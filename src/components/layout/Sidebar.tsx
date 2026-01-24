@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, FileText, AlertTriangle, FolderOpen,
   User, MessageSquare, CreditCard, LogOut,
-  ChevronLeft, Phone, Trophy, Gift, Star
+  ChevronLeft, Phone, Trophy, Gift, Star, Receipt
 } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import { cn } from '@/lib/utils'
@@ -15,6 +15,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle'
 const menuItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Mis Pólizas', href: '/polizas', icon: FileText },
+  { name: 'Recibos', href: '/recibos', icon: Receipt },
   { name: 'Siniestros', href: '/siniestros', icon: AlertTriangle },
   { name: 'Documentos', href: '/documentos', icon: FolderOpen },
   { name: 'Mensajes', href: '/mensajes', icon: MessageSquare },
