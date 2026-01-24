@@ -1,0 +1,49 @@
+{
+  "name": "e-SORI | Soriano Mediadores",
+  "short_name": "e-SORI",
+  "description": "Portal de clientes de Soriano Mediadores de Seguros - Gestiona tus pólizas, siniestros y documentos",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#E30613",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/logo-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["business", "finance", "productivity"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Mis Pólizas",
+      "short_name": "Pólizas",
+      "url": "/polizas",
+      "description": "Ver mis pólizas de seguros"
+    },
+    {
+      "name": "Siniestros",
+      "short_name": "Siniestros",
+      "url": "/siniestros",
+      "description": "Gestionar siniestros"
+    },
+    {
+      "name": "Soriano Club",
+      "short_name": "Club",
+      "url": "/soriano-club",
+      "description": "Programa de fidelidad"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

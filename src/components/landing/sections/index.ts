@@ -1,0 +1,8 @@
+export { HeroSection } from './HeroSection'
+export { TrustBar } from './TrustBar'
+export { CoverageCards } from './CoverageCards'
+export { BenefitsGrid } from './BenefitsGrid'
+export { StatsSection } from './StatsSection'
+export { TestimonialsSection } from './TestimonialsSection'
+export { FAQSection } from './FAQSection'
+export { CTASection } from './CTASection'

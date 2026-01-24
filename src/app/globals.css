@@ -1,0 +1,482 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========================================
+   VARIABLES CSS - PREMIUM THEME
+   ======================================== */
+:root {
+  --color-primary: #E30613;
+  --color-primary-dark: #B8050F;
+  --color-bg: #f5f5f7;
+  --color-bg-secondary: #ffffff;
+  --color-text: #1d1d1f;
+  --color-text-secondary: #6e6e73;
+  --color-border: #e5e5ea;
+  --sidebar-bg: #f5f5f7;
+  --card-bg: #ffffff;
+}
+
+.dark {
+  --color-bg: #000000;
+  --color-bg-secondary: #1d1d1f;
+  --color-text: #f5f5f7;
+  --color-text-secondary: #86868b;
+  --color-border: #2d2d2f;
+  --sidebar-bg: #1d1d1f;
+  --card-bg: #1d1d1f;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply antialiased transition-colors duration-200;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  ::selection {
+    @apply bg-occident/20 text-occident;
+  }
+}
+
+@layer components {
+  /* ========================================
+     SIDEBAR - APPLE STYLE
+     ======================================== */
+  .sidebar {
+    background-color: var(--sidebar-bg);
+    @apply border-r transition-colors duration-200;
+    border-color: var(--color-border);
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200;
+    color: var(--color-text-secondary);
+  }
+
+  .sidebar-link:hover {
+    @apply bg-white/50 dark:bg-white/5;
+    color: var(--color-text);
+  }
+
+  .sidebar-link.active {
+    @apply bg-white dark:bg-white/10 font-medium shadow-sm;
+    color: var(--color-primary);
+  }
+
+  /* ========================================
+     CARDS - PREMIUM
+     ======================================== */
+  .card {
+    background-color: var(--card-bg);
+    border-color: var(--color-border);
+    @apply rounded-2xl border shadow-premium transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply card cursor-pointer;
+  }
+
+  .card-hover:hover {
+    @apply shadow-premium-lg -translate-y-0.5;
+    border-color: var(--color-primary);
+  }
+
+  .card-premium {
+    @apply card backdrop-blur-xl;
+    background: linear-gradient(135deg, var(--card-bg) 0%, var(--color-bg-secondary) 100%);
+  }
+
+  .card-glass {
+    @apply rounded-2xl backdrop-blur-xl border;
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .dark .card-glass {
+    background: rgba(29, 29, 31, 0.7);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  /* ========================================
+     BUTTONS - APPLE STYLE
+     ======================================== */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-white rounded-xl transition-all duration-200;
+    background: linear-gradient(135deg, #E30613 0%, #B8050F 100%);
+  }
+
+  .btn-primary:hover {
+    @apply shadow-glow -translate-y-0.5;
+    background: linear-gradient(135deg, #F43F47 0%, #E30613 100%);
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-semibold rounded-xl border transition-all duration-200;
+    color: var(--color-text);
+    background-color: var(--card-bg);
+    border-color: var(--color-border);
+  }
+
+  .btn-secondary:hover {
+    @apply -translate-y-0.5;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200;
+    color: var(--color-text-secondary);
+  }
+
+  .btn-ghost:hover {
+    @apply bg-occident/10;
+    color: var(--color-primary);
+  }
+
+  .btn-apple {
+    @apply inline-flex items-center justify-center px-8 py-4 text-base font-semibold rounded-full transition-all duration-200;
+    background: var(--color-text);
+    color: var(--color-bg);
+  }
+
+  .btn-apple:hover {
+    @apply opacity-80 -translate-y-0.5;
+  }
+
+  /* ========================================
+     INPUTS - PREMIUM
+     ======================================== */
+  .input {
+    @apply w-full px-4 py-3 text-sm rounded-xl border transition-all duration-200;
+    background-color: var(--card-bg);
+    border-color: var(--color-border);
+    color: var(--color-text);
+  }
+
+  .input:focus {
+    @apply outline-none ring-2 ring-occident/20 border-occident;
+  }
+
+  .input::placeholder {
+    color: var(--color-text-secondary);
+  }
+
+  /* ========================================
+     BADGES - PREMIUM
+     ======================================== */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full transition-colors;
+  }
+
+  .badge-success {
+    @apply bg-accent-green/10 text-accent-green;
+  }
+
+  .badge-warning {
+    @apply bg-accent-orange/10 text-accent-orange;
+  }
+
+  .badge-danger {
+    @apply bg-occident/10 text-occident;
+  }
+
+  .badge-info {
+    @apply bg-accent-blue/10 text-accent-blue;
+  }
+
+  .badge-gray {
+    @apply bg-apple-gray-100 text-apple-gray-600 dark:bg-apple-gray-800 dark:text-apple-gray-400;
+  }
+
+  .badge-premium {
+    @apply bg-gradient-to-r from-accent-purple to-accent-pink text-white;
+  }
+
+  /* ========================================
+     LEVEL BADGES - GAMIFICATION
+     ======================================== */
+  .badge-bronce {
+    @apply bg-gradient-to-r from-amber-600 to-amber-700 text-white;
+  }
+
+  .badge-plata {
+    @apply bg-gradient-to-r from-gray-400 to-gray-500 text-white;
+  }
+
+  .badge-oro {
+    @apply bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900;
+  }
+
+  .badge-platino {
+    @apply bg-gradient-to-r from-purple-400 to-purple-600 text-white;
+  }
+
+  /* ========================================
+     STAT CARDS
+     ======================================== */
+  .stat-card {
+    @apply card p-6 relative overflow-hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    @apply absolute top-0 right-0 w-32 h-32 rounded-full opacity-5;
+    background: var(--color-primary);
+    transform: translate(30%, -30%);
+  }
+
+  /* ========================================
+     TABLE
+     ======================================== */
+  .table-header {
+    @apply text-xs font-semibold uppercase tracking-wider;
+    color: var(--color-text-secondary);
+  }
+
+  /* ========================================
+     PROGRESS BAR
+     ======================================== */
+  .progress-bar {
+    @apply h-2 rounded-full overflow-hidden;
+    background-color: var(--color-border);
+  }
+
+  .progress-bar-fill {
+    @apply h-full rounded-full transition-all duration-500 ease-out;
+    background: linear-gradient(90deg, #E30613, #F43F47);
+  }
+
+  /* ========================================
+     TIMELINE - CLAIM TRACKING
+     ======================================== */
+  .timeline-step {
+    @apply relative flex items-center gap-4;
+  }
+
+  .timeline-step::before {
+    content: '';
+    @apply absolute left-5 top-12 w-0.5 h-full;
+    background-color: var(--color-border);
+  }
+
+  .timeline-step:last-child::before {
+    @apply hidden;
+  }
+
+  .timeline-dot {
+    @apply w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300;
+    background-color: var(--color-border);
+    color: var(--color-text-secondary);
+  }
+
+  .timeline-dot.active {
+    @apply bg-occident text-white shadow-glow;
+  }
+
+  .timeline-dot.completed {
+    @apply bg-accent-green text-white;
+  }
+
+  /* ========================================
+     ANIMATIONS
+     ======================================== */
+  .animate-in {
+    animation: fadeIn 0.5s ease-out, slideUp 0.5s ease-out;
+  }
+
+  .skeleton {
+    @apply animate-pulse rounded-lg;
+    background: linear-gradient(90deg, var(--color-border) 25%, var(--color-bg) 50%, var(--color-border) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  /* ========================================
+     GRADIENT TEXT
+     ======================================== */
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-occident to-occident-400;
+  }
+
+  .gradient-text-premium {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent-purple via-accent-pink to-occident;
+  }
+}
+
+/* ========================================
+   SCROLLBAR - APPLE STYLE
+   ======================================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply rounded-full;
+  background: var(--color-border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+/* ========================================
+   CHART TOOLTIP
+   ======================================== */
+.recharts-tooltip-wrapper {
+  @apply !outline-none;
+}
+
+.custom-tooltip {
+  @apply card p-3 shadow-premium-lg;
+}
+
+/* ========================================
+   KEYFRAME ANIMATIONS
+   ======================================== */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce-soft {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(227, 6, 19, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(227, 6, 19, 0.6);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+}
+
+.animate-bounce-soft {
+  animation: bounce-soft 2s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ========================================
+   SAFE AREA (iOS Notch Support)
+   ======================================== */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.pl-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.pr-safe {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ========================================
+   MOBILE APP FEEL
+   ======================================== */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .mobile-safe-area {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+  }
+}
+
+/* Prevent text selection on interactive elements */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Smooth touch feedback */
+.touch-feedback {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.touch-feedback:active {
+  opacity: 0.7;
+  transform: scale(0.98);
+}
+
+/* ========================================
+   PREMIUM SHADOWS
+   ======================================== */
+.shadow-glow-sm {
+  box-shadow: 0 0 15px rgba(227, 6, 19, 0.2);
+}
+
+.shadow-glow-lg {
+  box-shadow: 0 0 40px rgba(227, 6, 19, 0.3);
+}
+
+/* ========================================
+   GLASS MORPHISM
+   ======================================== */
+.glass {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.dark .glass {
+  background: rgba(29, 29, 31, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}

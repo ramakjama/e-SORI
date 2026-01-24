@@ -1,0 +1,8 @@
+export { familiasLanding } from './familias'
+export { autonomosLanding } from './autonomos'
+export { empresasLanding } from './empresas'
+export { jovenesLanding } from './jovenes'
+export { mayores65Landing } from './mayores-65'
+export { parejasLanding } from './parejas'
+export { nuevosConductoresLanding } from './nuevos-conductores'
+export { extranjerosLanding } from './extranjeros'
