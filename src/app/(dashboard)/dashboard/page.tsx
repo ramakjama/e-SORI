@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -10,13 +10,21 @@ import {
   Star, Trophy, Gift, Sparkles, Bell, ChevronRight,
   Car, Home, Heart, Umbrella, Users, Phone, MessageCircle,
   Zap, Target, Award, BarChart3, PieChart, Wallet,
-  ArrowUpRight, ArrowDownRight, Activity, Sun, Cloud, Droplets
+  ArrowUpRight, ArrowDownRight, Activity, Sun, Cloud, Droplets,
+  Flame
 } from 'lucide-react'
 import { useStore, UserRole } from '@/store/useStore'
 import { formatCurrency, formatDateShort, cn } from '@/lib/utils'
 import { CircularProgress } from '@/components/ui/Progress'
 import { Badge, LevelBadge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
+
+// Gamification widgets
+import { WalletSummary } from '@/components/gamification/WalletSummary'
+import { DailyQuizWidget } from '@/components/gamification/DailyQuizWidget'
+import { LeaderboardMini } from '@/components/gamification/LeaderboardMini'
+import { RenewalCheckpoints } from '@/components/gamification/RenewalCheckpoints'
+import { StreakDisplay } from '@/components/gamification/StreakDisplay'
 
 const policyIcons: Record<string, React.ElementType> = {
   auto: Car,
@@ -194,13 +202,19 @@ export default function DashboardPage() {
             </motion.div>
           </div>
 
-          {/* Level Card */}
+          {/* Level Card + Streak */}
           {user && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3 }}
+              className="flex flex-col gap-3"
             >
+              {/* Streak Display en Header */}
+              <div className="flex justify-end">
+                <StreakDisplay variant="badge" showTooltip />
+              </div>
+
               <Link href="/soriano-club">
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/20 hover:bg-white/20 transition-all cursor-pointer group min-w-[200px]">
                   <div className="flex items-center gap-3 mb-4">
@@ -430,6 +444,23 @@ export default function DashboardPage() {
         </motion.div>
       </div>
 
+      {/* Renewal Checkpoints Section - Solo si hay polizas con checkpoints */}
+      {policies.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+        >
+          <RenewalCheckpoints
+            maxVisible={2}
+            onViewPolicy={(policyId) => {
+              // Navegar a la poliza
+              console.log('View policy:', policyId)
+            }}
+          />
+        </motion.div>
+      )}
+
       {/* Main Content Grid */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Policies List */}
@@ -507,6 +538,12 @@ export default function DashboardPage() {
           transition={{ delay: 0.6 }}
           className="space-y-6"
         >
+          {/* Wallet Summary Widget */}
+          <WalletSummary variant="compact" />
+
+          {/* Leaderboard Mini Widget */}
+          <LeaderboardMini period="weekly" />
+
           {/* Next Payment Card */}
           {nextPayment && (
             <Card variant="premium" className="p-6 relative overflow-hidden">
@@ -609,6 +646,14 @@ export default function DashboardPage() {
           </Card>
         </motion.div>
       </div>
+
+      {/* Daily Quiz Widget - Floating Component */}
+      <DailyQuizWidget
+        onComplete={(score, xpEarned, coinsEarned) => {
+          console.log('Quiz completed:', { score, xpEarned, coinsEarned })
+          // Aqui se puede actualizar el estado global con los puntos ganados
+        }}
+      />
     </div>
   )
 }

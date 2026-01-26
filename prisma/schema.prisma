@@ -60,6 +60,18 @@ model User {
   conversations  Conversation[]
   notifications  Notification[]
 
+  // Gamificacion V2.0
+  wallets              Wallet[]
+  quizAttempts         QuizAttempt[]
+  referralsMadeV2      ReferralV2[]      @relation("ReferrerV2")
+  referredByV2         ReferralV2?       @relation("ReferredV2")
+  spinWheelSpins       SpinWheelSpin[]
+  leaderboardEntries   LeaderboardEntry[]
+  ledgerEntries        Ledger[]
+  streak               UserStreak?
+  renewalCheckpoints   RenewalCheckpoint[]
+  redemptions          Redemption[]
+
   @@index([email])
   @@index([role])
 }
@@ -397,6 +409,278 @@ model ChatMessage {
   conversation   Conversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId])
+}
+
+// ========================================
+// GAMIFICACION V2.0 - SISTEMA AVANZADO
+// ========================================
+
+enum WalletType {
+  XP
+  COINS
+  SHIELDS
+}
+
+model Wallet {
+  id        String     @id @default(cuid())
+  userId    String
+  type      WalletType
+  balance   Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions WalletTransaction[]
+
+  @@unique([userId, type])
+  @@index([userId])
+}
+
+model WalletTransaction {
+  id          String     @id @default(cuid())
+  walletId    String
+  amount      Int
+  type        String     // QUIZ_REWARD, REFERRAL_BONUS, SPIN_WHEEL, PURCHASE, etc.
+  description String?
+  metadata    Json?
+  createdAt   DateTime   @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId])
+  @@index([createdAt])
+}
+
+model QuizQuestion {
+  id            String   @id @default(cuid())
+  category      String   // SEGUROS, PREVENCION, SORIANO, etc.
+  difficulty    Int      @default(1) // 1-3
+  question      String
+  options       Json     // Array of options
+  correctIndex  Int
+  explanation   String?
+  xpReward      Int      @default(10)
+  coinsReward   Int      @default(5)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  attempts QuizAttempt[]
+
+  @@index([category])
+  @@index([difficulty])
+  @@index([isActive])
+}
+
+model DailyQuiz {
+  id        String   @id @default(cuid())
+  date      DateTime @unique @db.Date
+  questions Json     // Array of question IDs for this day
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  attempts QuizAttempt[]
+
+  @@index([date])
+}
+
+model QuizAttempt {
+  id           String    @id @default(cuid())
+  userId       String
+  dailyQuizId  String?
+  questionId   String?
+  answers      Json      // Array of { questionId, selectedIndex, correct, timeSpent }
+  score        Int       @default(0)
+  totalXP      Int       @default(0)
+  totalCoins   Int       @default(0)
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dailyQuiz DailyQuiz?    @relation(fields: [dailyQuizId], references: [id])
+  question  QuizQuestion? @relation(fields: [questionId], references: [id])
+
+  @@unique([userId, dailyQuizId])
+  @@index([userId])
+  @@index([dailyQuizId])
+  @@index([createdAt])
+}
+
+enum ReferralStage {
+  INVITED
+  INSTALL_OPEN
+  PROFILE_QUIZ
+  REQUESTED_REVIEW
+  POLICY_PAID
+}
+
+model ReferralV2 {
+  id             String        @id @default(cuid())
+  referrerId     String
+  referredEmail  String?
+  referredPhone  String?
+  referredName   String?
+  code           String        @unique
+  stage          ReferralStage @default(INVITED)
+  referredUserId String?       @unique
+  xpAwarded      Int           @default(0)
+  coinsAwarded   Int           @default(0)
+  metadata       Json?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  referrer     User  @relation("ReferrerV2", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredUser User? @relation("ReferredV2", fields: [referredUserId], references: [id])
+
+  @@index([referrerId])
+  @@index([code])
+  @@index([stage])
+}
+
+model SpinWheelPrize {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        String   // XP, COINS, SHIELDS, PHYSICAL, DISCOUNT
+  value       Int      // Amount for XP/COINS/SHIELDS, or reference for physical
+  probability Float    // 0-1 probability weight
+  color       String?  // For wheel segment color
+  icon        String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  spins SpinWheelSpin[]
+
+  @@index([isActive])
+}
+
+model SpinWheelSpin {
+  id        String   @id @default(cuid())
+  userId    String
+  prizeId   String
+  claimed   Boolean  @default(false)
+  claimedAt DateTime?
+  createdAt DateTime @default(now())
+
+  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prize SpinWheelPrize @relation(fields: [prizeId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model LeaderboardEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  period    String   // daily_2024-01-15, weekly_2024-W03, monthly_2024-01
+  xpEarned  Int      @default(0)
+  rank      Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, period])
+  @@index([period])
+  @@index([xpEarned])
+}
+
+// ========================================
+// LEDGER - SISTEMA AUDITABLE APPEND-ONLY
+// ========================================
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+}
+
+/// Ledger - Sistema append-only auditable de todas las transacciones de wallet
+model Ledger {
+  id              String          @id @default(cuid())
+  userId          String
+  walletType      WalletType
+  transactionType TransactionType
+  delta           Int             /// Cantidad (siempre positivo, tipo determina direccion)
+  balanceBefore   Int             /// Balance antes de transaccion
+  balanceAfter    Int             /// Balance despues de transaccion
+  reason          String          /// Razon: QUIZ_COMPLETED, STORE_PURCHASE, REFERRAL_BONUS, etc.
+  reference       String?         /// ID referencia externa (quizAttemptId, orderId, etc.)
+  idempotencyKey  String?         @unique /// Clave unica para prevenir duplicados
+  metadata        Json?           /// Datos adicionales en formato JSON
+  createdAt       DateTime        @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, walletType])
+  @@index([createdAt])
+  @@index([reason])
+  @@index([reference])
+}
+
+// ========================================
+// STREAKS - SISTEMA DE RACHAS
+// ========================================
+
+/// Racha de actividad del usuario (quizzes diarios)
+model UserStreak {
+  id                String    @id @default(cuid())
+  userId            String    @unique
+  currentStreak     Int       @default(0)      /// Dias consecutivos actuales
+  longestStreak     Int       @default(0)      /// Record historico personal
+  lastActivityDate  DateTime?                  /// Fecha de ultima actividad completada
+  streakStartDate   DateTime?                  /// Cuando inicio la racha actual
+  shieldsUsedCount  Int       @default(0)      /// Escudos usados en racha actual
+  freezeUntil       DateTime?                  /// Racha congelada hasta esta fecha (por shield)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([lastActivityDate])
+  @@index([currentStreak])
+}
+
+// ========================================
+// RENEWAL CHECKPOINTS - PUNTOS DE RENOVACIÓN
+// ========================================
+
+/// Checkpoints de renovación de pólizas para recompensas
+model RenewalCheckpoint {
+  id              String   @id @default(cuid())
+  userId          String
+  policyId        String
+  checkpoint      String   // T-30, T-15, T-7
+  coinsEarned     Int
+  freeSpinAwarded Boolean  @default(false)
+  completedAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, policyId, checkpoint])
+  @@index([userId])
+  @@index([policyId])
+}
+
+// ========================================
+// REDEMPTIONS - CANJES DEL MARKETPLACE
+// ========================================
+
+/// Historial de canjes de recompensas en el marketplace
+model Redemption {
+  id         String   @id @default(cuid())
+  userId     String
+  rewardId   String
+  rewardName String
+  coinsCost  Int
+  code       String?
+  status     String   @default("COMPLETED")
+  redeemedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
 }
 
 // ========================================

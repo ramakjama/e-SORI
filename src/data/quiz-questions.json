@@ -1,0 +1,1504 @@
+{
+  "questions": [
+    {
+      "id": "q001",
+      "category": "SEGUROS",
+      "subcategory": "auto",
+      "difficulty": "EASY",
+      "question": "¿Qué cubre el seguro a terceros básico?",
+      "options": [
+        {"label": "Solo los daños a tu propio vehículo", "isCorrect": false},
+        {"label": "Los daños que causes a otras personas y sus bienes", "isCorrect": true},
+        {"label": "El robo de tu coche completo", "isCorrect": false},
+        {"label": "Las multas de tráfico", "isCorrect": false}
+      ],
+      "explanation": "El seguro a terceros básico cubre los daños que puedas causar a terceras personas, sus vehículos y propiedades. Es el mínimo obligatorio por ley.",
+      "funFact": "🚗 En España, circular sin seguro puede costarte entre 601€ y 3.005€ de multa. ¡Más caro que el propio seguro!"
+    },
+    {
+      "id": "q002",
+      "category": "SEGUROS",
+      "subcategory": "auto",
+      "difficulty": "EASY",
+      "question": "Si un jabalí se cruza en tu camino y chocas, ¿qué tipo de seguro lo cubriría?",
+      "options": [
+        {"label": "Seguro a terceros básico", "isCorrect": false},
+        {"label": "Seguro a terceros ampliado con cobertura de animales", "isCorrect": true},
+        {"label": "Seguro de vida", "isCorrect": false},
+        {"label": "Ninguno, los jabalíes no pagan seguros", "isCorrect": false}
+      ],
+      "explanation": "Los daños por colisión con animales suelen estar cubiertos en pólizas a terceros ampliado o todo riesgo, no en el básico.",
+      "funFact": "🐗 En España hay más de 1 millón de jabalíes. ¡Son los conductores más imprudentes del reino animal!"
+    },
+    {
+      "id": "q003",
+      "category": "SEGUROS",
+      "subcategory": "auto",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué es la franquicia en un seguro de coche?",
+      "options": [
+        {"label": "Una cadena de restaurantes de seguros", "isCorrect": false},
+        {"label": "La cantidad que paga el asegurado en caso de siniestro", "isCorrect": true},
+        {"label": "El descuento por ser buen conductor", "isCorrect": false},
+        {"label": "Un tipo de película de acción sobre seguros", "isCorrect": false}
+      ],
+      "explanation": "La franquicia es la cantidad fija que el asegurado debe pagar de su bolsillo cuando ocurre un siniestro. A mayor franquicia, menor prima.",
+      "funFact": "💰 Elegir una franquicia de 300€ puede ahorrarte hasta un 20% en la prima anual. ¡Matemáticas de adulto responsable!"
+    },
+    {
+      "id": "q004",
+      "category": "SEGUROS",
+      "subcategory": "hogar",
+      "difficulty": "EASY",
+      "question": "¿Qué daños NO suele cubrir un seguro de hogar básico?",
+      "options": [
+        {"label": "Incendio en la cocina", "isCorrect": false},
+        {"label": "Robo con fuerza", "isCorrect": false},
+        {"label": "Daños por falta de mantenimiento", "isCorrect": true},
+        {"label": "Daños por agua de tuberías", "isCorrect": false}
+      ],
+      "explanation": "Los seguros de hogar no cubren daños derivados de la falta de mantenimiento o el deterioro natural. ¡Hay que cuidar la casa!",
+      "funFact": "🏠 El 70% de los siniestros en hogares españoles son por daños de agua. ¡Las tuberías son las verdaderas villanas!"
+    },
+    {
+      "id": "q005",
+      "category": "SEGUROS",
+      "subcategory": "hogar",
+      "difficulty": "MEDIUM",
+      "question": "Si tu vecino de arriba inunda tu piso, ¿quién debe hacerse cargo?",
+      "options": [
+        {"label": "Tú, por vivir abajo", "isCorrect": false},
+        {"label": "El seguro de tu vecino (RC)", "isCorrect": true},
+        {"label": "El ayuntamiento", "isCorrect": false},
+        {"label": "Nadie, el agua es libre", "isCorrect": false}
+      ],
+      "explanation": "La responsabilidad civil del vecino causante debe cubrir los daños. Si no tiene seguro, puedes reclamarlo judicialmente.",
+      "funFact": "🌊 Las filtraciones de agua entre vecinos causan el 40% de las reclamaciones de RC en comunidades. ¡El agua siempre encuentra camino!"
+    },
+    {
+      "id": "q006",
+      "category": "SEGUROS",
+      "subcategory": "vida",
+      "difficulty": "EASY",
+      "question": "¿Qué es un beneficiario en un seguro de vida?",
+      "options": [
+        {"label": "El que vende el seguro", "isCorrect": false},
+        {"label": "La persona que recibe la indemnización si fallece el asegurado", "isCorrect": true},
+        {"label": "El médico que certifica la muerte", "isCorrect": false},
+        {"label": "El que paga las primas", "isCorrect": false}
+      ],
+      "explanation": "El beneficiario es quien recibirá el capital asegurado en caso de fallecimiento del titular de la póliza.",
+      "funFact": "💝 Puedes cambiar de beneficiario cuando quieras. ¡Es como actualizar tu testamento pero más fácil!"
+    },
+    {
+      "id": "q007",
+      "category": "SEGUROS",
+      "subcategory": "vida",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué significa que un seguro de vida tenga 'valor de rescate'?",
+      "options": [
+        {"label": "Que te rescatan si te pierdes", "isCorrect": false},
+        {"label": "Que puedes recuperar parte del dinero si cancelas antes", "isCorrect": true},
+        {"label": "Que incluye seguro de secuestro", "isCorrect": false},
+        {"label": "Que te devuelven todo si no mueres", "isCorrect": false}
+      ],
+      "explanation": "El valor de rescate es la cantidad que el asegurado puede recuperar si decide cancelar anticipadamente una póliza de ahorro o vida entera.",
+      "funFact": "🎰 Los seguros de vida con ahorro son como una hucha... pero con beneficios fiscales. ¡Ahorrar con ventajas!"
+    },
+    {
+      "id": "q008",
+      "category": "SEGUROS",
+      "subcategory": "salud",
+      "difficulty": "EASY",
+      "question": "¿Qué es el período de carencia en un seguro de salud?",
+      "options": [
+        {"label": "Cuando el médico no está disponible", "isCorrect": false},
+        {"label": "El tiempo de espera antes de poder usar ciertas coberturas", "isCorrect": true},
+        {"label": "El período sin pagar primas", "isCorrect": false},
+        {"label": "La falta de médicos especialistas", "isCorrect": false}
+      ],
+      "explanation": "La carencia es el período inicial en el que ciertas prestaciones no están disponibles, aunque pagues la prima desde el primer día.",
+      "funFact": "⏰ El parto suele tener 8-10 meses de carencia. ¡Las aseguradoras saben contar hasta 9!"
+    },
+    {
+      "id": "q009",
+      "category": "SEGUROS",
+      "subcategory": "salud",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué diferencia hay entre copago y reembolso?",
+      "options": [
+        {"label": "Son exactamente lo mismo", "isCorrect": false},
+        {"label": "Copago: pagas parte en cada visita. Reembolso: te devuelven lo gastado", "isCorrect": true},
+        {"label": "Copago es más caro siempre", "isCorrect": false},
+        {"label": "Reembolso solo existe en USA", "isCorrect": false}
+      ],
+      "explanation": "En copago pagas una cantidad fija por servicio. En reembolso, pagas todo y luego la aseguradora te devuelve un porcentaje.",
+      "funFact": "💸 Con reembolso puedes ir a cualquier médico del mundo. ¡Es el Netflix de los seguros de salud!"
+    },
+    {
+      "id": "q010",
+      "category": "SEGUROS",
+      "subcategory": "RC",
+      "difficulty": "EASY",
+      "question": "¿Qué cubre el seguro de Responsabilidad Civil (RC)?",
+      "options": [
+        {"label": "Daños que sufres tú mismo", "isCorrect": false},
+        {"label": "Daños que causas involuntariamente a terceros", "isCorrect": true},
+        {"label": "Solo daños en accidentes de tráfico", "isCorrect": false},
+        {"label": "Multas y sanciones administrativas", "isCorrect": false}
+      ],
+      "explanation": "La RC cubre los daños materiales y personales que puedas causar involuntariamente a otras personas en tu vida cotidiana.",
+      "funFact": "🎾 Si tu saque de pádel rompe las gafas del rival, ¡la RC te salva! Es el seguro del 'perdona, no quería'."
+    },
+    {
+      "id": "q011",
+      "category": "SEGUROS",
+      "subcategory": "auto",
+      "difficulty": "HARD",
+      "question": "¿Qué es el sistema Bonus-Malus en seguros de auto?",
+      "options": [
+        {"label": "Un videojuego de coches", "isCorrect": false},
+        {"label": "Sistema que ajusta la prima según tu historial de siniestros", "isCorrect": true},
+        {"label": "Un tipo de motor híbrido", "isCorrect": false},
+        {"label": "El nombre del fundador de los seguros de coche", "isCorrect": false}
+      ],
+      "explanation": "El Bonus-Malus premia a buenos conductores (bonus) con descuentos y penaliza a los que tienen siniestros (malus) con recargos.",
+      "funFact": "🏆 Tras 5 años sin siniestros puedes tener hasta un 50% de descuento. ¡Conducir bien tiene premio!"
+    },
+    {
+      "id": "q012",
+      "category": "SEGUROS",
+      "subcategory": "auto",
+      "difficulty": "MEDIUM",
+      "question": "Si prestas tu coche a un amigo y tiene un accidente, ¿quién responde?",
+      "options": [
+        {"label": "Solo tu amigo con su patrimonio", "isCorrect": false},
+        {"label": "Tu seguro, aunque luego puede haber penalizaciones", "isCorrect": true},
+        {"label": "Nadie, prestar el coche anula el seguro", "isCorrect": false},
+        {"label": "El Estado español", "isCorrect": false}
+      ],
+      "explanation": "Tu seguro cubre el vehículo, no solo al titular. Pero si el conductor no estaba autorizado, podrían aplicarse restricciones.",
+      "funFact": "🤝 El 15% de los accidentes ocurren con el coche prestado. ¡La amistad tiene sus riesgos!"
+    },
+    {
+      "id": "q013",
+      "category": "SEGUROS",
+      "subcategory": "hogar",
+      "difficulty": "HARD",
+      "question": "¿Qué es el infraseguro en una póliza de hogar?",
+      "options": [
+        {"label": "Un seguro para sótanos", "isCorrect": false},
+        {"label": "Cuando el valor asegurado es menor al valor real", "isCorrect": true},
+        {"label": "Un seguro muy barato", "isCorrect": false},
+        {"label": "Cobertura para tuberías subterráneas", "isCorrect": false}
+      ],
+      "explanation": "Si declaras un valor inferior al real, en caso de siniestro la indemnización se reduce proporcionalmente. ¡Ojo con ahorrar en la declaración!",
+      "funFact": "📉 Con infraseguro del 50%, si tienes un daño de 10.000€, ¡solo te pagan 5.000€! Las matemáticas no perdonan."
+    },
+    {
+      "id": "q014",
+      "category": "SEGUROS",
+      "subcategory": "hogar",
+      "difficulty": "MEDIUM",
+      "question": "¿El seguro de hogar cubre si tu perro muerde a alguien?",
+      "options": [
+        {"label": "Nunca, los animales no son cosa del hogar", "isCorrect": false},
+        {"label": "Sí, normalmente en la RC familiar incluida", "isCorrect": true},
+        {"label": "Solo si el perro tiene su propio seguro", "isCorrect": false},
+        {"label": "Solo si es un perro pequeño", "isCorrect": false}
+      ],
+      "explanation": "La mayoría de seguros de hogar incluyen RC familiar que cubre daños causados por mascotas. Razas peligrosas requieren seguro específico.",
+      "funFact": "🐕 Los perros de razas PPP (potencialmente peligrosas) necesitan seguro obligatorio de 120.000€ mínimo. ¡Son los Ferrari del mundo canino!"
+    },
+    {
+      "id": "q015",
+      "category": "SEGUROS",
+      "subcategory": "vida",
+      "difficulty": "HARD",
+      "question": "¿Qué es la 'cláusula de incontestabilidad' en seguros de vida?",
+      "options": [
+        {"label": "Que no puedes quejarte del servicio", "isCorrect": false},
+        {"label": "Tras 2 años, la aseguradora no puede anular la póliza por omisiones", "isCorrect": true},
+        {"label": "Que el precio no se puede negociar", "isCorrect": false},
+        {"label": "Que no puedes cambiar de beneficiario", "isCorrect": false}
+      ],
+      "explanation": "Después de cierto tiempo (generalmente 2 años), la aseguradora no puede rescindir el contrato por inexactitudes en la declaración de salud.",
+      "funFact": "⚖️ Esta cláusula protege a las familias de quedarse sin indemnización por 'olvidos' del fallecido. ¡La ley piensa en todo!"
+    },
+    {
+      "id": "q016",
+      "category": "SEGUROS",
+      "subcategory": "salud",
+      "difficulty": "HARD",
+      "question": "¿Qué son las 'preexistencias' en un seguro de salud?",
+      "options": [
+        {"label": "Vidas anteriores según el budismo", "isCorrect": false},
+        {"label": "Enfermedades o condiciones que ya tenías antes de contratar", "isCorrect": true},
+        {"label": "Los requisitos previos para contratar", "isCorrect": false},
+        {"label": "Los seguros que tuviste antes", "isCorrect": false}
+      ],
+      "explanation": "Las preexistencias son condiciones médicas previas a la contratación. Pueden estar excluidas o tener carencias especiales.",
+      "funFact": "🏥 Algunas aseguradoras aceptan preexistencias con recargo. ¡Es el 'todo tiene solución' del mundo asegurador!"
+    },
+    {
+      "id": "q017",
+      "category": "SEGUROS",
+      "subcategory": "RC",
+      "difficulty": "MEDIUM",
+      "question": "Si tu hijo de 8 años rompe el móvil de un compañero en el cole, ¿quién paga?",
+      "options": [
+        {"label": "El colegio siempre", "isCorrect": false},
+        {"label": "Tu RC familiar (normalmente en el seguro de hogar)", "isCorrect": true},
+        {"label": "El niño con su paga", "isCorrect": false},
+        {"label": "Nadie, son cosas de niños", "isCorrect": false}
+      ],
+      "explanation": "La RC familiar incluida en el seguro de hogar cubre los daños que causen tus hijos menores a terceros.",
+      "funFact": "📱 Los daños causados por menores representan el 25% de las reclamaciones de RC familiar. ¡Los peques son expertos en destrucción!"
+    },
+    {
+      "id": "q018",
+      "category": "SEGUROS",
+      "subcategory": "auto",
+      "difficulty": "EASY",
+      "question": "¿Qué significa 'Todo Riesgo con franquicia'?",
+      "options": [
+        {"label": "Cubre todo menos accidentes", "isCorrect": false},
+        {"label": "Cubre todos los daños pero pagas una parte fija en cada siniestro", "isCorrect": true},
+        {"label": "Solo cubre riesgos en franquicias comerciales", "isCorrect": false},
+        {"label": "Es un seguro para food trucks", "isCorrect": false}
+      ],
+      "explanation": "El todo riesgo con franquicia cubre daños propios y a terceros, pero el asegurado paga una cantidad fija por siniestro.",
+      "funFact": "🎯 La franquicia más común es de 300€. ¡Es como el 'bote' que pones para arreglar tu propio coche!"
+    },
+    {
+      "id": "q019",
+      "category": "SEGUROS",
+      "subcategory": "hogar",
+      "difficulty": "EASY",
+      "question": "¿Qué es el continente en un seguro de hogar?",
+      "options": [
+        {"label": "Europa, donde vives", "isCorrect": false},
+        {"label": "La estructura física de la vivienda (paredes, suelos, techos)", "isCorrect": true},
+        {"label": "El contenido de la casa", "isCorrect": false},
+        {"label": "El jardín exterior", "isCorrect": false}
+      ],
+      "explanation": "El continente incluye la estructura: paredes, suelos, techos, puertas, ventanas, instalaciones fijas. El contenido son tus pertenencias.",
+      "funFact": "🏗️ Si eres inquilino, normalmente solo aseguras el contenido. ¡El casero se encarga del continente!"
+    },
+    {
+      "id": "q020",
+      "category": "SEGUROS",
+      "subcategory": "vida",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué diferencia hay entre seguro de vida temporal y vida entera?",
+      "options": [
+        {"label": "Temporal es más caro", "isCorrect": false},
+        {"label": "Temporal cubre un período fijo, vida entera hasta el fallecimiento", "isCorrect": true},
+        {"label": "Son exactamente iguales", "isCorrect": false},
+        {"label": "Vida entera solo cubre enfermedades", "isCorrect": false}
+      ],
+      "explanation": "El temporal cubre un plazo concreto (ej: 20 años). El de vida entera está vigente hasta el fallecimiento, sin límite de edad.",
+      "funFact": "♾️ Los seguros de vida entera son como el matrimonio: ¡hasta que la muerte os separe! (literalmente)"
+    },
+    {
+      "id": "q021",
+      "category": "SEGUROS",
+      "subcategory": "salud",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué es el cuadro médico en un seguro de salud?",
+      "options": [
+        {"label": "Una pintura de un doctor", "isCorrect": false},
+        {"label": "La lista de médicos, clínicas y hospitales disponibles", "isCorrect": true},
+        {"label": "El historial médico del paciente", "isCorrect": false},
+        {"label": "Los resultados de análisis", "isCorrect": false}
+      ],
+      "explanation": "El cuadro médico es el directorio de profesionales y centros sanitarios concertados con tu aseguradora donde puedes ser atendido.",
+      "funFact": "📋 Las grandes aseguradoras tienen cuadros médicos con más de 40.000 profesionales. ¡Es como el catálogo de Netflix pero de médicos!"
+    },
+    {
+      "id": "q022",
+      "category": "SEGUROS",
+      "subcategory": "RC",
+      "difficulty": "HARD",
+      "question": "¿Qué es la RC profesional y quién debe tenerla obligatoriamente?",
+      "options": [
+        {"label": "Es voluntaria para todos", "isCorrect": false},
+        {"label": "Cubre errores profesionales; obligatoria para médicos, abogados, arquitectos...", "isCorrect": true},
+        {"label": "Solo para futbolistas profesionales", "isCorrect": false},
+        {"label": "Es un seguro de desempleo", "isCorrect": false}
+      ],
+      "explanation": "La RC profesional protege contra reclamaciones por errores en el ejercicio profesional. Es obligatoria para ciertas profesiones colegiadas.",
+      "funFact": "👨‍⚕️ Un médico puede pagar más de 5.000€/año en RC profesional. ¡El precio de que confíen tu vida en sus manos!"
+    },
+    {
+      "id": "q023",
+      "category": "SEGUROS",
+      "subcategory": "auto",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué es la asistencia en carretera y qué servicios incluye normalmente?",
+      "options": [
+        {"label": "Solo remolque del vehículo", "isCorrect": false},
+        {"label": "Grúa, reparación in situ, vehículo de sustitución, hotel...", "isCorrect": true},
+        {"label": "Un mecánico personal las 24h", "isCorrect": false},
+        {"label": "Gasolina gratis ilimitada", "isCorrect": false}
+      ],
+      "explanation": "La asistencia en carretera incluye servicios como grúa, reparación de averías, vehículo de sustitución, hotel y viaje de regreso.",
+      "funFact": "🛣️ El 60% de las asistencias son por batería descargada. ¡Las luces encendidas son el enemigo número 1!"
+    },
+    {
+      "id": "q024",
+      "category": "SEGUROS",
+      "subcategory": "hogar",
+      "difficulty": "HARD",
+      "question": "¿Qué diferencia hay entre 'primer riesgo' y 'valor total' en seguros?",
+      "options": [
+        {"label": "Son sinónimos", "isCorrect": false},
+        {"label": "Primer riesgo: se paga hasta el límite sin regla proporcional. Valor total: se aplica infraseguro", "isCorrect": true},
+        {"label": "Primer riesgo es más barato siempre", "isCorrect": false},
+        {"label": "Valor total solo existe en coches", "isCorrect": false}
+      ],
+      "explanation": "En primer riesgo, si el daño es menor al límite, se paga íntegro. En valor total, si hay infraseguro, se reduce proporcionalmente.",
+      "funFact": "🧮 El primer riesgo es ideal para joyas: aseguras 10.000€ aunque tengas más, y no te aplican regla proporcional."
+    },
+    {
+      "id": "q025",
+      "category": "SEGUROS",
+      "subcategory": "vida",
+      "difficulty": "EASY",
+      "question": "¿Qué es el capital asegurado en un seguro de vida?",
+      "options": [
+        {"label": "Madrid, la capital de España", "isCorrect": false},
+        {"label": "La cantidad que recibirán los beneficiarios si falleces", "isCorrect": true},
+        {"label": "El dinero que has pagado en primas", "isCorrect": false},
+        {"label": "Tu cuenta bancaria", "isCorrect": false}
+      ],
+      "explanation": "El capital asegurado es la suma que la aseguradora pagará a los beneficiarios en caso de fallecimiento del asegurado.",
+      "funFact": "💰 El capital medio contratado en España es de unos 100.000€. ¡Suficiente para pagar la hipoteca y un buen homenaje!"
+    },
+    {
+      "id": "q026",
+      "category": "SEGUROS",
+      "subcategory": "salud",
+      "difficulty": "EASY",
+      "question": "¿Qué ventaja tiene un seguro de salud privado frente a la sanidad pública?",
+      "options": [
+        {"label": "Los médicos son mejores", "isCorrect": false},
+        {"label": "Menor tiempo de espera y elección de especialista", "isCorrect": true},
+        {"label": "Las medicinas son gratis", "isCorrect": false},
+        {"label": "Te curan enfermedades incurables", "isCorrect": false}
+      ],
+      "explanation": "Las principales ventajas son tiempos de espera reducidos, libre elección de médico y acceso a habitación individual.",
+      "funFact": "⏱️ La espera media para una operación en la pública es de 121 días. En la privada, ¡puedes operarte en semanas!"
+    },
+    {
+      "id": "q027",
+      "category": "SEGUROS",
+      "subcategory": "RC",
+      "difficulty": "EASY",
+      "question": "Si tu maceta cae del balcón y abolla un coche, ¿qué seguro responde?",
+      "options": [
+        {"label": "El seguro del coche afectado", "isCorrect": false},
+        {"label": "Tu seguro de hogar (RC)", "isCorrect": true},
+        {"label": "El seguro de la comunidad", "isCorrect": false},
+        {"label": "Ninguno, es un acto divino", "isCorrect": false}
+      ],
+      "explanation": "La RC de tu seguro de hogar cubre los daños que objetos de tu vivienda puedan causar a terceros.",
+      "funFact": "🪴 Los geranios son las plantas más peligrosas de España... ¡estadísticamente hablando, por sus caídas!"
+    },
+    {
+      "id": "q028",
+      "category": "SEGUROS",
+      "subcategory": "auto",
+      "difficulty": "HARD",
+      "question": "¿Qué es el CCS (Consorcio de Compensación de Seguros)?",
+      "options": [
+        {"label": "Una aseguradora privada muy grande", "isCorrect": false},
+        {"label": "Entidad pública que cubre riesgos extraordinarios y vehículos sin seguro", "isCorrect": true},
+        {"label": "El sindicato de aseguradoras", "isCorrect": false},
+        {"label": "Una app para comparar seguros", "isCorrect": false}
+      ],
+      "explanation": "El CCS es una entidad pública que cubre catástrofes naturales, terrorismo y daños causados por vehículos sin seguro identificado.",
+      "funFact": "🌪️ El CCS pagó más de 800 millones por la DANA de 2019. ¡Es el superhéroe de los desastres!"
+    },
+    {
+      "id": "q029",
+      "category": "SEGUROS",
+      "subcategory": "hogar",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué cubre normalmente el 'seguro de impago de alquiler'?",
+      "options": [
+        {"label": "Solo un mes de alquiler", "isCorrect": false},
+        {"label": "Rentas impagadas, defensa jurídica y daños por vandalismo", "isCorrect": true},
+        {"label": "El alquiler si tú no puedes pagar", "isCorrect": false},
+        {"label": "Los gastos de mudanza del inquilino", "isCorrect": false}
+      ],
+      "explanation": "Este seguro para propietarios cubre impago de rentas (hasta 12-18 meses), gastos legales de desahucio y daños del inquilino.",
+      "funFact": "🏠 Los desahucios pueden tardar más de 2 años. ¡Con este seguro, el casero duerme tranquilo!"
+    },
+    {
+      "id": "q030",
+      "category": "SEGUROS",
+      "subcategory": "vida",
+      "difficulty": "HARD",
+      "question": "¿Qué es el 'riesgo de longevidad' en seguros?",
+      "options": [
+        {"label": "El riesgo de morir joven", "isCorrect": false},
+        {"label": "El riesgo de vivir más de lo esperado y quedarse sin ahorros", "isCorrect": true},
+        {"label": "Una enfermedad rara", "isCorrect": false},
+        {"label": "El riesgo de que suba la prima", "isCorrect": false}
+      ],
+      "explanation": "Es el riesgo de que una persona viva más de lo previsto y agote sus recursos. Las rentas vitalicias lo cubren.",
+      "funFact": "👴 En España, quien cumple 65 años hoy vivirá de media hasta los 86. ¡Necesitarás pasta para 20 años más!"
+    },
+    {
+      "id": "q031",
+      "category": "SEGUROS",
+      "subcategory": "salud",
+      "difficulty": "HARD",
+      "question": "¿Qué es la 'rescisión unilateral' y cuándo puede aplicarla una aseguradora de salud?",
+      "options": [
+        {"label": "Nunca puede cancelar tu póliza", "isCorrect": false},
+        {"label": "Puede cancelar si hay fraude, pero no por usar mucho el seguro", "isCorrect": true},
+        {"label": "Puede cancelar cuando quiera", "isCorrect": false},
+        {"label": "Solo si no pagas 10 cuotas seguidas", "isCorrect": false}
+      ],
+      "explanation": "La aseguradora puede rescindir por fraude o incumplimiento grave, pero NO por alta siniestralidad (usar mucho el seguro).",
+      "funFact": "⚖️ Si te cancelan el seguro por usarlo mucho, ¡puedes demandarlos! La ley protege al consumidor."
+    },
+    {
+      "id": "q032",
+      "category": "SEGUROS",
+      "subcategory": "RC",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué es la 'RC patronal' de una empresa?",
+      "options": [
+        {"label": "Seguro del jefe como persona", "isCorrect": false},
+        {"label": "Cubre daños a empleados por accidentes laborales imputables a la empresa", "isCorrect": true},
+        {"label": "Seguro de los clientes", "isCorrect": false},
+        {"label": "Un plan de pensiones para trabajadores", "isCorrect": false}
+      ],
+      "explanation": "La RC patronal cubre la responsabilidad del empresario cuando un trabajador sufre un accidente por negligencia de la empresa.",
+      "funFact": "👷 Las indemnizaciones por accidentes laborales graves pueden superar los 500.000€. ¡El casco no es broma!"
+    },
+    {
+      "id": "q033",
+      "category": "SEGUROS",
+      "subcategory": "auto",
+      "difficulty": "EASY",
+      "question": "¿Qué es un 'parte amistoso' de accidente?",
+      "options": [
+        {"label": "Una fiesta después del accidente", "isCorrect": false},
+        {"label": "Documento que rellenan los conductores para declarar un accidente", "isCorrect": true},
+        {"label": "Una carta de disculpa al otro conductor", "isCorrect": false},
+        {"label": "El informe policial", "isCorrect": false}
+      ],
+      "explanation": "La Declaración Amistosa de Accidente (DAA) es un documento europeo para declarar los hechos de un siniestro entre los implicados.",
+      "funFact": "📝 El parte amistoso tiene validez en toda Europa. ¡Es el idioma universal de los accidentes!"
+    },
+    {
+      "id": "q034",
+      "category": "SEGUROS",
+      "subcategory": "hogar",
+      "difficulty": "EASY",
+      "question": "¿Qué es el servicio de 'manitas' o 'bricolaje' en seguros de hogar?",
+      "options": [
+        {"label": "Un curso para aprender a reparar", "isCorrect": false},
+        {"label": "Pequeñas reparaciones domésticas incluidas en la póliza", "isCorrect": true},
+        {"label": "Un seguro para herramientas", "isCorrect": false},
+        {"label": "Descuento en ferreterías", "isCorrect": false}
+      ],
+      "explanation": "Muchos seguros incluyen horas de un profesional para pequeñas reparaciones: colgar cuadros, montar muebles, cambiar bombillas...",
+      "funFact": "🔧 El servicio de manitas puede ahorrarte hasta 500€/año en chapuzas domésticas. ¡Adiós a los tutoriales de YouTube!"
+    },
+    {
+      "id": "q035",
+      "category": "SEGUROS",
+      "subcategory": "vida",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué es el 'cuestionario de salud' al contratar un seguro de vida?",
+      "options": [
+        {"label": "Un examen médico completo obligatorio", "isCorrect": false},
+        {"label": "Preguntas sobre tu estado de salud para evaluar el riesgo", "isCorrect": true},
+        {"label": "Consejos de salud de la aseguradora", "isCorrect": false},
+        {"label": "Tu historial médico completo", "isCorrect": false}
+      ],
+      "explanation": "Es un formulario con preguntas sobre enfermedades, hábitos y antecedentes que determina las condiciones de la póliza.",
+      "funFact": "🩺 Mentir en el cuestionario puede anular tu seguro. ¡La sinceridad es la mejor póliza!"
+    },
+    {
+      "id": "q036",
+      "category": "SEGUROS",
+      "subcategory": "salud",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué significa que un tratamiento esté 'fuera de cuadro'?",
+      "options": [
+        {"label": "Que es un tratamiento artístico", "isCorrect": false},
+        {"label": "Que el médico o centro no está concertado con tu aseguradora", "isCorrect": true},
+        {"label": "Que es un tratamiento experimental", "isCorrect": false},
+        {"label": "Que está prohibido", "isCorrect": false}
+      ],
+      "explanation": "Fuera de cuadro significa acudir a profesionales no concertados. Según tu póliza, puede no estar cubierto o ser por reembolso.",
+      "funFact": "🗺️ Antes de viajar, comprueba el cuadro médico de destino. ¡No querrás que te operen en Cuenca si vives en Barcelona!"
+    },
+    {
+      "id": "q037",
+      "category": "SEGUROS",
+      "subcategory": "RC",
+      "difficulty": "HARD",
+      "question": "¿Qué diferencia hay entre RC subsidiaria y RC solidaria?",
+      "options": [
+        {"label": "Son lo mismo", "isCorrect": false},
+        {"label": "Subsidiaria: pagas si el principal no puede. Solidaria: puedes pagar todo", "isCorrect": true},
+        {"label": "Subsidiaria es más cara", "isCorrect": false},
+        {"label": "Solidaria solo existe en grupos", "isCorrect": false}
+      ],
+      "explanation": "En subsidiaria, solo respondes si el responsable principal no puede. En solidaria, el perjudicado puede reclamarte todo a ti.",
+      "funFact": "🤝 Si contratas una obra en casa y el obrero causa daños, ¡puedes ser responsable solidario! Siempre pide seguros."
+    },
+    {
+      "id": "q038",
+      "category": "SEGUROS",
+      "subcategory": "auto",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué pasa con tu seguro si vendes el coche?",
+      "options": [
+        {"label": "Se transfiere automáticamente al nuevo propietario", "isCorrect": false},
+        {"label": "Puedes cancelarlo o transferirlo, recuperando parte de la prima", "isCorrect": true},
+        {"label": "Lo pierdes todo sin derecho a nada", "isCorrect": false},
+        {"label": "Sigue vigente hasta que caduque", "isCorrect": false}
+      ],
+      "explanation": "Al vender, puedes cancelar el seguro y recuperar la parte proporcional no consumida, o transferirlo al nuevo titular.",
+      "funFact": "🚙 El 30% de los vendedores olvidan cancelar el seguro. ¡Dinero tirado a la basura cada mes!"
+    },
+    {
+      "id": "q039",
+      "category": "SEGUROS",
+      "subcategory": "hogar",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué son los 'objetos especialmente valiosos' en un seguro de hogar?",
+      "options": [
+        {"label": "Todo lo que te gusta mucho", "isCorrect": false},
+        {"label": "Joyas, arte, antigüedades que superan cierto valor unitario", "isCorrect": true},
+        {"label": "Los electrodomésticos", "isCorrect": false},
+        {"label": "Los recuerdos familiares", "isCorrect": false}
+      ],
+      "explanation": "Son objetos de alto valor individual (joyas, obras de arte, colecciones) que requieren declaración específica y límites especiales.",
+      "funFact": "💎 Sin declaración especial, tus joyas pueden tener un límite de solo 1.500€. ¡Ese anillo de la abuela merece más!"
+    },
+    {
+      "id": "q040",
+      "category": "SEGUROS",
+      "subcategory": "vida",
+      "difficulty": "EASY",
+      "question": "¿Qué es un seguro de vida 'vinculado a hipoteca'?",
+      "options": [
+        {"label": "Un seguro que paga tu alquiler", "isCorrect": false},
+        {"label": "Seguro que cancela la hipoteca si falleces", "isCorrect": true},
+        {"label": "Un préstamo con seguro incluido", "isCorrect": false},
+        {"label": "Seguro para la casa hipotecada", "isCorrect": false}
+      ],
+      "explanation": "Este seguro paga el saldo pendiente de la hipoteca si el titular fallece, protegiendo a la familia de perder la vivienda.",
+      "funFact": "🏡 Los bancos 'sugieren' este seguro, pero NO es obligatorio con ellos. ¡Puedes contratarlo donde quieras!"
+    },
+    {
+      "id": "q041",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "historia",
+      "difficulty": "EASY",
+      "question": "¿En qué año llegó Cristóbal Colón a América?",
+      "options": [
+        {"label": "1592, cuando inventó el GPS", "isCorrect": false},
+        {"label": "1492, buscando una ruta a las Indias", "isCorrect": true},
+        {"label": "1392, antes que nadie", "isCorrect": false},
+        {"label": "1892, en avión", "isCorrect": false}
+      ],
+      "explanation": "Cristóbal Colón llegó a América el 12 de octubre de 1492, creyendo que había llegado a las Indias.",
+      "funFact": "🌎 Colón murió creyendo que había llegado a Asia. ¡El primer turista confundido de la historia!"
+    },
+    {
+      "id": "q042",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "historia",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué construcción ordenó levantar el emperador Qin Shi Huang para proteger China?",
+      "options": [
+        {"label": "La Torre Eiffel china", "isCorrect": false},
+        {"label": "La Gran Muralla China", "isCorrect": true},
+        {"label": "El Canal de Suez", "isCorrect": false},
+        {"label": "Las Pirámides de Giza", "isCorrect": false}
+      ],
+      "explanation": "Qin Shi Huang inició la construcción de la Gran Muralla China en el siglo III a.C. para defender el imperio de invasiones.",
+      "funFact": "🧱 La muralla mide más de 21.000 km. ¡Podrías caminarla... si no tuvieras nada mejor que hacer durante 18 meses!"
+    },
+    {
+      "id": "q043",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "ciencia",
+      "difficulty": "EASY",
+      "question": "¿Cuál es el planeta más grande del Sistema Solar?",
+      "options": [
+        {"label": "Marte, el rojo", "isCorrect": false},
+        {"label": "Júpiter, el gigante gaseoso", "isCorrect": true},
+        {"label": "Saturno, el de los anillos", "isCorrect": false},
+        {"label": "La Tierra, porque es nuestro", "isCorrect": false}
+      ],
+      "explanation": "Júpiter es el planeta más grande, con un diámetro 11 veces mayor que el de la Tierra.",
+      "funFact": "🪐 Dentro de Júpiter cabrían más de 1.300 Tierras. ¡Es el gigante que se comió la dieta!"
+    },
+    {
+      "id": "q044",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "ciencia",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué científico formuló la teoría de la relatividad?",
+      "options": [
+        {"label": "Isaac Newton", "isCorrect": false},
+        {"label": "Albert Einstein", "isCorrect": true},
+        {"label": "Galileo Galilei", "isCorrect": false},
+        {"label": "Stephen Hawking", "isCorrect": false}
+      ],
+      "explanation": "Albert Einstein publicó la teoría de la relatividad especial en 1905 y la general en 1915.",
+      "funFact": "🧠 Einstein era tan malo estudiante que un profesor le dijo que nunca llegaría a nada. ¡Vaya profecía!"
+    },
+    {
+      "id": "q045",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "deportes",
+      "difficulty": "EASY",
+      "question": "¿Cuántos jugadores tiene un equipo de fútbol en el campo?",
+      "options": [
+        {"label": "9, como en béisbol", "isCorrect": false},
+        {"label": "11, incluyendo al portero", "isCorrect": true},
+        {"label": "15, como en rugby", "isCorrect": false},
+        {"label": "7, como en fútbol sala", "isCorrect": false}
+      ],
+      "explanation": "Cada equipo de fútbol tiene 11 jugadores en el campo, incluyendo al portero.",
+      "funFact": "⚽ Si todos los jugadores de la Liga fueran a un bar, serían 440 personas. ¡Y seguro que no se pondrían de acuerdo en nada!"
+    },
+    {
+      "id": "q046",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "deportes",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué país ha ganado más Mundiales de Fútbol masculino?",
+      "options": [
+        {"label": "Alemania con 4 títulos", "isCorrect": false},
+        {"label": "Brasil con 5 títulos", "isCorrect": true},
+        {"label": "Argentina con 3 títulos", "isCorrect": false},
+        {"label": "España con 2 títulos", "isCorrect": false}
+      ],
+      "explanation": "Brasil es el país con más Copas del Mundo de fútbol, con 5 títulos (1958, 1962, 1970, 1994, 2002).",
+      "funFact": "🏆 Brasil es el único país que ha jugado TODOS los Mundiales. ¡Nunca faltan a la fiesta!"
+    },
+    {
+      "id": "q047",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "cine",
+      "difficulty": "EASY",
+      "question": "¿Qué director es famoso por películas como 'E.T.' y 'Jurassic Park'?",
+      "options": [
+        {"label": "Quentin Tarantino", "isCorrect": false},
+        {"label": "Steven Spielberg", "isCorrect": true},
+        {"label": "Martin Scorsese", "isCorrect": false},
+        {"label": "Alfred Hitchcock", "isCorrect": false}
+      ],
+      "explanation": "Steven Spielberg dirigió clásicos como E.T., Jurassic Park, Tiburón, Indiana Jones y La Lista de Schindler.",
+      "funFact": "🎬 Spielberg fue rechazado 3 veces por la escuela de cine de USC. ¡Mira quién ríe ahora!"
+    },
+    {
+      "id": "q048",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "cine",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué película ganó el Oscar a Mejor Película en 2020?",
+      "options": [
+        {"label": "Joker", "isCorrect": false},
+        {"label": "Parásitos (Parasite)", "isCorrect": true},
+        {"label": "1917", "isCorrect": false},
+        {"label": "Érase una vez en Hollywood", "isCorrect": false}
+      ],
+      "explanation": "Parásitos, dirigida por Bong Joon-ho, hizo historia al ser la primera película de habla no inglesa en ganar el Oscar a Mejor Película.",
+      "funFact": "🎭 Parásitos también ganó Mejor Director, Guión y Película Internacional. ¡El Grand Slam de los Oscar!"
+    },
+    {
+      "id": "q049",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "geografia",
+      "difficulty": "EASY",
+      "question": "¿Cuál es el río más largo del mundo?",
+      "options": [
+        {"label": "El Misisipi", "isCorrect": false},
+        {"label": "El Nilo (aunque el Amazonas le disputa)", "isCorrect": true},
+        {"label": "El Danubio", "isCorrect": false},
+        {"label": "El Ganges", "isCorrect": false}
+      ],
+      "explanation": "El Nilo, con unos 6.650 km, es tradicionalmente considerado el río más largo, aunque mediciones recientes dan ventaja al Amazonas.",
+      "funFact": "🌊 El debate Nilo vs Amazonas es como el de tortilla con o sin cebolla. ¡Depende de cómo lo midas!"
+    },
+    {
+      "id": "q050",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "geografia",
+      "difficulty": "MEDIUM",
+      "question": "¿Cuántos países hay en la Unión Europea actualmente?",
+      "options": [
+        {"label": "28, contando a Reino Unido", "isCorrect": false},
+        {"label": "27, desde el Brexit", "isCorrect": true},
+        {"label": "25, los originales", "isCorrect": false},
+        {"label": "30, incluyendo candidatos", "isCorrect": false}
+      ],
+      "explanation": "Desde el Brexit en 2020, la UE tiene 27 estados miembros tras la salida del Reino Unido.",
+      "funFact": "🇪🇺 Los británicos buscaron 'Qué es la UE' en Google... DESPUÉS de votar Brexit. ¡Información tardía!"
+    },
+    {
+      "id": "q051",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "historia",
+      "difficulty": "HARD",
+      "question": "¿Qué tratado puso fin a la Primera Guerra Mundial con Alemania?",
+      "options": [
+        {"label": "Tratado de Roma", "isCorrect": false},
+        {"label": "Tratado de Versalles", "isCorrect": true},
+        {"label": "Tratado de París", "isCorrect": false},
+        {"label": "Tratado de Westfalia", "isCorrect": false}
+      ],
+      "explanation": "El Tratado de Versalles se firmó el 28 de junio de 1919, imponiendo duras condiciones a Alemania.",
+      "funFact": "📜 Las condiciones de Versalles fueron tan duras que muchos historiadores las ven como semilla de la WWII. ¡Spoiler alert!"
+    },
+    {
+      "id": "q052",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "ciencia",
+      "difficulty": "HARD",
+      "question": "¿Qué partícula subatómica tiene carga negativa?",
+      "options": [
+        {"label": "El protón", "isCorrect": false},
+        {"label": "El electrón", "isCorrect": true},
+        {"label": "El neutrón", "isCorrect": false},
+        {"label": "El positrón", "isCorrect": false}
+      ],
+      "explanation": "El electrón tiene carga eléctrica negativa, el protón positiva y el neutrón no tiene carga.",
+      "funFact": "⚡ Los electrones son tan pequeños que si ampliaras un átomo al tamaño de un estadio, el electrón sería como una mosca."
+    },
+    {
+      "id": "q053",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "deportes",
+      "difficulty": "HARD",
+      "question": "¿Quién tiene más Grand Slams en tenis masculino individual?",
+      "options": [
+        {"label": "Roger Federer con 20", "isCorrect": false},
+        {"label": "Novak Djokovic con 24", "isCorrect": true},
+        {"label": "Rafael Nadal con 22", "isCorrect": false},
+        {"label": "Pete Sampras con 14", "isCorrect": false}
+      ],
+      "explanation": "Novak Djokovic lidera el ranking histórico de Grand Slams con 24 títulos (a fecha de 2024).",
+      "funFact": "🎾 Los tres (Djokovic, Nadal, Federer) coincidieron en la misma era. ¡Como tener a los Beatles, Rolling Stones y Queen juntos!"
+    },
+    {
+      "id": "q054",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "cine",
+      "difficulty": "HARD",
+      "question": "¿Qué película tiene el récord de más premios Oscar?",
+      "options": [
+        {"label": "La La Land con 6 Oscar", "isCorrect": false},
+        {"label": "Ben-Hur, Titanic y El Señor de los Anillos: El Retorno del Rey, con 11 cada una", "isCorrect": true},
+        {"label": "Lo que el viento se llevó con 10 Oscar", "isCorrect": false},
+        {"label": "El Padrino con 9 Oscar", "isCorrect": false}
+      ],
+      "explanation": "Tres películas comparten el récord de 11 premios Oscar: Ben-Hur (1959), Titanic (1997) y El Retorno del Rey (2003).",
+      "funFact": "🏆 El Retorno del Rey ganó en TODAS las categorías en las que fue nominada. ¡Pleno al 11!"
+    },
+    {
+      "id": "q055",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "geografia",
+      "difficulty": "HARD",
+      "question": "¿Cuál es el país más pequeño del mundo por superficie?",
+      "options": [
+        {"label": "Mónaco", "isCorrect": false},
+        {"label": "Ciudad del Vaticano", "isCorrect": true},
+        {"label": "San Marino", "isCorrect": false},
+        {"label": "Liechtenstein", "isCorrect": false}
+      ],
+      "explanation": "Ciudad del Vaticano, con 0.44 km², es el país más pequeño del mundo. Mónaco es el segundo.",
+      "funFact": "🇻🇦 El Vaticano es tan pequeño que tiene más Papas por km² que cualquier otro país. ¡Técnicamente, 2.27 Papas/km²!"
+    },
+    {
+      "id": "q056",
+      "category": "SEGUROS",
+      "subcategory": "auto",
+      "difficulty": "EASY",
+      "question": "Si te roban el coche, ¿qué seguro necesitas para estar cubierto?",
+      "options": [
+        {"label": "El seguro a terceros básico es suficiente", "isCorrect": false},
+        {"label": "Terceros ampliado con cobertura de robo o Todo Riesgo", "isCorrect": true},
+        {"label": "El seguro de hogar", "isCorrect": false},
+        {"label": "Ninguno, eso lo paga el Estado", "isCorrect": false}
+      ],
+      "explanation": "El robo de vehículo no está cubierto en el seguro a terceros básico. Necesitas terceros ampliado con robo o todo riesgo.",
+      "funFact": "🔐 En España se roban unos 40.000 coches al año. ¡El más robado suele ser el Seat Ibiza! Popular hasta para los ladrones."
+    },
+    {
+      "id": "q057",
+      "category": "SEGUROS",
+      "subcategory": "hogar",
+      "difficulty": "HARD",
+      "question": "¿Qué es la 'regla proporcional' en seguros de hogar?",
+      "options": [
+        {"label": "Que todos los vecinos pagan igual", "isCorrect": false},
+        {"label": "Si el valor asegurado es inferior al real, la indemnización se reduce proporcionalmente", "isCorrect": true},
+        {"label": "Que el seguro sube proporcionalmente cada año", "isCorrect": false},
+        {"label": "Que pagas según los metros cuadrados", "isCorrect": false}
+      ],
+      "explanation": "Si aseguras tu contenido por 30.000€ pero vale 60.000€ (infraseguro del 50%), solo te pagarán el 50% de cualquier daño.",
+      "funFact": "📐 La regla proporcional es como compartir pizza: si declaraste que hay 4 trozos pero hay 8, solo te toca la mitad!"
+    },
+    {
+      "id": "q058",
+      "category": "SEGUROS",
+      "subcategory": "vida",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué es un seguro de vida 'unit linked'?",
+      "options": [
+        {"label": "Un seguro que une a varias personas", "isCorrect": false},
+        {"label": "Un seguro de vida con inversión en fondos", "isCorrect": true},
+        {"label": "Un seguro para militares", "isCorrect": false},
+        {"label": "Un seguro de salud combinado", "isCorrect": false}
+      ],
+      "explanation": "El unit linked combina seguro de vida con inversión en fondos. El capital depende de la evolución de los mercados.",
+      "funFact": "📈 Con un unit linked puedes ganar mucho... o perder parte. ¡Es el seguro con emociones de montaña rusa!"
+    },
+    {
+      "id": "q059",
+      "category": "SEGUROS",
+      "subcategory": "salud",
+      "difficulty": "EASY",
+      "question": "¿Qué es la 'segunda opinión médica' que incluyen algunos seguros de salud?",
+      "options": [
+        {"label": "Preguntar a un familiar médico", "isCorrect": false},
+        {"label": "Consultar a otro especialista sobre un diagnóstico grave", "isCorrect": true},
+        {"label": "Leer sobre tu enfermedad en internet", "isCorrect": false},
+        {"label": "Que te vea dos veces el mismo médico", "isCorrect": false}
+      ],
+      "explanation": "Es el derecho a consultar a otro especialista, generalmente de prestigio internacional, ante diagnósticos graves o dudosos.",
+      "funFact": "🏥 La segunda opinión cambia el diagnóstico o tratamiento en un 30% de los casos. ¡Vale la pena preguntar!"
+    },
+    {
+      "id": "q060",
+      "category": "SEGUROS",
+      "subcategory": "RC",
+      "difficulty": "MEDIUM",
+      "question": "¿La RC de tu seguro de hogar te cubre si causas daños practicando deporte?",
+      "options": [
+        {"label": "Siempre, en cualquier deporte", "isCorrect": false},
+        {"label": "Generalmente sí, salvo deportes de riesgo o competiciones federadas", "isCorrect": true},
+        {"label": "Nunca, necesitas seguro deportivo", "isCorrect": false},
+        {"label": "Solo en deportes de equipo", "isCorrect": false}
+      ],
+      "explanation": "La RC familiar suele cubrir daños en deportes recreativos, pero excluye deportes de riesgo y competiciones oficiales.",
+      "funFact": "🏂 Si te federas en un deporte, tu RC de hogar ya no te cubre en él. ¡La federación es cosa seria!"
+    },
+    {
+      "id": "q061",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "historia",
+      "difficulty": "EASY",
+      "question": "¿Quién fue el primer presidente de Estados Unidos?",
+      "options": [
+        {"label": "Abraham Lincoln", "isCorrect": false},
+        {"label": "George Washington", "isCorrect": true},
+        {"label": "Thomas Jefferson", "isCorrect": false},
+        {"label": "Benjamin Franklin", "isCorrect": false}
+      ],
+      "explanation": "George Washington fue el primer presidente de EEUU, desde 1789 hasta 1797.",
+      "funFact": "🪙 Washington aparece en el billete de 1 dólar y en el quarter (25 centavos). ¡El primer presidente y primer 'influencer' de la moneda!"
+    },
+    {
+      "id": "q062",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "ciencia",
+      "difficulty": "EASY",
+      "question": "¿Cuál es el símbolo químico del oro?",
+      "options": [
+        {"label": "Or", "isCorrect": false},
+        {"label": "Au", "isCorrect": true},
+        {"label": "Go", "isCorrect": false},
+        {"label": "Ag", "isCorrect": false}
+      ],
+      "explanation": "El símbolo Au viene del latín 'aurum'. Ag es la plata (argentum).",
+      "funFact": "🥇 Todo el oro extraído en la historia cabría en 3 piscinas olímpicas. ¡Y la mitad está en joyería!"
+    },
+    {
+      "id": "q063",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "deportes",
+      "difficulty": "EASY",
+      "question": "¿Cada cuántos años se celebran los Juegos Olímpicos de verano?",
+      "options": [
+        {"label": "Cada 2 años", "isCorrect": false},
+        {"label": "Cada 4 años", "isCorrect": true},
+        {"label": "Cada 5 años", "isCorrect": false},
+        {"label": "Cada año", "isCorrect": false}
+      ],
+      "explanation": "Los Juegos Olímpicos de verano se celebran cada 4 años, igual que los de invierno (pero alternados cada 2 años).",
+      "funFact": "🏅 Los Juegos de Tokio 2020 se celebraron en 2021. ¡El único evento que llegó tarde y lo celebramos igual!"
+    },
+    {
+      "id": "q064",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "cine",
+      "difficulty": "EASY",
+      "question": "¿Cómo se llama el famoso mago de la saga de películas británicas interpretado por Daniel Radcliffe?",
+      "options": [
+        {"label": "Frodo Bolsón", "isCorrect": false},
+        {"label": "Harry Potter", "isCorrect": true},
+        {"label": "Gandalf el Gris", "isCorrect": false},
+        {"label": "Merlín", "isCorrect": false}
+      ],
+      "explanation": "Daniel Radcliffe interpretó a Harry Potter en las 8 películas de la saga basada en los libros de J.K. Rowling.",
+      "funFact": "⚡ Radcliffe usó más de 160 gafas durante el rodaje porque las rompía constantemente. ¡Magia destructiva!"
+    },
+    {
+      "id": "q065",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "geografia",
+      "difficulty": "EASY",
+      "question": "¿Cuál es la capital de Australia?",
+      "options": [
+        {"label": "Sídney", "isCorrect": false},
+        {"label": "Canberra", "isCorrect": true},
+        {"label": "Melbourne", "isCorrect": false},
+        {"label": "Brisbane", "isCorrect": false}
+      ],
+      "explanation": "Canberra es la capital de Australia. Sídney y Melbourne son más grandes y conocidas, pero no son la capital.",
+      "funFact": "🦘 Canberra se construyó específicamente para ser capital porque Sídney y Melbourne se peleaban por el título. ¡Decisión salomónica!"
+    },
+    {
+      "id": "q066",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "historia",
+      "difficulty": "MEDIUM",
+      "question": "¿En qué año cayó el Muro de Berlín?",
+      "options": [
+        {"label": "1985", "isCorrect": false},
+        {"label": "1989", "isCorrect": true},
+        {"label": "1991", "isCorrect": false},
+        {"label": "1993", "isCorrect": false}
+      ],
+      "explanation": "El Muro de Berlín cayó el 9 de noviembre de 1989, marcando el fin de la Guerra Fría.",
+      "funFact": "🧱 El muro cayó por un error de comunicación: un portavoz dijo que se podía cruzar 'inmediatamente' cuando no era así. ¡Ups!"
+    },
+    {
+      "id": "q067",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "ciencia",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué gas es esencial para la fotosíntesis de las plantas?",
+      "options": [
+        {"label": "Oxígeno", "isCorrect": false},
+        {"label": "Dióxido de carbono (CO2)", "isCorrect": true},
+        {"label": "Nitrógeno", "isCorrect": false},
+        {"label": "Hidrógeno", "isCorrect": false}
+      ],
+      "explanation": "Las plantas absorben CO2 y liberan oxígeno durante la fotosíntesis, usando la luz solar como energía.",
+      "funFact": "🌳 Un solo árbol puede absorber 22 kg de CO2 al año. ¡Son los héroes silenciosos del planeta!"
+    },
+    {
+      "id": "q068",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "deportes",
+      "difficulty": "MEDIUM",
+      "question": "¿En qué deporte se usa el término 'ace'?",
+      "options": [
+        {"label": "Fútbol", "isCorrect": false},
+        {"label": "Tenis (también voleibol)", "isCorrect": true},
+        {"label": "Baloncesto", "isCorrect": false},
+        {"label": "Natación", "isCorrect": false}
+      ],
+      "explanation": "Un 'ace' en tenis es un saque que el rival no logra tocar. En voleibol, un saque directo que puntúa.",
+      "funFact": "🎾 El récord de aces en un partido de Wimbledon es de 113 por John Isner. ¡El partido duró 11 horas!"
+    },
+    {
+      "id": "q069",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "cine",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué director mexicano ha ganado el Oscar a Mejor Director en 2014, 2015 y 2016?",
+      "options": [
+        {"label": "Robert Rodriguez", "isCorrect": false},
+        {"label": "Alejandro González Iñárritu (2015, 2016) y Alfonso Cuarón (2014)", "isCorrect": true},
+        {"label": "Guillermo del Toro", "isCorrect": false},
+        {"label": "Solo uno mexicano lo ganó", "isCorrect": false}
+      ],
+      "explanation": "Alfonso Cuarón ganó por Gravity (2014), Iñárritu por Birdman (2015) y The Revenant (2016). ¡Triplete mexicano!",
+      "funFact": "🇲🇽 Los 'Tres Amigos' (Cuarón, Iñárritu, Del Toro) tienen 10 Oscar de dirección entre ellos. ¡México en la cima de Hollywood!"
+    },
+    {
+      "id": "q070",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "geografia",
+      "difficulty": "MEDIUM",
+      "question": "¿Cuál es el océano más grande del mundo?",
+      "options": [
+        {"label": "Océano Atlántico", "isCorrect": false},
+        {"label": "Océano Pacífico", "isCorrect": true},
+        {"label": "Océano Índico", "isCorrect": false},
+        {"label": "Océano Ártico", "isCorrect": false}
+      ],
+      "explanation": "El Océano Pacífico cubre más de 165 millones de km², más que toda la superficie terrestre combinada.",
+      "funFact": "🌊 El Pacífico es tan grande que su punto más alejado de tierra firme se llama 'Punto Nemo'. ¡El lugar más solo del planeta!"
+    },
+    {
+      "id": "q071",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "historia",
+      "difficulty": "HARD",
+      "question": "¿Qué imperio construyó el Coliseo de Roma?",
+      "options": [
+        {"label": "El Imperio Griego", "isCorrect": false},
+        {"label": "El Imperio Romano", "isCorrect": true},
+        {"label": "El Imperio Bizantino", "isCorrect": false},
+        {"label": "El Imperio Otomano", "isCorrect": false}
+      ],
+      "explanation": "El Coliseo fue construido por el Imperio Romano entre los años 70-80 d.C. bajo los emperadores Vespasiano y Tito.",
+      "funFact": "🏟️ El Coliseo podía llenarse de agua para simular batallas navales. ¡Los romanos inventaron los parques acuáticos!"
+    },
+    {
+      "id": "q072",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "ciencia",
+      "difficulty": "HARD",
+      "question": "¿Qué unidad mide la intensidad de los terremotos?",
+      "options": [
+        {"label": "Decibelios", "isCorrect": false},
+        {"label": "La escala de Richter (o momento sísmico)", "isCorrect": true},
+        {"label": "Voltios", "isCorrect": false},
+        {"label": "Grados Celsius", "isCorrect": false}
+      ],
+      "explanation": "La escala de Richter mide la magnitud de los terremotos. Actualmente se usa más la escala de magnitud de momento (Mw).",
+      "funFact": "🌍 Cada punto en Richter es 10 veces más intenso. ¡Un 8.0 es 10.000 veces más fuerte que un 4.0!"
+    },
+    {
+      "id": "q073",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "deportes",
+      "difficulty": "HARD",
+      "question": "¿Qué nadador tiene más medallas olímpicas de la historia?",
+      "options": [
+        {"label": "Ian Thorpe", "isCorrect": false},
+        {"label": "Michael Phelps", "isCorrect": true},
+        {"label": "Mark Spitz", "isCorrect": false},
+        {"label": "Ryan Lochte", "isCorrect": false}
+      ],
+      "explanation": "Michael Phelps tiene 28 medallas olímpicas (23 de oro), más que ningún otro atleta en la historia.",
+      "funFact": "🏊 Phelps come 12.000 calorías al día entrenando. ¡Es como comer 23 Big Macs diarios!"
+    },
+    {
+      "id": "q074",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "cine",
+      "difficulty": "HARD",
+      "question": "¿Qué película de animación fue la primera en ganar el Oscar a Mejor Película Animada?",
+      "options": [
+        {"label": "Toy Story", "isCorrect": false},
+        {"label": "Shrek", "isCorrect": true},
+        {"label": "Buscando a Nemo", "isCorrect": false},
+        {"label": "El Rey León", "isCorrect": false}
+      ],
+      "explanation": "Shrek ganó el primer Oscar a Mejor Película Animada en 2002, cuando se creó la categoría.",
+      "funFact": "🧅 Shrek se hizo en DreamWorks como 'castigo' para animadores en desgracia. ¡El castigo se convirtió en éxito!"
+    },
+    {
+      "id": "q075",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "geografia",
+      "difficulty": "HARD",
+      "question": "¿Cuál es el desierto más grande del mundo?",
+      "options": [
+        {"label": "El Sáhara", "isCorrect": false},
+        {"label": "La Antártida (desierto frío)", "isCorrect": true},
+        {"label": "El desierto de Gobi", "isCorrect": false},
+        {"label": "El desierto de Arabia", "isCorrect": false}
+      ],
+      "explanation": "Técnicamente, la Antártida es un desierto (por precipitaciones) y es el más grande. El Sáhara es el mayor desierto cálido.",
+      "funFact": "🐧 La Antártida es un desierto donde llueven menos de 50mm al año. ¡Pero todo congelado!"
+    },
+    {
+      "id": "q076",
+      "category": "SEGUROS",
+      "subcategory": "auto",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué significa que tu seguro de coche tenga 'defensa jurídica'?",
+      "options": [
+        {"label": "Que te defienden si robas un coche", "isCorrect": false},
+        {"label": "Abogados que te defienden en reclamaciones de tráfico", "isCorrect": true},
+        {"label": "Un escudo físico para el coche", "isCorrect": false},
+        {"label": "Que puedes demandar a la aseguradora", "isCorrect": false}
+      ],
+      "explanation": "La defensa jurídica incluye abogados para defenderte en juicios de tráfico o reclamar indemnizaciones.",
+      "funFact": "⚖️ Sin defensa jurídica, un abogado de tráfico puede costarte 1.500€+. ¡El seguro lo incluye por unos euros!"
+    },
+    {
+      "id": "q077",
+      "category": "SEGUROS",
+      "subcategory": "hogar",
+      "difficulty": "EASY",
+      "question": "¿El seguro de hogar cubre los daños si dejas el grifo abierto y se inunda tu casa?",
+      "options": [
+        {"label": "Nunca, es tu culpa", "isCorrect": false},
+        {"label": "Generalmente sí, aunque puede haber franquicia", "isCorrect": true},
+        {"label": "Solo si estabas de vacaciones", "isCorrect": false},
+        {"label": "Solo los daños a vecinos, no los tuyos", "isCorrect": false}
+      ],
+      "explanation": "La mayoría de seguros cubren daños por agua incluso por descuidos, aunque puede aplicarse franquicia o límites.",
+      "funFact": "🚿 El 25% de inundaciones domésticas son por olvidos (grifos, lavadoras...). ¡Los despistados tienen seguro!"
+    },
+    {
+      "id": "q078",
+      "category": "SEGUROS",
+      "subcategory": "vida",
+      "difficulty": "HARD",
+      "question": "¿Qué es la 'prima nivelada' en un seguro de vida?",
+      "options": [
+        {"label": "Una prima muy barata", "isCorrect": false},
+        {"label": "Prima constante durante toda la vida de la póliza", "isCorrect": true},
+        {"label": "Prima que sube cada año", "isCorrect": false},
+        {"label": "Prima para principiantes", "isCorrect": false}
+      ],
+      "explanation": "Con prima nivelada pagas lo mismo toda la vida del seguro. Con prima natural, sube con la edad.",
+      "funFact": "📊 Con prima natural a los 60 años pagarías 5 veces más que a los 30. ¡La nivelada es el 'precio fijo' de los seguros!"
+    },
+    {
+      "id": "q079",
+      "category": "SEGUROS",
+      "subcategory": "salud",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué es la 'hospitalización domiciliaria' en seguros de salud?",
+      "options": [
+        {"label": "Convertir tu casa en hospital", "isCorrect": false},
+        {"label": "Recibir atención hospitalaria en tu propio domicilio", "isCorrect": true},
+        {"label": "Que el hospital te manda comida a casa", "isCorrect": false},
+        {"label": "Visitas médicas normales", "isCorrect": false}
+      ],
+      "explanation": "Es un servicio donde personal sanitario te atiende en casa con equipamiento hospitalario, evitando el ingreso.",
+      "funFact": "🏠 La hospitalización domiciliaria cuesta un 40% menos que el ingreso tradicional. ¡Y duermes en tu cama!"
+    },
+    {
+      "id": "q080",
+      "category": "SEGUROS",
+      "subcategory": "RC",
+      "difficulty": "EASY",
+      "question": "Si alquilas un patinete eléctrico y atropellas a alguien, ¿quién responde?",
+      "options": [
+        {"label": "Siempre la empresa de alquiler", "isCorrect": false},
+        {"label": "Tú principalmente, y necesitas RC (muchos patinetes la incluyen)", "isCorrect": true},
+        {"label": "El ayuntamiento", "isCorrect": false},
+        {"label": "Nadie, los patinetes no tienen seguro", "isCorrect": false}
+      ],
+      "explanation": "El conductor es responsable. Muchas apps de alquiler incluyen seguro, pero conviene verificarlo.",
+      "funFact": "🛴 Los accidentes con patinetes se han multiplicado por 10 en 5 años. ¡La libertad tiene sus riesgos!"
+    },
+    {
+      "id": "q081",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "historia",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué famoso líder indio promovió la independencia mediante la no violencia?",
+      "options": [
+        {"label": "Jawaharlal Nehru", "isCorrect": false},
+        {"label": "Mahatma Gandhi", "isCorrect": true},
+        {"label": "Indira Gandhi", "isCorrect": false},
+        {"label": "Buda", "isCorrect": false}
+      ],
+      "explanation": "Mahatma Gandhi lideró el movimiento de independencia de la India mediante la resistencia pacífica y la no violencia.",
+      "funFact": "☮️ Gandhi fue nominado 5 veces al Nobel de la Paz pero nunca lo ganó. ¡El pacifista más famoso sin premio de paz!"
+    },
+    {
+      "id": "q082",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "ciencia",
+      "difficulty": "EASY",
+      "question": "¿Cuántos huesos tiene el cuerpo humano adulto?",
+      "options": [
+        {"label": "150", "isCorrect": false},
+        {"label": "206", "isCorrect": true},
+        {"label": "300", "isCorrect": false},
+        {"label": "180", "isCorrect": false}
+      ],
+      "explanation": "Un adulto tiene 206 huesos. Los bebés nacen con unos 270, pero algunos se fusionan con el tiempo.",
+      "funFact": "🦴 El hueso más pequeño es el estribo del oído: mide 3mm. ¡Pero sin él no oirías nada!"
+    },
+    {
+      "id": "q083",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "deportes",
+      "difficulty": "MEDIUM",
+      "question": "¿En qué país se inventó el baloncesto?",
+      "options": [
+        {"label": "España", "isCorrect": false},
+        {"label": "Estados Unidos", "isCorrect": true},
+        {"label": "Reino Unido", "isCorrect": false},
+        {"label": "Canadá", "isCorrect": false}
+      ],
+      "explanation": "James Naismith inventó el baloncesto en 1891 en Springfield, Massachusetts (EEUU), aunque él era canadiense.",
+      "funFact": "🏀 Las primeras canastas eran cestas de melocotones de verdad. ¡Alguien tenía que subir a sacar la pelota cada vez!"
+    },
+    {
+      "id": "q084",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "cine",
+      "difficulty": "EASY",
+      "question": "¿Qué estudio de animación creó 'Toy Story', 'Buscando a Nemo' y 'Los Increíbles'?",
+      "options": [
+        {"label": "DreamWorks", "isCorrect": false},
+        {"label": "Pixar", "isCorrect": true},
+        {"label": "Disney (clásico)", "isCorrect": false},
+        {"label": "Illumination", "isCorrect": false}
+      ],
+      "explanation": "Pixar Animation Studios, fundado en 1986, revolucionó la animación por ordenador con estas películas.",
+      "funFact": "🎬 Steve Jobs compró Pixar por 5 millones y la vendió a Disney por 7.400 millones. ¡Vaya inversión!"
+    },
+    {
+      "id": "q085",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "geografia",
+      "difficulty": "EASY",
+      "question": "¿Cuál es la montaña más alta del mundo?",
+      "options": [
+        {"label": "El K2", "isCorrect": false},
+        {"label": "El Monte Everest", "isCorrect": true},
+        {"label": "El Kilimanjaro", "isCorrect": false},
+        {"label": "El Mont Blanc", "isCorrect": false}
+      ],
+      "explanation": "El Everest mide 8.848 metros sobre el nivel del mar, siendo la montaña más alta del mundo.",
+      "funFact": "🏔️ Hay más de 200 cadáveres en el Everest. Algunos se usan como puntos de referencia. ¡Macabro pero útil!"
+    },
+    {
+      "id": "q086",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "historia",
+      "difficulty": "EASY",
+      "question": "¿Quién pintó la Mona Lisa?",
+      "options": [
+        {"label": "Miguel Ángel", "isCorrect": false},
+        {"label": "Leonardo da Vinci", "isCorrect": true},
+        {"label": "Rafael", "isCorrect": false},
+        {"label": "Botticelli", "isCorrect": false}
+      ],
+      "explanation": "Leonardo da Vinci pintó la Mona Lisa (La Gioconda) entre 1503 y 1519. Está en el Louvre de París.",
+      "funFact": "🎨 La Mona Lisa mide solo 77x53 cm. ¡Los turistas siempre se sorprenden de lo pequeña que es!"
+    },
+    {
+      "id": "q087",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "ciencia",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué vitamina produce nuestro cuerpo al exponerse al sol?",
+      "options": [
+        {"label": "Vitamina A", "isCorrect": false},
+        {"label": "Vitamina D", "isCorrect": true},
+        {"label": "Vitamina C", "isCorrect": false},
+        {"label": "Vitamina B12", "isCorrect": false}
+      ],
+      "explanation": "La piel produce vitamina D cuando se expone a los rayos UVB del sol. Es esencial para los huesos.",
+      "funFact": "☀️ Con 15 minutos de sol en brazos y cara produces suficiente vitamina D. ¡Pero no olvides el protector después!"
+    },
+    {
+      "id": "q088",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "deportes",
+      "difficulty": "EASY",
+      "question": "¿Cuántos sets necesitas ganar para vencer en un partido de tenis masculino de Grand Slam?",
+      "options": [
+        {"label": "2 sets", "isCorrect": false},
+        {"label": "3 sets", "isCorrect": true},
+        {"label": "4 sets", "isCorrect": false},
+        {"label": "5 sets", "isCorrect": false}
+      ],
+      "explanation": "En Grand Slam masculino se juega al mejor de 5 sets, necesitando ganar 3 para vencer. En femenino son 2 de 3.",
+      "funFact": "🎾 El partido más largo de la historia duró 11 horas y 5 minutos (Isner-Mahut, Wimbledon 2010). ¡Se jugó en 3 días!"
+    },
+    {
+      "id": "q089",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "cine",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué actor ha interpretado a James Bond más veces en cine?",
+      "options": [
+        {"label": "Sean Connery", "isCorrect": false},
+        {"label": "Roger Moore", "isCorrect": true},
+        {"label": "Daniel Craig", "isCorrect": false},
+        {"label": "Pierce Brosnan", "isCorrect": false}
+      ],
+      "explanation": "Roger Moore interpretó a Bond en 7 películas oficiales (1973-1985). Sean Connery lo hizo en 6 (más una no oficial).",
+      "funFact": "🍸 Daniel Craig bebió tantos martinis en sus películas que desarrolló aversión a la bebida. ¡Agitado, no revuelto... ni repetido!"
+    },
+    {
+      "id": "q090",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "geografia",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué país tiene más población del mundo?",
+      "options": [
+        {"label": "Estados Unidos", "isCorrect": false},
+        {"label": "India (superó a China en 2023)", "isCorrect": true},
+        {"label": "China", "isCorrect": false},
+        {"label": "Indonesia", "isCorrect": false}
+      ],
+      "explanation": "India superó a China como país más poblado en 2023, con más de 1.400 millones de habitantes.",
+      "funFact": "🇮🇳 India suma cada año más población que toda España. ¡Es como crear un país nuevo cada año!"
+    },
+    {
+      "id": "q091",
+      "category": "SEGUROS",
+      "subcategory": "auto",
+      "difficulty": "HARD",
+      "question": "¿Qué es el 'valor venal' de un vehículo a efectos de seguro?",
+      "options": [
+        {"label": "El precio que pagaste por él", "isCorrect": false},
+        {"label": "El valor de mercado del vehículo en el momento del siniestro", "isCorrect": true},
+        {"label": "El valor sentimental", "isCorrect": false},
+        {"label": "El precio de un coche nuevo igual", "isCorrect": false}
+      ],
+      "explanation": "El valor venal es lo que vale tu coche en el mercado de segunda mano en el momento del accidente.",
+      "funFact": "📉 Un coche pierde el 20% de su valor el primer año. ¡Es la inversión que más rápido se deprecia después de un móvil!"
+    },
+    {
+      "id": "q092",
+      "category": "SEGUROS",
+      "subcategory": "hogar",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué es la 'cláusula de inhabilitabilidad' en seguros de hogar?",
+      "options": [
+        {"label": "Que no puedes habitar la casa nunca", "isCorrect": false},
+        {"label": "Cobertura de gastos si tu casa queda inhabitable tras un siniestro", "isCorrect": true},
+        {"label": "Que te inhabilitan el seguro", "isCorrect": false},
+        {"label": "Exclusión para casas abandonadas", "isCorrect": false}
+      ],
+      "explanation": "Si un siniestro hace tu casa inhabitable, el seguro cubre gastos de alojamiento alternativo durante las reparaciones.",
+      "funFact": "🏨 Esta cobertura puede pagar hoteles durante meses. ¡Hay quien ha vivido mejor tras la inundación!"
+    },
+    {
+      "id": "q093",
+      "category": "SEGUROS",
+      "subcategory": "vida",
+      "difficulty": "EASY",
+      "question": "¿A partir de qué edad suele encarecer significativamente un seguro de vida?",
+      "options": [
+        {"label": "A partir de los 25 años", "isCorrect": false},
+        {"label": "A partir de los 45-50 años", "isCorrect": true},
+        {"label": "A partir de los 30 años", "isCorrect": false},
+        {"label": "La edad no influye en el precio", "isCorrect": false}
+      ],
+      "explanation": "A partir de los 45-50 años, las primas suben considerablemente porque aumenta el riesgo estadístico de fallecimiento.",
+      "funFact": "👴 Contratar a los 30 puede costarte la mitad que a los 50. ¡El seguro de vida premia a los previsores!"
+    },
+    {
+      "id": "q094",
+      "category": "SEGUROS",
+      "subcategory": "salud",
+      "difficulty": "HARD",
+      "question": "¿Qué es el 'Baremo de indemnizaciones' en seguros?",
+      "options": [
+        {"label": "Un tipo de médico especialista", "isCorrect": false},
+        {"label": "Tabla oficial que establece indemnizaciones por lesiones", "isCorrect": true},
+        {"label": "El nombre de una aseguradora", "isCorrect": false},
+        {"label": "Un tratamiento médico", "isCorrect": false}
+      ],
+      "explanation": "El baremo es la tabla legal que determina las indemnizaciones por lesiones en accidentes de tráfico y otros ámbitos.",
+      "funFact": "📋 El baremo español se actualiza periódicamente. ¡Perder un dedo vale diferente según el año!"
+    },
+    {
+      "id": "q095",
+      "category": "SEGUROS",
+      "subcategory": "RC",
+      "difficulty": "HARD",
+      "question": "¿Qué es la 'acción directa' en seguros de RC?",
+      "options": [
+        {"label": "Demandar al causante personalmente", "isCorrect": false},
+        {"label": "El perjudicado puede reclamar directamente a la aseguradora del causante", "isCorrect": true},
+        {"label": "Llamar directamente al seguro", "isCorrect": false},
+        {"label": "Una acción de bolsa", "isCorrect": false}
+      ],
+      "explanation": "La acción directa permite al perjudicado reclamar directamente a la aseguradora sin pasar por el causante del daño.",
+      "funFact": "⚡ Gracias a la acción directa, no tienes que perseguir a quien te chocó. ¡Vas directo a su aseguradora!"
+    },
+    {
+      "id": "q096",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "ciencia",
+      "difficulty": "MEDIUM",
+      "question": "¿Cuál es el elemento químico más abundante en el universo?",
+      "options": [
+        {"label": "Oxígeno", "isCorrect": false},
+        {"label": "Hidrógeno", "isCorrect": true},
+        {"label": "Carbono", "isCorrect": false},
+        {"label": "Helio", "isCorrect": false}
+      ],
+      "explanation": "El hidrógeno constituye aproximadamente el 75% de la materia bariónica del universo.",
+      "funFact": "💫 El hidrógeno es tan simple que tiene un solo protón y un solo electrón. ¡Menos es más, incluso en química!"
+    },
+    {
+      "id": "q097",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "deportes",
+      "difficulty": "HARD",
+      "question": "¿Qué país ha ganado más Copas del Mundo de Rugby?",
+      "options": [
+        {"label": "Australia", "isCorrect": false},
+        {"label": "Nueva Zelanda (los All Blacks)", "isCorrect": false},
+        {"label": "Sudáfrica (los Springboks)", "isCorrect": true},
+        {"label": "Inglaterra", "isCorrect": false}
+      ],
+      "explanation": "Sudáfrica lidera con 4 títulos mundiales (1995, 2007, 2019, 2023), seguida de Nueva Zelanda con 3.",
+      "funFact": "🏉 Los All Blacks hacen el 'haka' antes de cada partido. ¡Es intimidación legal y cultural!"
+    },
+    {
+      "id": "q098",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "cine",
+      "difficulty": "EASY",
+      "question": "¿En qué saga de películas aparece el personaje Darth Vader?",
+      "options": [
+        {"label": "Star Trek", "isCorrect": false},
+        {"label": "Star Wars", "isCorrect": true},
+        {"label": "Guardianes de la Galaxia", "isCorrect": false},
+        {"label": "Matrix", "isCorrect": false}
+      ],
+      "explanation": "Darth Vader es el villano principal de la trilogía original de Star Wars y padre de Luke Skywalker.",
+      "funFact": "🎭 La frase 'Luke, yo soy tu padre' es incorrecta. La real es 'No, yo soy tu padre'. ¡Efecto Mandela!"
+    },
+    {
+      "id": "q099",
+      "category": "CULTURA_GENERAL",
+      "subcategory": "geografia",
+      "difficulty": "HARD",
+      "question": "¿Cuántos países hay actualmente reconocidos por la ONU?",
+      "options": [
+        {"label": "180", "isCorrect": false},
+        {"label": "193", "isCorrect": true},
+        {"label": "206", "isCorrect": false},
+        {"label": "220", "isCorrect": false}
+      ],
+      "explanation": "La ONU tiene 193 estados miembros. Además hay 2 observadores (Vaticano y Palestina) y territorios disputados.",
+      "funFact": "🌍 El país más nuevo es Sudán del Sur (2011). ¡Antes de independizarse era más grande que Alemania!"
+    },
+    {
+      "id": "q100",
+      "category": "SEGUROS",
+      "subcategory": "general",
+      "difficulty": "MEDIUM",
+      "question": "¿Qué significa que un seguro sea 'a primer riesgo absoluto'?",
+      "options": [
+        {"label": "Que cubre el primer accidente del año", "isCorrect": false},
+        {"label": "Que se paga íntegro el daño hasta el límite, sin regla proporcional", "isCorrect": true},
+        {"label": "Que es el seguro más básico", "isCorrect": false},
+        {"label": "Que solo cubre riesgos prioritarios", "isCorrect": false}
+      ],
+      "explanation": "A primer riesgo absoluto significa que, si el daño está dentro del límite asegurado, se paga íntegro sin aplicar infraseguro.",
+      "funFact": "💯 Es la mejor modalidad para asegurar joyas o arte: aseguras lo que quieres y no te aplican proporcionalidad."
+    }
+  ]
+}
