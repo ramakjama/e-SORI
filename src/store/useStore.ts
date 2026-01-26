@@ -290,6 +290,7 @@ const calculateLevel = (points: number): UserLevel => {
 export const useStore = create<AppState>()(
   persist(
     (set) => ({
+      // Estado inicial: sin autenticar (muestra login)
       user: null,
       isAuthenticated: false,
       userRole: null,

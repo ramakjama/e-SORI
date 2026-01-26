@@ -1,0 +1,86 @@
+/* ========================================
+   E-SORI DESIGN TOKENS
+   Premium Dark Theme - Insurance App
+   ======================================== */
+
+:root {
+  /* ========================================
+     1. BASE - Fondos de pantalla
+     ======================================== */
+  --app-bg: #070A0F;
+  --app-bg-2: #0B0F14;
+  --app-surface: #121824;
+  --app-surface-hover: #162033;
+  --app-elevated: #18243A;
+  --app-border: #223047;
+  --app-divider: #1A263A;
+
+  /* ========================================
+     2. TEXTO - Jerarquía quirúrgica
+     ======================================== */
+  --text-strong: #F2F6FB;
+  --text: #D0DAE7;
+  --text-muted: #93A0B3;
+  --text-faint: #6D7A8E;
+  --text-disabled: #4F5A6C;
+
+  /* ========================================
+     3. MARCA - Platas del logo Soriano
+     ======================================== */
+  --brand-silver: #C6CFDA;
+  --brand-chrome: #E9EEF4;
+  --brand-titanium: #6F7B89;
+
+  /* ========================================
+     4. ACCION - Tech controlado (azul)
+     ======================================== */
+  --primary: #4FA3FF;
+  --primary-hover: #2E7FE6;
+  --primary-active: #1E5FA8;
+  --primary-soft-bg: #0D223C;
+
+  /* ========================================
+     5. ESTADOS - Operativa de seguros
+     ======================================== */
+  --success: #2FBF97;
+  --success-bg: #0B231D;
+  --warning: #E0B04A;
+  --warning-bg: #261F10;
+  --danger: #D05B5B;
+  --danger-bg: #2A1414;
+  --info: #6AA0D6;
+  --info-bg: #0E1F33;
+
+  /* ========================================
+     6. SOMBRAS PREMIUM
+     ======================================== */
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-glow-primary: 0 0 20px rgba(79, 163, 255, 0.25);
+  --shadow-glow-success: 0 0 20px rgba(47, 191, 151, 0.25);
+  --shadow-glow-danger: 0 0 20px rgba(208, 91, 91, 0.25);
+
+  /* ========================================
+     7. TRANSICIONES
+     ======================================== */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+
+  /* ========================================
+     8. BORDES RADIUS
+     ======================================== */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-full: 9999px;
+
+  /* ========================================
+     9. FUENTES
+     ======================================== */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', monospace;
+}
