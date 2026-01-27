@@ -52,6 +52,7 @@ model User {
   // Actividad
   messages      Message[]
   notifications Notification[]
+  analisisCobertura AnalisisCobertura[]
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -205,9 +206,332 @@ model DatosVivienda {
   userId            String   @unique
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  tipoVivienda      String
+  tipoVivienda      String   // piso, casa, chalet, adosado
   metrosCuadrados   Int?
-  anoConst
+  anoConst          Int?
+  numHabitaciones   Int?
+  numBanos          Int?
+  tieneGaraje       Boolean  @default(false)
+  tieneTrastero     Boolean  @default(false)
+  tieneJardin       Boolean  @default(false)
+  tienePiscina      Boolean  @default(false)
+  tieneAscensor     Boolean  @default(false)
+  estadoConservacion String? // excelente, bueno, regular, malo
+  valorEstimado     Float?
+  hipotecaPendiente Boolean  @default(false)
+  
+  completitud       Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model DatosSalud {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  grupoSanguineo        String?  // A+, A-, B+, B-, AB+, AB-, O+, O-
+  alergias              String?  // JSON array
+  condicionesMedicas    String?  // JSON array
+  medicacionHabitual    String?
+  contactoEmergencia    String?
+  telefonoEmergencia    String?
+  relacionEmergencia    String?
+  
+  completitud           Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model DatosPreferencias {
+  id                        String   @id @default(cuid())
+  userId                    String   @unique
+  user                      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  tiposSegurosInteres       String?  // JSON array: ["vida", "salud", "auto"]
+  presupuestoMensual        Float?
+  coberturasPrioritarias    String?  // JSON array
+  frecuenciaRevision        String?  // mensual, trimestral, semestral, anual
+  canalContactoPreferido    String?  // email, telefono, whatsapp, presencial
+  horarioContactoPreferido  String?  // manana, tarde, noche
+  
+  completitud               Int      @default(0)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+}
+
+model DatosAficiones {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  deportesPracticados   String?  // JSON array
+  viajesFrecuentes      Boolean  @default(false)
+  destinosFrecuentes    String?  // JSON array
+  actividadesRiesgo     String?  // JSON array: ["paracaidismo", "buceo"]
+  hobbies               String?  // JSON array
+  mascotasTipo          String?  // JSON array: ["perro", "gato"]
+  mascotasCantidad      Int      @default(0)
+  
+  completitud           Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+// ============================================
+// GAMIFICACIÓN
+// ============================================
+
+model Gamification {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  level           String   @default("BRONCE") // BRONCE, PLATA, ORO, PLATINO, DIAMANTE
+  points          Int      @default(0)
+  experience      Int      @default(0)
+  streak          Int      @default(0)
+  lastActivityDate DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId])
+}
+
+model UserMission {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  missionId       String
+  missionType     String   // daily, weekly, profile
+  status          String   @default("active") // active, completed, expired
+  progress        Int      @default(0)
+  target          Int
+  
+  completedAt     DateTime?
+  expiresAt       DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId, status])
+  @@index([missionType])
+}
+
+model UserAchievement {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  achievementId   String
+  achievementName String
+  rarity          String   // common, rare, epic, legendary
+  unlockedAt      DateTime @default(now())
+  
+  @@index([userId])
+  @@unique([userId, achievementId])
+}
+
+// ============================================
+// PRODUCTOS Y SEGUROS
+// ============================================
+
+model Producto {
+  id              String   @id @default(cuid())
+  nombre          String
+  categoria       String   // vehiculos, multirriesgos, salud, vida, etc.
+  subcategoria    String
+  descripcion     String   @db.Text
+  icono           String?
+  color           String?
+  
+  // Público objetivo
+  targetParticular Boolean @default(true)
+  targetEmpresa   Boolean  @default(false)
+  targetAutonomo  Boolean  @default(false)
+  
+  // Precios
+  precioMin       Float
+  precioMax       Float
+  
+  // Coberturas (JSON)
+  coberturas      String   @db.Text
+  beneficios      String   @db.Text
+  requisitos      String?  @db.Text
+  
+  // Destacados
+  popular         Boolean  @default(false)
+  recomendado     Boolean  @default(false)
+  
+  activo          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([categoria])
+  @@index([popular, recomendado])
+}
+
+model Poliza {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  numero          String   @unique
+  tipo            String   // auto, hogar, vida, salud, etc.
+  compania        String
+  estado          String   @default("activa") // activa, suspendida, cancelada
+  
+  fechaInicio     DateTime
+  fechaVencimiento DateTime
+  prima           Float
+  franquicia      Float?
+  
+  coberturas      String   @db.Text // JSON
+  beneficiario    String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  siniestros      Siniestro[]
+  
+  @@index([userId, estado])
+  @@index([tipo])
+}
+
+model Siniestro {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  polizaId        String
+  poliza          Poliza   @relation(fields: [polizaId], references: [id])
+  
+  numero          String   @unique
+  tipo            String
+  descripcion     String   @db.Text
+  fechaSiniestro  DateTime
+  estado          String   @default("pendiente") // pendiente, en_proceso, resuelto, rechazado
+  
+  importeReclamado Float?
+  importeAprobado Float?
+  
+  documentos      String?  @db.Text // JSON array de URLs
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId, estado])
+  @@index([polizaId])
+}
+
+model Documento {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  nombre          String
+  categoria       String   // suministros, telecomunicaciones, financieros, etc.
+  subcategoria    String
+  tipo            String   // pdf, jpg, png, doc, docx
+  
+  url             String
+  thumbnail       String?
+  size            Int      // bytes
+  
+  fechaSubida     DateTime @default(now())
+  fechaVencimiento DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId, categoria])
+}
+
+model Pago {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  concepto        String
+  importe         Float
+  estado          String   @default("pendiente") // pendiente, pagado, fallido
+  metodoPago      String?  // tarjeta, transferencia, domiciliacion
+  
+  fechaVencimiento DateTime
+  fechaPago       DateTime?
+  
+  referencia      String?  @unique
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId, estado])
+  @@index([fechaVencimiento])
+}
+
+model Message {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  asunto          String
+  contenido       String   @db.Text
+  remitente       String
+  leido           Boolean  @default(false)
+  importante      Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId, leido])
+}
+
+model Notification {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  tipo            String   // info, warning, success, error
+  titulo          String
+  mensaje         String   @db.Text
+  leida           Boolean  @default(false)
+  accion          String?  // URL o acción
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId, leida])
+  @@index([createdAt])
+}
+
+// ============================================
+// ANÁLISIS DE COBERTURA
+// ============================================
+
+model AnalisisCobertura {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  score           Int      // 0-100
+  nivelRiesgo     String   // critico, alto, medio, bajo, optimo
+  
+  // Gaps detectados (JSON)
+  gapsDetectados  String   @db.Text
+  
+  // Recomendaciones (JSON)
+  recomendaciones String   @db.Text
+  
+  // Pérdida potencial estimada
+  perdidaPotencial Float?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([createdAt])
+}
 
 [Response interrupted by length limit - let me continue with a summary document instead]
 
