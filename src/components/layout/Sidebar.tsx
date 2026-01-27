@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, FileText, AlertTriangle, FolderOpen, FolderArchive,
   User, MessageSquare, CreditCard, LogOut,
-  ChevronLeft, Phone, Trophy, Gift, Star, Receipt
+  ChevronLeft, Phone, Trophy, Gift, Star, Receipt,
+  Gamepad2, Target, Users, Award, ShoppingBag
 } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import { cn } from '@/lib/utils'
@@ -22,6 +23,15 @@ const menuItems = [
   { name: 'Mensajes', href: '/mensajes', icon: MessageSquare },
   { name: 'Pagos', href: '/pagos', icon: CreditCard },
   { name: 'Mi Perfil', href: '/perfil', icon: User },
+]
+
+const gamificationItems = [
+  { name: 'Soriano Club', href: '/soriano-club', icon: Gamepad2 },
+  { name: 'Quizzes', href: '/quizzes', icon: Target },
+  { name: 'Clasificación', href: '/clasificacion', icon: Trophy },
+  { name: 'Referidos', href: '/referidos', icon: Users },
+  { name: 'Logros', href: '/logros', icon: Award },
+  { name: 'Marketplace', href: '/marketplace', icon: ShoppingBag },
 ]
 
 const getLevelInfo = (level: string) => {
@@ -173,16 +183,43 @@ export function Sidebar() {
             )
           })}
 
-          {/* Soriano Club Link */}
+          {/* Gamification Section */}
           {sidebarOpen && (
-            <Link
-              href="/soriano-club"
-              className="sidebar-link mt-4 bg-gradient-to-r from-occident/10 to-accent-purple/10 border border-occident/20"
-            >
-              <Trophy className="w-5 h-5 text-occident" />
-              <span className="gradient-text font-medium">Soriano Club</span>
-              <Gift className="w-4 h-4 ml-auto text-accent-purple" />
-            </Link>
+            <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-2 px-3" style={{ color: 'var(--color-text-tertiary)' }}>
+                Soriano Club
+              </p>
+              {gamificationItems.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn('sidebar-link', isActive && 'active')}
+                  >
+                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                    <span className="whitespace-nowrap overflow-hidden">{item.name}</span>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+          {!sidebarOpen && (
+            <div className="mt-4 pt-4 border-t space-y-1" style={{ borderColor: 'var(--color-border)' }}>
+              {gamificationItems.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn('sidebar-link', isActive && 'active')}
+                    title={item.name}
+                  >
+                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                  </Link>
+                )
+              })}
+            </div>
           )}
         </nav>
 

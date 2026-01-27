@@ -10,6 +10,7 @@ import {
   ChevronRight, X, AlertCircle, PartyPopper
 } from 'lucide-react'
 import { useStore } from '@/store/useStore'
+import { SpinWheel } from '@/components/gamification/SpinWheel'
 import { cn } from '@/lib/utils'
 import Modal from '@/components/ui/Modal'
 
@@ -429,6 +430,8 @@ export default function MarketplacePage() {
   const [showConfetti, setShowConfetti] = useState(false)
   const [redemptionHistory, setRedemptionHistory] = useState<RedemptionRecord[]>(mockRedemptionHistory)
   const [showHistoryPanel, setShowHistoryPanel] = useState(false)
+  const [showSpinWheel, setShowSpinWheel] = useState(false)
+  const [remainingSpins, setRemainingSpins] = useState(3)
 
   // Simulated user coins (using points from store, multiplied for demo purposes)
   const userCoins = user?.points || 0
@@ -614,6 +617,99 @@ export default function MarketplacePage() {
           </div>
         </div>
       </motion.div>
+
+      {/* Ruleta de la Suerte */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 to-indigo-700 p-6 md:p-8 text-white"
+      >
+        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-2">
+              🎰 Ruleta de la Suerte
+            </h2>
+            <p className="text-white/80 text-sm md:text-base">
+              Gasta 50 COINS por giro. ¡Hasta 3 giros al día!
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center md:items-end gap-3">
+            <div className="flex items-center gap-4">
+              <div className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 text-center">
+                <p className="text-white/70 text-xs">Giros restantes</p>
+                <p className="text-xl font-bold">{remainingSpins}/3</p>
+              </div>
+              <div className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 text-center">
+                <p className="text-white/70 text-xs">Coste por giro</p>
+                <p className="text-xl font-bold flex items-center gap-1">
+                  <Coins className="w-4 h-4" /> 50
+                </p>
+              </div>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowSpinWheel(true)}
+              disabled={remainingSpins <= 0 || userCoins < 50}
+              className={cn(
+                'px-8 py-3 rounded-xl font-bold text-lg transition-all flex items-center gap-2 shadow-lg',
+                remainingSpins > 0 && userCoins >= 50
+                  ? 'bg-white text-purple-700 hover:shadow-xl'
+                  : 'bg-white/30 text-white/60 cursor-not-allowed'
+              )}
+            >
+              <Sparkles className="w-5 h-5" />
+              Girar Ruleta
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* SpinWheel Modal */}
+      <AnimatePresence>
+        {showSpinWheel && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowSpinWheel(false)}
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+            >
+              <div
+                className="relative w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden pointer-events-auto"
+                style={{ backgroundColor: 'var(--color-card)' }}
+              >
+                <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
+                  <h3 className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>
+                    🎰 Ruleta de la Suerte
+                  </h3>
+                  <button
+                    onClick={() => setShowSpinWheel(false)}
+                    className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <X className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
+                  </button>
+                </div>
+                <div className="p-6">
+                  <SpinWheel />
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Tabs & Filters */}
       <motion.div

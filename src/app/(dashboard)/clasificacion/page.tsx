@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils'
 // TYPES
 // ============================================
 
-type LeaderboardPeriod = 'daily' | 'weekly' | 'monthly'
+type LeaderboardPeriod = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annual'
 
 interface UserPosition {
   rank: number
@@ -82,6 +82,24 @@ const PRIZES: PrizeInfo[] = [
       { position: 'Top 4-10', reward: '100 coins', icon: '&#x1F3C6;', description: 'Top 10 mensual' },
     ],
   },
+  {
+    period: 'quarterly',
+    periodLabel: 'Trimestral',
+    prizes: [
+      { position: 'Top 1', reward: '5000 coins + Weekend SPA', icon: '👑', description: 'Campeón trimestral' },
+      { position: 'Top 2-3', reward: '2000 coins + Regalo', icon: '💎', description: 'Elite trimestral' },
+      { position: 'Top 4-10', reward: '500 coins', icon: '🏆', description: 'Top 10 trimestral' },
+    ],
+  },
+  {
+    period: 'annual',
+    periodLabel: 'Anual',
+    prizes: [
+      { position: 'Top 1', reward: '🌴 VIAJE A PUNTA CANA', icon: '✈️', description: '¡El gran premio anual! Viaje todo incluido a Punta Cana para 2 personas' },
+      { position: 'Top 2-3', reward: '10,000 coins + Experiencia premium', icon: '👑', description: 'Finalistas anuales' },
+      { position: 'Top 4-10', reward: '2,000 coins + Regalo exclusivo', icon: '💎', description: 'Top 10 anual' },
+    ],
+  },
 ]
 
 // ============================================
@@ -99,6 +117,28 @@ const mockHistoricalPositions: HistoricalPosition[] = [
 // ============================================
 // COMPONENTS
 // ============================================
+
+// Animated sparkle for the annual grand prize
+function AnimatedSparkle({ className }: { className?: string }) {
+  return (
+    <motion.div
+      className={cn('absolute', className)}
+      animate={{
+        scale: [0, 1.2, 0],
+        opacity: [0, 1, 0],
+        rotate: [0, 180, 360],
+      }}
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+        repeatDelay: Math.random() * 2,
+        ease: 'easeInOut',
+      }}
+    >
+      <Sparkles className="w-4 h-4 text-yellow-400" />
+    </motion.div>
+  )
+}
 
 // User Position Card Component
 function UserPositionCard() {
@@ -299,6 +339,7 @@ function UserPositionCard() {
 function PrizesSection() {
   const [selectedPeriod, setSelectedPeriod] = useState<LeaderboardPeriod>('weekly')
   const currentPrizes = PRIZES.find(p => p.period === selectedPeriod)
+  const isAnnual = selectedPeriod === 'annual'
 
   return (
     <motion.div
@@ -315,14 +356,14 @@ function PrizesSection() {
         </CardHeader>
         <CardContent>
           {/* Period Selector */}
-          <div className="flex gap-2 mb-4">
+          <div className="flex gap-2 mb-4 overflow-x-auto pb-1 scrollbar-hide">
             {PRIZES.map((prize) => (
               <button
                 key={prize.period}
                 type="button"
                 onClick={() => setSelectedPeriod(prize.period)}
                 className={cn(
-                  'flex-1 py-2 px-3 rounded-xl text-sm font-medium transition-all',
+                  'flex-shrink-0 py-2 px-3 rounded-xl text-sm font-medium transition-all whitespace-nowrap',
                   selectedPeriod === prize.period
                     ? 'bg-occident text-white shadow-lg shadow-occident/30'
                     : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -345,30 +386,58 @@ function PrizesSection() {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-3"
             >
-              {currentPrizes?.prizes.map((prize, index) => (
-                <motion.div
-                  key={prize.position}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border border-amber-200 dark:border-amber-800"
-                >
-                  <span className="text-3xl" dangerouslySetInnerHTML={{ __html: prize.icon }} />
-                  <div className="flex-1">
-                    <p className="font-bold" style={{ color: 'var(--color-text)' }}>
-                      {prize.position}
-                    </p>
-                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                      {prize.description}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-amber-600 dark:text-amber-400">
-                      {prize.reward}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
+              {currentPrizes?.prizes.map((prize, index) => {
+                const isGrandPrize = isAnnual && index === 0
+
+                return (
+                  <motion.div
+                    key={prize.position}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className={cn(
+                      'relative flex items-center gap-4 p-4 rounded-xl border overflow-hidden',
+                      isGrandPrize
+                        ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400 dark:from-amber-500 dark:via-orange-500 dark:to-rose-500 border-amber-300 dark:border-amber-400 shadow-xl shadow-amber-500/30'
+                        : 'bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border-amber-200 dark:border-amber-800'
+                    )}
+                  >
+                    {/* Animated sparkles for grand prize */}
+                    {isGrandPrize && (
+                      <>
+                        <AnimatedSparkle className="top-1 left-2" />
+                        <AnimatedSparkle className="top-2 right-4" />
+                        <AnimatedSparkle className="bottom-1 left-1/3" />
+                        <AnimatedSparkle className="bottom-2 right-8" />
+                        <AnimatedSparkle className="top-1/2 left-1/2" />
+                        {/* Shimmer overlay */}
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                          animate={{ x: ['-100%', '200%'] }}
+                          transition={{ duration: 3, repeat: Infinity, repeatDelay: 2, ease: 'easeInOut' }}
+                        />
+                      </>
+                    )}
+
+                    <span className={cn('text-3xl relative z-10', isGrandPrize && 'drop-shadow-lg')}>
+                      {prize.icon}
+                    </span>
+                    <div className="flex-1 relative z-10">
+                      <p className={cn('font-bold', isGrandPrize ? 'text-white text-lg' : '')} style={isGrandPrize ? undefined : { color: 'var(--color-text)' }}>
+                        {prize.position}
+                      </p>
+                      <p className={cn('text-sm', isGrandPrize ? 'text-white/90' : '')} style={isGrandPrize ? undefined : { color: 'var(--color-text-secondary)' }}>
+                        {prize.description}
+                      </p>
+                    </div>
+                    <div className="text-right relative z-10">
+                      <p className={cn('font-bold', isGrandPrize ? 'text-white text-lg drop-shadow' : 'text-amber-600 dark:text-amber-400')}>
+                        {prize.reward}
+                      </p>
+                    </div>
+                  </motion.div>
+                )
+              })}
             </motion.div>
           </AnimatePresence>
         </CardContent>
