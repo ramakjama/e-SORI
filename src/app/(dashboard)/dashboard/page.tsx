@@ -362,70 +362,173 @@ export default function DashboardPage() {
 
       {/* Protection Score + Active Claim Row */}
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Protection Score Widget */}
+        {/* Coverage Gap Analysis Widget */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
           <Card variant="gradient" className="p-6 h-full">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Nivel de Protección</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Tu cobertura actual</p>
-              </div>
-              <Badge variant="success">Excelente</Badge>
-            </div>
+            {(() => {
+              // Calculate coverage gaps
+              const essentialPolicies = [
+                {
+                  type: 'hogar',
+                  label: 'Hogar',
+                  covered: policies.some(p => p.type === 'hogar'),
+                  risk: 'Daños estructurales pueden costar más de 50.000€',
+                  priority: 'Alta'
+                },
+                {
+                  type: 'auto',
+                  label: 'Auto',
+                  covered: policies.some(p => p.type === 'auto'),
+                  risk: 'Sin cobertura legal obligatoria - Multas desde 3.000€',
+                  priority: 'Crítica'
+                },
+                {
+                  type: 'salud',
+                  label: 'Salud',
+                  covered: policies.some(p => p.type === 'salud'),
+                  risk: 'Tratamientos médicos privados pueden superar 15.000€',
+                  priority: 'Alta'
+                },
+                {
+                  type: 'vida',
+                  label: 'Vida',
+                  covered: policies.some(p => p.type === 'vida'),
+                  risk: 'Sin protección financiera para tu familia',
+                  priority: 'Media'
+                },
+              ]
 
-            <div className="flex items-center gap-8">
-              <CircularProgress
-                value={protectionScore}
-                size="xl"
-                strokeWidth={8}
-                variant="success"
-              />
+              const coveredCount = essentialPolicies.filter(p => p.covered).length
+              const totalCount = essentialPolicies.length
+              const coveragePercentage = Math.round((coveredCount / totalCount) * 100)
+              const gapPercentage = 100 - coveragePercentage
+              const missingPolicies = essentialPolicies.filter(p => !p.covered)
 
-              <div className="flex-1 space-y-3">
-                {[
-                  { label: 'Hogar', value: policies.some(p => p.type === 'hogar') ? 100 : 0 },
-                  { label: 'Auto', value: policies.some(p => p.type === 'auto') ? 100 : 0 },
-                  { label: 'Salud', value: policies.some(p => p.type === 'salud') ? 100 : 0 },
-                  { label: 'Vida', value: policies.some(p => p.type === 'vida') ? 100 : 0 },
-                ].map((item) => (
-                  <div key={item.label}>
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-slate-600 dark:text-slate-400">{item.label}</span>
-                      <span className={cn(
-                        'font-medium',
-                        item.value === 100 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'
-                      )}>
-                        {item.value === 100 ? 'Cubierto' : 'Sin cubrir'}
-                      </span>
+              // Determine risk level badge
+              const getRiskBadge = () => {
+                if (gapPercentage === 0) return { variant: 'success' as const, label: 'Bien Protegido' }
+                if (gapPercentage >= 75) return { variant: 'error' as const, label: 'Alto Riesgo' }
+                if (gapPercentage >= 50) return { variant: 'warning' as const, label: 'Riesgo Medio' }
+                if (gapPercentage >= 25) return { variant: 'warning' as const, label: 'Revisar Coberturas' }
+                return { variant: 'success' as const, label: 'Baja Exposición' }
+              }
+
+              const riskBadge = getRiskBadge()
+
+              return (
+                <>
+                  <div className="flex items-start justify-between mb-6">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">Análisis de Cobertura</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        {gapPercentage === 0
+                          ? 'Todas las coberturas esenciales activas'
+                          : `Te faltan ${missingPolicies.length} de ${totalCount} coberturas esenciales`
+                        }
+                      </p>
                     </div>
-                    <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${item.value}%` }}
-                        transition={{ delay: 0.5, duration: 0.5 }}
-                        className={cn(
-                          'h-full rounded-full',
-                          item.value === 100 ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
-                        )}
+                    <Badge variant={riskBadge.variant}>{riskBadge.label}</Badge>
+                  </div>
+
+                  <div className="flex items-center gap-8">
+                    {/* Show GAP percentage in circular progress */}
+                    <div className="relative">
+                      <CircularProgress
+                        value={gapPercentage}
+                        size="xl"
+                        strokeWidth={8}
+                        variant={gapPercentage >= 50 ? 'error' : gapPercentage >= 25 ? 'warning' : 'success'}
                       />
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-bold text-slate-900 dark:text-white">{gapPercentage}%</span>
+                        <span className="text-xs text-slate-600 dark:text-slate-400">
+                          {gapPercentage === 0 ? 'Cubierto' : 'Descubierto'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex-1 space-y-3">
+                      {essentialPolicies.map((item) => (
+                        <div key={item.label}>
+                          <div className="flex items-center justify-between text-sm mb-1">
+                            <div className="flex items-center gap-2">
+                              {!item.covered && (
+                                <span className="text-red-500" title={`Prioridad ${item.priority}`}>⚠️</span>
+                              )}
+                              <span className={cn(
+                                'font-medium',
+                                item.covered ? 'text-slate-600 dark:text-slate-400' : 'text-slate-900 dark:text-white'
+                              )}>
+                                {item.label}
+                              </span>
+                            </div>
+                            <span className={cn(
+                              'font-medium text-xs',
+                              item.covered
+                                ? 'text-emerald-600 dark:text-emerald-400'
+                                : 'text-red-600 dark:text-red-400'
+                            )}>
+                              {item.covered ? '✓ Cubierto' : `✗ Sin cobertura - ${item.priority}`}
+                            </span>
+                          </div>
+
+                          {/* Show risk message for uncovered policies */}
+                          {!item.covered && (
+                            <div className="mb-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                              <p className="text-xs text-red-700 dark:text-red-300">
+                                {item.risk}
+                              </p>
+                            </div>
+                          )}
+
+                          <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: item.covered ? '100%' : '0%' }}
+                              transition={{ delay: 0.5, duration: 0.5 }}
+                              className={cn(
+                                'h-full rounded-full',
+                                item.covered
+                                  ? 'bg-emerald-500'
+                                  : 'bg-red-300 dark:bg-red-700'
+                              )}
+                            />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
 
-            {protectionScore < 80 && (
-              <Link href="/polizas">
-                <button type="button" className="mt-6 w-full py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-600 hover:to-red-700 transition-all flex items-center justify-center gap-2">
-                  <Shield className="w-4 h-4" />
-                  Mejorar protección
-                </button>
-              </Link>
-            )}
+                  {/* Always show button if there are gaps */}
+                  {gapPercentage > 0 && (
+                    <Link href="/polizas">
+                      <button type="button" className={cn(
+                        'mt-6 w-full py-3 rounded-xl text-white font-semibold transition-all flex items-center justify-center gap-2',
+                        gapPercentage >= 50
+                          ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
+                          : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700'
+                      )}>
+                        <Shield className="w-4 h-4" />
+                        {gapPercentage >= 50 ? 'Reducir riesgo urgentemente' : 'Completar protección'}
+                      </button>
+                    </Link>
+                  )}
+
+                  {/* If fully covered, show congratulations */}
+                  {gapPercentage === 0 && (
+                    <div className="mt-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+                      <p className="text-sm text-emerald-700 dark:text-emerald-300 text-center font-medium">
+                        ✅ Excelente - Todas tus coberturas esenciales están activas
+                      </p>
+                    </div>
+                  )}
+                </>
+              )
+            })()}
           </Card>
         </motion.div>
 
