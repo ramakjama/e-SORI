@@ -139,5 +139,170 @@ export const SkeletonStats = ({ items = 4 }: { items?: number }) => (
   </div>
 )
 
+// Policy Skeleton - for policy cards
+export const PolicySkeleton = ({ className }: { className?: string }) => (
+  <div className={cn('p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800', className)}>
+    {/* Header with icon and status */}
+    <div className="flex items-start justify-between mb-4">
+      <div className="flex items-center gap-3">
+        <Skeleton variant="rounded" className="w-12 h-12" />
+        <div className="space-y-2">
+          <Skeleton variant="text" width={120} height={18} />
+          <Skeleton variant="text" width={80} height={14} />
+        </div>
+      </div>
+      <Skeleton variant="rounded" width={70} height={24} />
+    </div>
+    {/* Policy details */}
+    <div className="space-y-3 mb-4">
+      <div className="flex justify-between">
+        <Skeleton variant="text" width="40%" height={14} />
+        <Skeleton variant="text" width="30%" height={14} />
+      </div>
+      <div className="flex justify-between">
+        <Skeleton variant="text" width="35%" height={14} />
+        <Skeleton variant="text" width="25%" height={14} />
+      </div>
+    </div>
+    {/* Footer with action */}
+    <div className="pt-3 border-t border-slate-100 dark:border-slate-700">
+      <Skeleton variant="rounded" width="100%" height={36} />
+    </div>
+  </div>
+)
+
+// Document Skeleton - for document list items
+export const DocumentSkeleton = ({ className }: { className?: string }) => (
+  <div className={cn('flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700', className)}>
+    {/* File icon */}
+    <Skeleton variant="rounded" className="w-10 h-10 flex-shrink-0" />
+    {/* Document info */}
+    <div className="flex-1 min-w-0 space-y-2">
+      <Skeleton variant="text" width="70%" height={16} />
+      <div className="flex items-center gap-2">
+        <Skeleton variant="text" width={60} height={12} />
+        <Skeleton variant="circular" className="w-1 h-1" />
+        <Skeleton variant="text" width={80} height={12} />
+      </div>
+    </div>
+    {/* Action button */}
+    <Skeleton variant="circular" className="w-8 h-8 flex-shrink-0" />
+  </div>
+)
+
+// Message Skeleton - for message/notification items
+export const MessageSkeleton = ({ className }: { className?: string }) => (
+  <div className={cn('flex items-start gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700', className)}>
+    {/* Avatar */}
+    <Skeleton variant="circular" className="w-10 h-10 flex-shrink-0" />
+    {/* Message content */}
+    <div className="flex-1 min-w-0 space-y-2">
+      <div className="flex items-center justify-between">
+        <Skeleton variant="text" width={100} height={16} />
+        <Skeleton variant="text" width={50} height={12} />
+      </div>
+      <Skeleton variant="text" width="90%" height={14} />
+      <Skeleton variant="text" width="60%" height={14} />
+    </div>
+    {/* Unread indicator */}
+    <Skeleton variant="circular" className="w-2 h-2 flex-shrink-0" />
+  </div>
+)
+
+// Card Skeleton - improved generic card skeleton
+export const CardSkeleton = ({
+  className,
+  variant = 'default'
+}: {
+  className?: string
+  variant?: 'default' | 'compact' | 'detailed'
+}) => {
+  if (variant === 'compact') {
+    return (
+      <div className={cn('p-3 rounded-xl border border-slate-200 dark:border-slate-700', className)}>
+        <div className="flex items-center gap-3">
+          <Skeleton variant="rounded" className="w-10 h-10" />
+          <div className="flex-1 space-y-1.5">
+            <Skeleton variant="text" width="60%" height={14} />
+            <Skeleton variant="text" width="40%" height={12} />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (variant === 'detailed') {
+    return (
+      <div className={cn('p-5 rounded-2xl border border-slate-200 dark:border-slate-700', className)}>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Skeleton variant="rounded" className="w-14 h-14" />
+            <div className="space-y-2">
+              <Skeleton variant="text" width={140} height={18} />
+              <Skeleton variant="text" width={100} height={14} />
+            </div>
+          </div>
+          <Skeleton variant="rounded" width={80} height={28} />
+        </div>
+        {/* Content */}
+        <div className="space-y-3 mb-4">
+          <SkeletonText lines={3} />
+        </div>
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="text-center p-2 rounded-lg bg-slate-50 dark:bg-slate-800">
+              <Skeleton variant="text" width="50%" height={20} className="mx-auto mb-1" />
+              <Skeleton variant="text" width="70%" height={12} className="mx-auto" />
+            </div>
+          ))}
+        </div>
+        {/* Actions */}
+        <div className="flex gap-2">
+          <Skeleton variant="rounded" className="flex-1 h-10" />
+          <Skeleton variant="rounded" className="w-10 h-10" />
+        </div>
+      </div>
+    )
+  }
+
+  // Default variant
+  return (
+    <div className={cn('p-4 rounded-xl border border-slate-200 dark:border-slate-700', className)}>
+      <div className="flex items-center gap-3 mb-4">
+        <SkeletonAvatar />
+        <div className="flex-1 space-y-2">
+          <Skeleton variant="text" width="60%" />
+          <Skeleton variant="text" width="40%" height={12} />
+        </div>
+      </div>
+      <SkeletonText lines={3} />
+    </div>
+  )
+}
+
+// Receipt/Invoice Skeleton
+export const ReceiptSkeleton = ({ className }: { className?: string }) => (
+  <div className={cn('flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700', className)}>
+    {/* Status indicator */}
+    <Skeleton variant="circular" className="w-3 h-3 flex-shrink-0" />
+    {/* Receipt info */}
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center justify-between mb-2">
+        <Skeleton variant="text" width={120} height={16} />
+        <Skeleton variant="text" width={80} height={18} />
+      </div>
+      <div className="flex items-center gap-2">
+        <Skeleton variant="text" width={100} height={12} />
+        <Skeleton variant="circular" className="w-1 h-1" />
+        <Skeleton variant="text" width={70} height={12} />
+      </div>
+    </div>
+    {/* Action */}
+    <Skeleton variant="rounded" width={70} height={32} className="flex-shrink-0" />
+  </div>
+)
+
 export { Skeleton }
 export default Skeleton

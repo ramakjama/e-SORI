@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Groq from 'groq-sdk'
+import { rateLimiters, withRateLimit } from '@/lib/rate-limiter'
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY || '',
@@ -62,6 +63,27 @@ const SORI_SYSTEM_PROMPT = `Eres SORI (Soriano Responde Inteligente), el asisten
 Responde siempre de forma útil, empática y profesional.`
 
 export async function POST(request: NextRequest) {
+  // Apply rate limiting (20 messages per minute)
+  const rateLimitResult = await withRateLimit(request, rateLimiters.chat)
+  
+  if (!rateLimitResult.success) {
+    return NextResponse.json(
+      { 
+        error: 'Demasiadas solicitudes. Por favor, espera un momento.',
+        retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000)
+      },
+      { 
+        status: 429,
+        headers: {
+          'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+          'X-RateLimit-Reset': rateLimitResult.reset.toString(),
+          'Retry-After': Math.ceil((rateLimitResult.reset - Date.now()) / 1000).toString(),
+        }
+      }
+    )
+  }
+
   try {
     const { message, conversationHistory, userContext } = await request.json()
 

@@ -101,18 +101,44 @@ const defaultSegments: WheelSegment[] = [
   },
 ]
 
+// Normalize probabilities to ensure they sum to 1.0
+function normalizeProbabilities(segments: WheelSegment[]): WheelSegment[] {
+  const total = segments.reduce((sum, seg) => sum + seg.probability, 0)
+  
+  // Validate in development
+  if (process.env.NODE_ENV === 'development' && Math.abs(total - 1.0) > 0.001) {
+    console.warn(
+      `⚠️ SpinWheel: Probabilities sum to ${total.toFixed(3)}, expected 1.0. Auto-normalizing...`
+    )
+  }
+  
+  // Normalize if needed
+  if (Math.abs(total - 1.0) > 0.001) {
+    return segments.map(seg => ({
+      ...seg,
+      probability: seg.probability / total
+    }))
+  }
+  
+  return segments
+}
+
 function getWeightedRandomIndex(segments: WheelSegment[]): number {
+  // Ensure probabilities are normalized
+  const normalizedSegments = normalizeProbabilities(segments)
+  
   const random = Math.random()
   let cumulative = 0
 
-  for (let i = 0; i < segments.length; i++) {
-    cumulative += segments[i].probability
+  for (let i = 0; i < normalizedSegments.length; i++) {
+    cumulative += normalizedSegments[i].probability
     if (random <= cumulative) {
       return i
     }
   }
 
-  return segments.length - 1
+  // Fallback to last segment (should never happen with normalized probabilities)
+  return normalizedSegments.length - 1
 }
 
 export function SpinWheel({

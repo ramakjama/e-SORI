@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  LayoutDashboard, FileText, AlertTriangle, FolderOpen,
+  LayoutDashboard, FileText, AlertTriangle, FolderOpen, FolderArchive,
   User, MessageSquare, CreditCard, LogOut,
   ChevronLeft, Phone, Trophy, Gift, Star, Receipt
 } from 'lucide-react'

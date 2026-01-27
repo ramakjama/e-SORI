@@ -9,6 +9,7 @@ import {
   ChevronDown
 } from 'lucide-react'
 import Image from 'next/image'
+import DOMPurify from 'dompurify'
 import { useStore } from '@/store/useStore'
 import { cn } from '@/lib/utils'
 
@@ -211,9 +212,17 @@ export function SoriChatWidget() {
 
   const formatMessage = (content: string) => {
     // Simple markdown-like formatting
-    return content
+    const formatted = content
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\n/g, '<br />')
+
+    // Sanitize HTML to prevent XSS attacks
+    const sanitized = DOMPurify.sanitize(formatted, {
+      ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br', 'p'],
+      ALLOWED_ATTR: [],
+    })
+
+    return sanitized
   }
 
   const unreadCount = 1 // Could be dynamic based on notifications

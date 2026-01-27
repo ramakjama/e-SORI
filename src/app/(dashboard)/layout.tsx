@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, Bell, Search, Sparkles, Shield } from 'lucide-react'
+import { Menu, Bell, Sparkles, Shield } from 'lucide-react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { SoriChatWidget } from '@/components/chat/SoriChatWidget'
 import { BottomNav } from '@/components/ui/BottomNav'
+import { GlobalSearch } from '@/components/ui/GlobalSearch'
 import { useStore } from '@/store/useStore'
 import { cn } from '@/lib/utils'
 
@@ -51,28 +52,29 @@ export default function DashboardLayout({
           className="min-h-screen flex flex-col items-center justify-center"
           style={{ backgroundColor: 'var(--color-bg)' }}
         >
-          {/* Animated background particles */}
+          {/* Animated background particles - Optimized to 5 for better performance */}
           <div className="absolute inset-0 overflow-hidden">
-            {[...Array(20)].map((_, i) => (
+            {[...Array(5)].map((_, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{
-                  opacity: [0, 0.3, 0],
-                  scale: [0, 1, 0],
-                  y: [0, -100],
+                  opacity: [0, 0.4, 0],
+                  scale: [0, 1.2, 0],
+                  y: [0, -120],
                 }}
                 transition={{
                   duration: 3,
                   repeat: Infinity,
-                  delay: i * 0.15,
+                  delay: i * 0.3,
+                  ease: "easeInOut",
                 }}
-                className="absolute w-2 h-2 rounded-full"
+                className="absolute w-3 h-3 rounded-full"
                 style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${50 + Math.random() * 50}%`,
+                  left: `${20 + i * 15}%`,
+                  top: `${50 + Math.random() * 40}%`,
                   backgroundColor: 'var(--color-accent)',
-                  opacity: 0.2,
+                  opacity: 0.3,
                 }}
               />
             ))}
@@ -189,19 +191,8 @@ export default function DashboardLayout({
                 <Menu className="w-5 h-5" />
               </button>
 
-              {/* Search */}
-              <div
-                className="hidden md:flex items-center gap-2 px-4 py-2.5 rounded-xl w-72"
-                style={{ backgroundColor: 'var(--color-bg-secondary)' }}
-              >
-                <Search className="w-4 h-4" style={{ color: 'var(--color-text-secondary)' }} />
-                <input
-                  type="text"
-                  placeholder="Buscar pólizas, documentos..."
-                  className="bg-transparent text-sm outline-none w-full"
-                  style={{ color: 'var(--color-text)' }}
-                />
-              </div>
+              {/* Global Search */}
+              <GlobalSearch />
             </div>
 
             <div className="flex items-center gap-3">

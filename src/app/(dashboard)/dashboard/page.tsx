@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -51,10 +51,22 @@ const getLevelInfo = (level: string) => {
   }
 }
 
-// Animated Counter Component
-const AnimatedCounter = ({ value, duration = 1 }: { value: number | string; duration?: number }) => {
+// Animated Counter Component - Memoized for performance
+interface AnimatedCounterProps {
+  value: number | string
+  duration?: number
+}
+
+const AnimatedCounter = memo(function AnimatedCounter({ value, duration = 1 }: AnimatedCounterProps) {
   const [displayValue, setDisplayValue] = useState(0)
-  const numValue = typeof value === 'string' ? parseFloat(value.replace(/[^\d.-]/g, '')) : value
+  const numValue = useMemo(
+    () => typeof value === 'string' ? parseFloat(value.replace(/[^\d.-]/g, '')) : value,
+    [value]
+  )
+  const isCurrency = useMemo(
+    () => typeof value === 'string' && value.includes('EUR'),
+    [value]
+  )
 
   useEffect(() => {
     let start = 0
@@ -75,28 +87,42 @@ const AnimatedCounter = ({ value, duration = 1 }: { value: number | string; dura
     return () => clearInterval(timer)
   }, [numValue, duration])
 
-  if (typeof value === 'string' && value.includes('€')) {
+  if (isCurrency) {
     return <>{formatCurrency(displayValue)}</>
   }
   return <>{displayValue.toLocaleString()}</>
+})
+
+// Quick Tip Component - Memoized for performance
+interface QuickTipProps {
+  tip: string
 }
 
-// Quick Tip Component
-const QuickTip = ({ tip }: { tip: string }) => (
-  <motion.div
-    initial={{ opacity: 0, x: -20 }}
-    animate={{ opacity: 1, x: 0 }}
-    className="flex items-start gap-3 p-4 rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 border border-amber-200/50 dark:border-amber-800/30"
-  >
-    <div className="w-8 h-8 rounded-full bg-amber-400 flex items-center justify-center flex-shrink-0">
-      <Zap className="w-4 h-4 text-amber-900" />
-    </div>
-    <div>
-      <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Consejo del día</p>
-      <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">{tip}</p>
-    </div>
-  </motion.div>
-)
+const QuickTip = memo(function QuickTip({ tip }: QuickTipProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="flex items-start gap-3 p-4 rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 border border-amber-200/50 dark:border-amber-800/30"
+    >
+      <div className="w-8 h-8 rounded-full bg-amber-400 flex items-center justify-center flex-shrink-0">
+        <Zap className="w-4 h-4 text-amber-900" />
+      </div>
+      <div>
+        <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Consejo del día</p>
+        <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">{tip}</p>
+      </div>
+    </motion.div>
+  )
+})
+
+// Tips data - moved outside component to prevent recreation
+const TIPS = [
+  'Revisa tus coberturas anualmente para asegurar que se ajusten a tus necesidades.',
+  'Comunicar un siniestro a tiempo agiliza el proceso de resolución.',
+  'Refiere a un amigo y gana 150 puntos Soriano Club.',
+  'Mantén tus datos actualizados para recibir comunicaciones importantes.',
+] as const
 
 export default function DashboardPage() {
   const { user, policies, claims, messages, notifications, openChat } = useStore()
@@ -113,34 +139,80 @@ export default function DashboardPage() {
     return () => clearInterval(timer)
   }, [])
 
-  const activePolicies = policies.filter((p) => p.status === 'active').length
-  const pendingClaims = claims.filter((c) => c.status !== 'resolved' && c.status !== 'rejected').length
-  const totalPremium = policies.reduce((sum, p) => sum + p.premium, 0)
-  const unreadMessages = messages.filter((m) => !m.read).length
-  const unreadNotifications = notifications.filter((n) => !n.read).length
+  // Memoized computed values for performance
+  const activePolicies = useMemo(
+    () => policies.filter((p) => p.status === 'active').length,
+    [policies]
+  )
 
-  const nextPayment = policies.reduce((nearest, policy) => {
-    const paymentDate = new Date(policy.nextPayment)
-    if (!nearest || paymentDate < nearest.date) {
-      return { date: paymentDate, policy }
-    }
-    return nearest
-  }, null as { date: Date; policy: typeof policies[0] } | null)
+  const pendingClaims = useMemo(
+    () => claims.filter((c) => c.status !== 'resolved' && c.status !== 'rejected').length,
+    [claims]
+  )
 
-  const activeClaim = claims.find((c) => c.status === 'in_progress')
-  const levelInfo = getLevelInfo(user?.level || 'BRONCE')
+  const totalPremium = useMemo(
+    () => policies.reduce((sum, p) => sum + p.premium, 0),
+    [policies]
+  )
 
-  const tips = [
-    'Revisa tus coberturas anualmente para asegurar que se ajusten a tus necesidades.',
-    'Comunicar un siniestro a tiempo agiliza el proceso de resolución.',
-    'Refiere a un amigo y gana 150 puntos Soriano Club.',
-    'Mantén tus datos actualizados para recibir comunicaciones importantes.',
-  ]
+  const unreadMessages = useMemo(
+    () => messages.filter((m) => !m.read).length,
+    [messages]
+  )
 
-  const randomTip = tips[Math.floor(Math.random() * tips.length)]
+  const unreadNotifications = useMemo(
+    () => notifications.filter((n) => !n.read).length,
+    [notifications]
+  )
 
-  // Calculate protection score
-  const protectionScore = Math.min(100, (activePolicies * 20) + (user?.points ? Math.min(20, user.points / 50) : 0))
+  const nextPayment = useMemo(
+    () => policies.reduce((nearest, policy) => {
+      const paymentDate = new Date(policy.nextPayment)
+      if (!nearest || paymentDate < nearest.date) {
+        return { date: paymentDate, policy }
+      }
+      return nearest
+    }, null as { date: Date; policy: typeof policies[0] } | null),
+    [policies]
+  )
+
+  const activeClaim = useMemo(
+    () => claims.find((c) => c.status === 'in_progress'),
+    [claims]
+  )
+
+  const levelInfo = useMemo(
+    () => getLevelInfo(user?.level || 'BRONCE'),
+    [user?.level]
+  )
+
+  // Memoize random tip to prevent re-selection on each render
+  const randomTip = useMemo(
+    () => TIPS[Math.floor(Math.random() * TIPS.length)],
+    [] // Empty deps - only calculate once on mount
+  )
+
+  // Calculate protection score - memoized
+  const protectionScore = useMemo(
+    () => Math.min(100, (activePolicies * 20) + (user?.points ? Math.min(20, user.points / 50) : 0)),
+    [activePolicies, user?.points]
+  )
+
+  // Memoized callback for opening chat
+  const handleOpenChat = useCallback(() => {
+    openChat()
+  }, [openChat])
+
+  // Memoized callback for viewing policy
+  const handleViewPolicy = useCallback((policyId: string) => {
+    console.log('View policy:', policyId)
+  }, [])
+
+  // Memoized callback for quiz completion
+  const handleQuizComplete = useCallback((score: number, xpEarned: number, coinsEarned: number) => {
+    console.log('Quiz completed:', { score, xpEarned, coinsEarned })
+    // Here you can update the global state with earned points
+  }, [])
 
   return (
     <div className="space-y-6 md:space-y-8">
