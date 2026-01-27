@@ -18,6 +18,7 @@ import { formatCurrency, formatDateShort, cn } from '@/lib/utils'
 import { CircularProgress } from '@/components/ui/Progress'
 import { Badge, LevelBadge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
+import { useCoverageAnalysis } from '@/hooks/useCoverageAnalysis'
 
 // Gamification widgets
 import { WalletSummary } from '@/components/gamification/WalletSummary'
@@ -128,6 +129,9 @@ export default function DashboardPage() {
   const { user, policies, claims, messages, notifications, openChat } = useStore()
   const [greeting, setGreeting] = useState('Buenos días')
   const [currentTime, setCurrentTime] = useState(new Date())
+
+  // Usar el motor de análisis de cobertura
+  const { analysis: coverageAnalysis, loading: coverageLoading } = useCoverageAnalysis(user?.id)
 
   useEffect(() => {
     const hour = new Date().getHours()
@@ -362,173 +366,166 @@ export default function DashboardPage() {
 
       {/* Protection Score + Active Claim Row */}
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Coverage Gap Analysis Widget */}
+        {/* Coverage Gap Analysis Widget - POWERED BY MOTOR */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
           <Card variant="gradient" className="p-6 h-full">
-            {(() => {
-              // Calculate coverage gaps
-              const essentialPolicies = [
-                {
-                  type: 'hogar',
-                  label: 'Hogar',
-                  covered: policies.some(p => p.type === 'hogar'),
-                  risk: 'Daños estructurales pueden costar más de 50.000€',
-                  priority: 'Alta'
-                },
-                {
-                  type: 'auto',
-                  label: 'Auto',
-                  covered: policies.some(p => p.type === 'auto'),
-                  risk: 'Sin cobertura legal obligatoria - Multas desde 3.000€',
-                  priority: 'Crítica'
-                },
-                {
-                  type: 'salud',
-                  label: 'Salud',
-                  covered: policies.some(p => p.type === 'salud'),
-                  risk: 'Tratamientos médicos privados pueden superar 15.000€',
-                  priority: 'Alta'
-                },
-                {
-                  type: 'vida',
-                  label: 'Vida',
-                  covered: policies.some(p => p.type === 'vida'),
-                  risk: 'Sin protección financiera para tu familia',
-                  priority: 'Media'
-                },
-              ]
+            {coverageLoading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              </div>
+            ) : coverageAnalysis ? (
+              <>
+                <div className="flex items-start justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                      Análisis de Cobertura <span className="text-xs text-slate-500">(IA)</span>
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      {coverageAnalysis.gapPercentage === 0
+                        ? 'Todas las coberturas esenciales activas'
+                        : `Te faltan ${coverageAnalysis.missingPolicies} de ${coverageAnalysis.totalEssentialPolicies} coberturas esenciales`
+                      }
+                    </p>
+                  </div>
+                  <Badge variant={
+                    coverageAnalysis.riskLevel === 'CRITICO' ? 'error' :
+                    coverageAnalysis.riskLevel === 'ALTO' ? 'error' :
+                    coverageAnalysis.riskLevel === 'MEDIO' ? 'warning' :
+                    'success'
+                  }>
+                    {coverageAnalysis.riskLevel === 'CRITICO' ? 'Alto Riesgo' :
+                     coverageAnalysis.riskLevel === 'ALTO' ? 'Riesgo Alto' :
+                     coverageAnalysis.riskLevel === 'MEDIO' ? 'Riesgo Medio' :
+                     'Bien Protegido'}
+                  </Badge>
+                </div>
 
-              const coveredCount = essentialPolicies.filter(p => p.covered).length
-              const totalCount = essentialPolicies.length
-              const coveragePercentage = Math.round((coveredCount / totalCount) * 100)
-              const gapPercentage = 100 - coveragePercentage
-              const missingPolicies = essentialPolicies.filter(p => !p.covered)
-
-              // Determine risk level badge
-              const getRiskBadge = () => {
-                if (gapPercentage === 0) return { variant: 'success' as const, label: 'Bien Protegido' }
-                if (gapPercentage >= 75) return { variant: 'error' as const, label: 'Alto Riesgo' }
-                if (gapPercentage >= 50) return { variant: 'warning' as const, label: 'Riesgo Medio' }
-                if (gapPercentage >= 25) return { variant: 'warning' as const, label: 'Revisar Coberturas' }
-                return { variant: 'success' as const, label: 'Baja Exposición' }
-              }
-
-              const riskBadge = getRiskBadge()
-
-              return (
-                <>
-                  <div className="flex items-start justify-between mb-6">
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">Análisis de Cobertura</h3>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
-                        {gapPercentage === 0
-                          ? 'Todas las coberturas esenciales activas'
-                          : `Te faltan ${missingPolicies.length} de ${totalCount} coberturas esenciales`
-                        }
-                      </p>
+                <div className="flex items-center gap-8">
+                  {/* Show GAP percentage in circular progress */}
+                  <div className="relative">
+                    <CircularProgress
+                      value={coverageAnalysis.gapPercentage}
+                      size="xl"
+                      strokeWidth={8}
+                      variant={
+                        coverageAnalysis.gapPercentage >= 50 ? 'error' :
+                        coverageAnalysis.gapPercentage >= 25 ? 'warning' :
+                        'success'
+                      }
+                    />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-2xl font-bold text-slate-900 dark:text-white">
+                        {coverageAnalysis.gapPercentage}%
+                      </span>
+                      <span className="text-xs text-slate-600 dark:text-slate-400">
+                        {coverageAnalysis.gapPercentage === 0 ? 'Cubierto' : 'Descubierto'}
+                      </span>
                     </div>
-                    <Badge variant={riskBadge.variant}>{riskBadge.label}</Badge>
                   </div>
 
-                  <div className="flex items-center gap-8">
-                    {/* Show GAP percentage in circular progress */}
-                    <div className="relative">
-                      <CircularProgress
-                        value={gapPercentage}
-                        size="xl"
-                        strokeWidth={8}
-                        variant={gapPercentage >= 50 ? 'error' : gapPercentage >= 25 ? 'warning' : 'success'}
-                      />
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-2xl font-bold text-slate-900 dark:text-white">{gapPercentage}%</span>
-                        <span className="text-xs text-slate-600 dark:text-slate-400">
-                          {gapPercentage === 0 ? 'Cubierto' : 'Descubierto'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex-1 space-y-3">
-                      {essentialPolicies.map((item) => (
-                        <div key={item.label}>
-                          <div className="flex items-center justify-between text-sm mb-1">
-                            <div className="flex items-center gap-2">
-                              {!item.covered && (
-                                <span className="text-red-500" title={`Prioridad ${item.priority}`}>⚠️</span>
-                              )}
-                              <span className={cn(
-                                'font-medium',
-                                item.covered ? 'text-slate-600 dark:text-slate-400' : 'text-slate-900 dark:text-white'
-                              )}>
-                                {item.label}
-                              </span>
-                            </div>
+                  <div className="flex-1 space-y-3 max-h-64 overflow-y-auto">
+                    {coverageAnalysis.recommendations.map((rec) => (
+                      <div key={rec.policyType}>
+                        <div className="flex items-center justify-between text-sm mb-1">
+                          <div className="flex items-center gap-2">
+                            {!rec.isCurrentlyCovered && (
+                              <span className="text-red-500" title={`Prioridad ${rec.priority}`}>⚠️</span>
+                            )}
                             <span className={cn(
-                              'font-medium text-xs',
-                              item.covered
-                                ? 'text-emerald-600 dark:text-emerald-400'
-                                : 'text-red-600 dark:text-red-400'
+                              'font-medium',
+                              rec.isCurrentlyCovered ? 'text-slate-600 dark:text-slate-400' : 'text-slate-900 dark:text-white'
                             )}>
-                              {item.covered ? '✓ Cubierto' : `✗ Sin cobertura - ${item.priority}`}
+                              {rec.policyType}
                             </span>
                           </div>
-
-                          {/* Show risk message for uncovered policies */}
-                          {!item.covered && (
-                            <div className="mb-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                              <p className="text-xs text-red-700 dark:text-red-300">
-                                {item.risk}
-                              </p>
-                            </div>
-                          )}
-
-                          <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: item.covered ? '100%' : '0%' }}
-                              transition={{ delay: 0.5, duration: 0.5 }}
-                              className={cn(
-                                'h-full rounded-full',
-                                item.covered
-                                  ? 'bg-emerald-500'
-                                  : 'bg-red-300 dark:bg-red-700'
-                              )}
-                            />
-                          </div>
+                          <span className={cn(
+                            'font-medium text-xs',
+                            rec.isCurrentlyCovered
+                              ? 'text-emerald-600 dark:text-emerald-400'
+                              : 'text-red-600 dark:text-red-400'
+                          )}>
+                            {rec.isCurrentlyCovered ? '✓ Cubierto' : `✗ ${rec.priority}`}
+                          </span>
                         </div>
-                      ))}
-                    </div>
+
+                        {/* Show personalized risk message for uncovered policies */}
+                        {!rec.isCurrentlyCovered && (
+                          <div className="mb-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                            <p className="text-xs font-medium text-red-700 dark:text-red-300 mb-1">
+                              {rec.mainReason}
+                            </p>
+                            <p className="text-xs text-red-600 dark:text-red-400">
+                              {rec.riskDescription}
+                            </p>
+                            {rec.financialImpact && (
+                              <p className="text-xs text-red-600 dark:text-red-400 mt-1 font-semibold">
+                                💰 {rec.financialImpact}
+                              </p>
+                            )}
+                            {rec.legalImpact && (
+                              <p className="text-xs text-red-700 dark:text-red-300 mt-1 font-semibold">
+                                ⚖️ {rec.legalImpact}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: rec.isCurrentlyCovered ? '100%' : '0%' }}
+                            transition={{ delay: 0.5, duration: 0.5 }}
+                            className={cn(
+                              'h-full rounded-full',
+                              rec.isCurrentlyCovered
+                                ? 'bg-emerald-500'
+                                : 'bg-red-300 dark:bg-red-700'
+                            )}
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
+                </div>
 
-                  {/* Always show button if there are gaps */}
-                  {gapPercentage > 0 && (
-                    <Link href="/polizas">
-                      <button type="button" className={cn(
-                        'mt-6 w-full py-3 rounded-xl text-white font-semibold transition-all flex items-center justify-center gap-2',
-                        gapPercentage >= 50
-                          ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
-                          : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700'
-                      )}>
-                        <Shield className="w-4 h-4" />
-                        {gapPercentage >= 50 ? 'Reducir riesgo urgentemente' : 'Completar protección'}
-                      </button>
-                    </Link>
-                  )}
+                {/* Always show button if there are gaps */}
+                {coverageAnalysis.gapPercentage > 0 && (
+                  <Link href="/perfil-riesgo">
+                    <button type="button" className={cn(
+                      'mt-6 w-full py-3 rounded-xl text-white font-semibold transition-all flex items-center justify-center gap-2',
+                      coverageAnalysis.gapPercentage >= 50
+                        ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
+                        : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700'
+                    )}>
+                      <Shield className="w-4 h-4" />
+                      {coverageAnalysis.riskLevel === 'CRITICO' || coverageAnalysis.gapPercentage >= 50
+                        ? 'Reducir riesgo urgentemente'
+                        : 'Completar protección'}
+                    </button>
+                  </Link>
+                )}
 
-                  {/* If fully covered, show congratulations */}
-                  {gapPercentage === 0 && (
-                    <div className="mt-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
-                      <p className="text-sm text-emerald-700 dark:text-emerald-300 text-center font-medium">
-                        ✅ Excelente - Todas tus coberturas esenciales están activas
-                      </p>
-                    </div>
-                  )}
-                </>
-              )
-            })()}
+                {/* If fully covered, show congratulations */}
+                {coverageAnalysis.gapPercentage === 0 && (
+                  <div className="mt-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+                    <p className="text-sm text-emerald-700 dark:text-emerald-300 text-center font-medium">
+                      ✅ Excelente - Todas tus coberturas esenciales están activas
+                    </p>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 text-center mt-1">
+                      Score de protección: {coverageAnalysis.overallScore}/100
+                    </p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center text-slate-500 dark:text-slate-400 py-8">
+                Error al cargar el análisis de cobertura
+              </div>
+            )}
           </Card>
         </motion.div>
 

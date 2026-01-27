@@ -89,6 +89,9 @@ model User {
   // Chat AI
   conversations  Conversation[]
 
+  // Segmentation & Coverage Analysis
+  segment        UserSegment?
+
   @@index([email])
   @@index([role])
   @@index([referralCode])
@@ -1018,4 +1021,233 @@ model Lead {
   @@index([createdAt])
   @@index([email])
   @@map("leads")
+}
+
+// ========================================
+// MOTOR DE SEGMENTACION Y RECOMENDACION
+// ========================================
+
+enum MaritalStatus {
+  SOLTERO
+  CASADO
+  PAREJA_DE_HECHO
+  DIVORCIADO
+  VIUDO
+}
+
+enum EmploymentStatus {
+  EMPLEADO_CUENTA_AJENA
+  AUTONOMO
+  FUNCIONARIO
+  DIRECTIVO
+  DESEMPLEADO
+  JUBILADO
+  ESTUDIANTE
+  AMA_DE_CASA
+}
+
+enum HousingStatus {
+  VIVIENDA_PROPIA_SIN_HIPOTECA
+  VIVIENDA_PROPIA_CON_HIPOTECA
+  ALQUILER
+  FAMILIAR
+  OTROS
+}
+
+enum VehicleOwnership {
+  PROPIO
+  RENTING
+  LEASING
+  EMPRESA
+  NINGUNO
+}
+
+enum IncomeLevel {
+  MENOS_1000
+  ENTRE_1000_2000
+  ENTRE_2000_3000
+  ENTRE_3000_5000
+  ENTRE_5000_7000
+  MAS_7000
+}
+
+enum RiskTolerance {
+  MUY_BAJO
+  BAJO
+  MEDIO
+  ALTO
+  MUY_ALTO
+}
+
+enum PolicyPriority {
+  NO_NECESARIA
+  BAJA
+  MEDIA
+  ALTA
+  CRITICA
+}
+
+// Perfil completo de segmentación del usuario
+model UserSegment {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // ===== DEMOGRAFICAS =====
+  age                Int?
+  gender             String?           // HOMBRE, MUJER, OTRO, PREFIERO_NO_DECIR
+  maritalStatus      MaritalStatus?
+  hasChildren        Boolean           @default(false)
+  numberOfChildren   Int               @default(0)
+  childrenAges       String?           // JSON array: [2, 5, 8]
+  hasDependents      Boolean           @default(false)  // Padres mayores, familiares a cargo
+
+  // ===== LABORALES =====
+  employmentStatus   EmploymentStatus?
+  occupation         String?           // Profesor, Ingeniero, Médico, etc.
+  companySector      String?           // Tecnología, Construcción, Educación, etc.
+  yearsInCurrentJob  Int?
+  monthlyIncome      IncomeLevel?
+  hasSecondIncome    Boolean           @default(false)
+  secondIncomeAmount Int?              // En euros
+
+  // ===== PATRIMONIO =====
+  housingStatus      HousingStatus?
+  homeValue          Int?              // Valor de la vivienda en euros
+  hasMortgage        Boolean           @default(false)
+  mortgageAmount     Int?              // Cantidad pendiente de hipoteca
+  mortgageMonthly    Int?              // Pago mensual de hipoteca
+
+  vehicleOwnership   VehicleOwnership  @default(NINGUNO)
+  hasVehicle         Boolean           @default(false)
+  vehicleValue       Int?              // Valor del vehículo
+  vehicleType        String?           // Coche, Moto, Furgoneta
+  vehicleYear        Int?
+  vehicleUse         String?           // TRABAJO, PERSONAL, MIXTO
+
+  // ===== FINANCIERO =====
+  hasSavings         Boolean           @default(false)
+  savingsAmount      Int?              // Fondo de emergencia en euros
+  hasDebts           Boolean           @default(false)
+  totalDebts         Int?              // Deudas totales (tarjetas, préstamos)
+  monthlyExpenses    Int?              // Gastos mensuales estimados
+  riskTolerance      RiskTolerance?
+
+  // ===== ESTILO DE VIDA =====
+  travelFrequency    Int               @default(0)  // Viajes internacionales al año
+  practicesSports    Boolean           @default(false)
+  sportsType         String?           // BAJO_RIESGO, MEDIO_RIESGO, ALTO_RIESGO
+  hasPets            Boolean           @default(false)
+  numberOfPets       Int               @default(0)
+  petTypes           String?           // JSON array: ["perro", "gato"]
+
+  // ===== SALUD =====
+  hasHealthConditions      Boolean     @default(false)
+  healthConditionTypes     String?     // JSON array: ["diabetes", "hipertension"]
+  takesRegularMedication   Boolean     @default(false)
+  visitsHospitalFrequently Boolean     @default(false)
+  hasPublicHealthcare      Boolean     @default(true)
+  hasPrivateHealthcare     Boolean     @default(false)
+
+  // ===== PREFERENCIAS DE COBERTURA =====
+  priorityHome        Boolean          @default(false)  // Usuario marca como prioritario
+  priorityAuto        Boolean          @default(false)
+  priorityHealth      Boolean          @default(false)
+  priorityLife        Boolean          @default(false)
+  priorityDecesos     Boolean          @default(false)
+
+  // ===== COMPORTAMIENTO =====
+  lastPolicyReview    DateTime?        // Última vez que revisó sus pólizas
+  openToNewPolicies   Boolean          @default(true)
+  preferredContact    String?          // EMAIL, PHONE, WHATSAPP
+  bestContactTime     String?          // MANANA, TARDE, NOCHE
+
+  // ===== TRACKING =====
+  profileCompleteness Int              @default(0)  // % de perfil completado (0-100)
+  lastUpdated         DateTime         @default(now()) @updatedAt
+  createdAt           DateTime         @default(now())
+
+  // Relaciones
+  recommendations     PolicyRecommendation[]
+
+  @@index([userId])
+  @@index([employmentStatus])
+  @@index([housingStatus])
+  @@index([monthlyIncome])
+  @@map("user_segments")
+}
+
+// Recomendaciones personalizadas de pólizas
+model PolicyRecommendation {
+  id              String         @id @default(cuid())
+  userId          String
+  userSegmentId   String
+  userSegment     UserSegment    @relation(fields: [userSegmentId], references: [id], onDelete: Cascade)
+
+  // Identificación de la póliza
+  policyType      InsuranceType  // AUTO, HOGAR, SALUD, VIDA, etc.
+
+  // Análisis de necesidad
+  priority        PolicyPriority @default(MEDIA)
+  priorityScore   Int            @default(50)  // 0-100
+  isCurrentlyCovered Boolean     @default(false)
+
+  // Razones y mensajes personalizados
+  mainReason      String         @db.Text  // "Tienes una hipoteca de 150.000€"
+  riskDescription String         @db.Text  // "Sin seguro, tu familia debe asumir la hipoteca"
+  financialImpact String?        @db.Text  // "Hasta 150.000€ de riesgo financiero"
+  legalImpact     String?        @db.Text  // "Multas desde 3.000€ por circular sin seguro"
+
+  // Recomendación específica
+  recommendedCoverage String?    @db.Text  // "Cobertura mínima de 200.000€"
+  estimatedPremium    Int?                 // Prima estimada mensual en euros
+
+  // Cálculo del motor
+  calculationFactors  String     @db.Text  // JSON con factores que influyeron
+  confidenceScore     Int        @default(70)  // Confianza en la recomendación (0-100)
+
+  // Seguimiento
+  userViewed      Boolean        @default(false)
+  userDismissed   Boolean        @default(false)
+  dismissReason   String?
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  expiresAt       DateTime?      // Recomendación válida hasta
+
+  @@index([userId])
+  @@index([policyType])
+  @@index([priority])
+  @@index([isCurrentlyCovered])
+  @@index([createdAt])
+  @@map("policy_recommendations")
+}
+
+// Reglas de negocio para el motor de recomendación
+model CoverageRule {
+  id          String         @id @default(cuid())
+  name        String         // "Hipoteca -> Vida CRITICA"
+  description String         @db.Text
+
+  // Condiciones (JSON con lógica)
+  conditions  String         @db.Text  // {"hasMortgage": true, "hasChildren": true}
+
+  // Resultado
+  policyType  InsuranceType
+  priority    PolicyPriority
+  priorityBoost Int          @default(0)  // Puntos adicionales de prioridad
+
+  // Mensaje personalizado
+  messageTemplate String     @db.Text  // "Con una hipoteca de {mortgageAmount}€..."
+
+  // Gestión
+  isActive    Boolean        @default(true)
+  weight      Int            @default(100)  // Peso de la regla (0-100)
+
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([policyType])
+  @@index([isActive])
+  @@map("coverage_rules")
 }
