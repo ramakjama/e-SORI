@@ -1,18 +1,23 @@
 import { type NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
+import EmailProvider from 'next-auth/providers/email'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { UserRole, UserLevel } from '@prisma/client'
+import { Resend } from 'resend'
 
 // =====================================================
 // CONSTANTES DE SEGURIDAD
 // =====================================================
-const VALID_ROLES: UserRole[] = ['USER', 'AGENT', 'ADMIN']
+const VALID_ROLES: UserRole[] = ['CLIENTE', 'EMPLEADO', 'ADMIN']
 const VALID_LEVELS: UserLevel[] = ['BRONCE', 'PLATA', 'ORO', 'PLATINO']
 const SESSION_MAX_AGE = 30 * 24 * 60 * 60 // 30 dias
 const SESSION_UPDATE_AGE = 24 * 60 * 60 // Refrescar token cada 24 horas
+
+// Initialize Resend for email provider
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 // =====================================================
 // FUNCIONES DE VALIDACION DE ROLES Y TOKENS
@@ -68,9 +73,10 @@ function validateTokenStructure(token: Record<string, unknown>): boolean {
 function sanitizeUserForToken(user: Record<string, unknown>) {
   return {
     id: String(user.id || ''),
-    role: isValidRole(user.role) ? user.role : 'USER' as UserRole,
+    role: isValidRole(user.role) ? user.role : 'CLIENTE' as UserRole,
     level: isValidLevel(user.level) ? user.level : 'BRONCE' as UserLevel,
     points: typeof user.points === 'number' && user.points >= 0 ? user.points : 0,
+    referralCode: typeof user.referralCode === 'string' ? user.referralCode : null,
   }
 }
 
@@ -97,12 +103,63 @@ async function verifyUserIsActive(userId: string): Promise<boolean> {
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as any,
   providers: [
-    // Google OAuth (opcional)
+    // Google OAuth
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
       ? [
           GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          }),
+        ]
+      : []),
+    // Email (Magic Link with Resend)
+    ...(resend
+      ? [
+          EmailProvider({
+            server: '', // Not needed with custom sendVerificationRequest
+            from: process.env.EMAIL_FROM || 'noreply@soriano.com',
+            sendVerificationRequest: async ({ identifier: email, url }) => {
+              try {
+                await resend!.emails.send({
+                  from: process.env.EMAIL_FROM || 'noreply@soriano.com',
+                  to: email,
+                  subject: 'Inicia sesión en Soriano e-Cliente',
+                  html: `
+                    <!DOCTYPE html>
+                    <html>
+                      <head>
+                        <meta charset="utf-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                      </head>
+                      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+                          <h1 style="color: white; margin: 0; font-size: 28px;">Soriano e-Cliente</h1>
+                        </div>
+                        <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                          <h2 style="color: #667eea; margin-top: 0;">Inicia sesión en tu cuenta</h2>
+                          <p style="font-size: 16px; margin-bottom: 25px;">Haz clic en el botón de abajo para iniciar sesión en tu cuenta de Soriano e-Cliente:</p>
+                          <div style="text-align: center; margin: 30px 0;">
+                            <a href="${url}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">Iniciar Sesión</a>
+                          </div>
+                          <p style="font-size: 14px; color: #666; margin-top: 30px;">
+                            Si no solicitaste este enlace, puedes ignorar este correo de forma segura.
+                          </p>
+                          <p style="font-size: 14px; color: #666;">
+                            Este enlace expirará en 24 horas por motivos de seguridad.
+                          </p>
+                        </div>
+                        <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
+                          <p>&copy; ${new Date().getFullYear()} Soriano Mediadores de Seguros. Todos los derechos reservados.</p>
+                        </div>
+                      </body>
+                    </html>
+                  `,
+                })
+              } catch (error) {
+                console.error('[Auth] Error sending magic link email:', error)
+                throw new Error('No se pudo enviar el correo de inicio de sesión')
+              }
+            },
           }),
         ]
       : []),
@@ -166,6 +223,7 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
           level: user.level,
           points: user.points,
+          referralCode: user.referralCode,
         }
       },
     }),
@@ -188,6 +246,7 @@ export const authOptions: NextAuthOptions = {
         token.role = sanitized.role
         token.level = sanitized.level
         token.points = sanitized.points
+        token.referralCode = sanitized.referralCode
         token.lastVerified = Date.now()
       }
 
@@ -247,6 +306,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as UserRole
         session.user.level = token.level as UserLevel
         session.user.points = token.points as number
+        session.user.referralCode = token.referralCode as string | null
       }
       return session
     },
@@ -293,8 +353,8 @@ export const authOptions: NextAuthOptions = {
  */
 export function hasRole(userRole: UserRole, requiredRole: UserRole): boolean {
   const roleHierarchy: Record<UserRole, number> = {
-    USER: 1,
-    AGENT: 2,
+    CLIENTE: 1,
+    EMPLEADO: 2,
     ADMIN: 3,
   }
   return roleHierarchy[userRole] >= roleHierarchy[requiredRole]
@@ -302,7 +362,7 @@ export function hasRole(userRole: UserRole, requiredRole: UserRole): boolean {
 
 /**
  * Verifica si el usuario puede acceder a datos de otro usuario
- * Admins pueden ver todo, Agents pueden ver usuarios, Users solo a si mismos
+ * Admins pueden ver todo, Empleados pueden ver usuarios, Clientes solo a si mismos
  */
 export function canAccessUserData(
   currentUserId: string,
@@ -310,7 +370,7 @@ export function canAccessUserData(
   targetUserId: string
 ): boolean {
   if (currentUserRole === 'ADMIN') return true
-  if (currentUserRole === 'AGENT') return true
+  if (currentUserRole === 'EMPLEADO') return true
   return currentUserId === targetUserId
 }
 
@@ -318,10 +378,10 @@ export function canAccessUserData(
  * Lista de roles permitidos para acciones especificas
  */
 export const rolePermissions = {
-  viewAllUsers: ['ADMIN', 'AGENT'] as UserRole[],
+  viewAllUsers: ['ADMIN', 'EMPLEADO'] as UserRole[],
   editAnyUser: ['ADMIN'] as UserRole[],
-  viewAllPolicies: ['ADMIN', 'AGENT'] as UserRole[],
-  viewAllClaims: ['ADMIN', 'AGENT'] as UserRole[],
-  manageClaims: ['ADMIN', 'AGENT'] as UserRole[],
+  viewAllPolicies: ['ADMIN', 'EMPLEADO'] as UserRole[],
+  viewAllClaims: ['ADMIN', 'EMPLEADO'] as UserRole[],
+  manageClaims: ['ADMIN', 'EMPLEADO'] as UserRole[],
   systemSettings: ['ADMIN'] as UserRole[],
 } as const

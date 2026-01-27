@@ -1,22 +1,65 @@
+import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 
-// DEMO_MODE = true para saltar autenticación y acceder directo al dashboard
-const DEMO_MODE = true
+export default withAuth(
+  function middleware(req) {
+    const { pathname } = req.nextUrl
+    const token = req.nextauth.token
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-
-  // En DEMO_MODE, redirigir login al dashboard directamente
-  if (DEMO_MODE) {
-    if (pathname === '/login' || pathname === '/login-cliente' || pathname === '/login-empleado') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+    // Redirect root to appropriate page based on authentication
+    if (pathname === '/') {
+      if (token) {
+        return NextResponse.redirect(new URL('/dashboard', req.url))
+      } else {
+        return NextResponse.redirect(new URL('/login', req.url))
+      }
     }
-  }
 
-  return NextResponse.next()
-}
+    // Allow authenticated users to access protected routes
+    return NextResponse.next()
+  },
+  {
+    callbacks: {
+      authorized: ({ req, token }) => {
+        const { pathname } = req.nextUrl
+
+        // Public routes - always allow
+        if (
+          pathname === '/login' ||
+          pathname === '/login-cliente' ||
+          pathname === '/login-empleado' ||
+          pathname.startsWith('/api/auth/')
+        ) {
+          return true
+        }
+
+        // Root route - allow (will be handled by middleware function above)
+        if (pathname === '/') {
+          return true
+        }
+
+        // Protected dashboard routes - require authentication
+        if (pathname.startsWith('/dashboard')) {
+          return !!token
+        }
+
+        // All other routes are public by default
+        return true
+      },
+    },
+    pages: {
+      signIn: '/login',
+      error: '/login',
+    },
+  }
+)
 
 export const config = {
-  matcher: ['/login', '/login-cliente', '/login-empleado'],
+  matcher: [
+    '/',
+    '/dashboard/:path*',
+    '/login',
+    '/login-cliente',
+    '/login-empleado',
+  ],
 }

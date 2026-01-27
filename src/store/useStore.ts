@@ -26,6 +26,7 @@ export interface User {
   badges: Badge[]
   referralCode: string
   referralsCount: number
+  role?: UserRole
 }
 
 export interface Policy {
@@ -93,7 +94,7 @@ export interface Notification {
   read: boolean
 }
 
-export type UserRole = 'CLIENTE' | 'EMPLEADO'
+export type UserRole = 'CLIENTE' | 'EMPLEADO' | 'ADMIN'
 
 interface AppState {
   user: User | null

@@ -7,7 +7,7 @@ import {
   LayoutDashboard, FileText, AlertTriangle, FolderOpen, FolderArchive,
   User, MessageSquare, CreditCard, LogOut,
   ChevronLeft, Phone, Trophy, Gift, Star, Receipt,
-  Gamepad2, Target, Users, Award, ShoppingBag
+  Gamepad2, Target, Users, Award, ShoppingBag, BarChart3
 } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import { cn } from '@/lib/utils'
@@ -182,6 +182,37 @@ export function Sidebar() {
               </Link>
             )
           })}
+
+          {/* Admin Section */}
+          {user?.role === 'ADMIN' && (
+            <>
+              {sidebarOpen && (
+                <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
+                  <p className="text-xs font-semibold uppercase tracking-wider mb-2 px-3" style={{ color: 'var(--color-text-tertiary)' }}>
+                    Administración
+                  </p>
+                  <Link
+                    href="/analytics"
+                    className={cn('sidebar-link', pathname === '/analytics' && 'active')}
+                  >
+                    <BarChart3 className="w-5 h-5 flex-shrink-0" />
+                    <span className="whitespace-nowrap overflow-hidden">Análisis</span>
+                  </Link>
+                </div>
+              )}
+              {!sidebarOpen && (
+                <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
+                  <Link
+                    href="/analytics"
+                    className={cn('sidebar-link', pathname === '/analytics' && 'active')}
+                    title="Análisis"
+                  >
+                    <BarChart3 className="w-5 h-5 flex-shrink-0" />
+                  </Link>
+                </div>
+              )}
+            </>
+          )}
 
           {/* Gamification Section */}
           {sidebarOpen && (

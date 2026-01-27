@@ -9,6 +9,8 @@ import { BottomNav } from '@/components/ui/BottomNav'
 import { GlobalSearch } from '@/components/ui/GlobalSearch'
 import { useStore } from '@/store/useStore'
 import { cn } from '@/lib/utils'
+import { useNotifications } from '@/hooks/useNotifications'
+import { useGamificationToasts, GamificationToastContainer } from '@/components/gamification/GamificationToast'
 
 export default function DashboardLayout({
   children,
@@ -20,6 +22,23 @@ export default function DashboardLayout({
   const [loadingProgress, setLoadingProgress] = useState(0)
 
   const unreadMessages = messages.filter((m) => !m.read).length
+
+  // Gamification toast system
+  const { toasts, showToast, dismissToast } = useGamificationToasts()
+
+  // Real-time notifications via SSE
+  useNotifications({
+    userId: user?.id || 'guest',
+    onNotification: (notification) => {
+      showToast({
+        type: notification.type,
+        title: notification.title,
+        description: notification.description,
+        value: notification.value,
+      })
+    },
+    autoReconnect: true,
+  })
 
   useEffect(() => {
     // Animate loading progress
@@ -259,6 +278,9 @@ export default function DashboardLayout({
 
       {/* SORI Chat Widget */}
       <SoriChatWidget />
+
+      {/* Gamification Toast Container */}
+      <GamificationToastContainer toasts={toasts} dismissToast={dismissToast} />
     </div>
   )
 }
