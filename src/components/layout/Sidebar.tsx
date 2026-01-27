@@ -18,6 +18,7 @@ const menuItems = [
   { name: 'Recibos', href: '/recibos', icon: Receipt },
   { name: 'Siniestros', href: '/siniestros', icon: AlertTriangle },
   { name: 'Documentos', href: '/documentos', icon: FolderOpen },
+  { name: 'Mi Archivo', href: '/mi-archivo', icon: FolderArchive },
   { name: 'Mensajes', href: '/mensajes', icon: MessageSquare },
   { name: 'Pagos', href: '/pagos', icon: CreditCard },
   { name: 'Mi Perfil', href: '/perfil', icon: User },

@@ -10,22 +10,21 @@ const dniNieRegex = /^[0-9XYZ]\d{7}[A-Z]$/i
 const postalCodeRegex = /^\d{5}$/
 
 // =====================================================
-// FORMULARIO DE SINIESTROS
+// FORMULARIO DE SINIESTROS (ClaimSchema)
 // =====================================================
 export const claimFormSchema = z.object({
   // Datos del siniestro
   policyId: z
-    .string()
-    .min(1, 'Selecciona una poliza')
-    .uuid('ID de poliza invalido'),
+    .string({ required_error: 'Debes seleccionar una póliza' })
+    .min(1, 'Selecciona una póliza'),
 
   claimType: z.enum(
     ['accident', 'theft', 'damage', 'liability', 'health', 'other'],
-    { errorMap: () => ({ message: 'Selecciona un tipo de siniestro valido' }) }
+    { errorMap: () => ({ message: 'Selecciona un tipo de siniestro válido' }) }
   ),
 
   date: z
-    .string()
+    .string({ required_error: 'La fecha del incidente es obligatoria' })
     .min(1, 'La fecha es requerida')
     .refine((date) => {
       const claimDate = new Date(date)
@@ -33,34 +32,34 @@ export const claimFormSchema = z.object({
       const oneYearAgo = new Date()
       oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
       return claimDate <= today && claimDate >= oneYearAgo
-    }, 'La fecha debe estar dentro del ultimo ano'),
+    }, 'La fecha debe estar dentro del último año y no puede ser futura'),
 
   time: z
     .string()
-    .regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Hora invalida')
+    .regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Hora inválida (formato: HH:MM)')
     .optional(),
 
   location: z
-    .string()
-    .min(5, 'La ubicacion debe tener al menos 5 caracteres')
-    .max(200, 'La ubicacion no puede exceder 200 caracteres')
+    .string({ required_error: 'La ubicación del incidente es obligatoria' })
+    .min(5, 'La ubicación debe tener al menos 5 caracteres')
+    .max(200, 'La ubicación no puede exceder 200 caracteres')
     .transform((val) => val.trim()),
 
   description: z
-    .string()
-    .min(20, 'La descripcion debe tener al menos 20 caracteres')
-    .max(2000, 'La descripcion no puede exceder 2000 caracteres')
+    .string({ required_error: 'La descripción del incidente es obligatoria' })
+    .min(20, 'La descripción debe tener al menos 20 caracteres para proporcionar detalles suficientes')
+    .max(2000, 'La descripción no puede exceder 2000 caracteres')
     .transform((val) => val.trim()),
 
   // Datos de contacto
   contactPhone: z
     .string()
-    .regex(phoneRegex, 'Telefono invalido (ej: 612345678 o +34612345678)')
+    .regex(phoneRegex, 'Teléfono inválido (formato: 612345678 o +34612345678)')
     .optional(),
 
   contactEmail: z
     .string()
-    .email('Email invalido')
+    .email('El email proporcionado no es válido')
     .max(100, 'Email demasiado largo')
     .optional(),
 
@@ -69,52 +68,105 @@ export const claimFormSchema = z.object({
 
   thirdPartyInfo: z
     .string()
-    .max(500, 'Informacion de terceros demasiado larga')
+    .max(500, 'La información de terceros no puede exceder 500 caracteres')
     .optional(),
 
-  // Estimacion de danos
+  // Estimación de daños
   estimatedAmount: z
-    .number()
+    .number({
+      invalid_type_error: 'Debe ser un número válido'
+    })
     .min(0, 'El importe no puede ser negativo')
-    .max(10000000, 'Importe demasiado alto')
+    .max(10000000, 'El importe estimado es demasiado alto')
     .optional(),
 
   // Documentos adjuntos
   hasPhotos: z.boolean().default(false),
   hasPoliceReport: z.boolean().default(false),
-})
+
+  policeReportNumber: z
+    .string()
+    .max(50, 'El número de reporte policial es demasiado largo')
+    .optional()
+    .or(z.literal('')),
+
+  // Lesiones
+  injuries: z.boolean().default(false),
+
+  injuryDetails: z
+    .string()
+    .max(1000, 'Los detalles de lesiones no pueden exceder 1000 caracteres')
+    .optional()
+    .or(z.literal('')),
+
+  // Comentarios adicionales
+  additionalComments: z
+    .string()
+    .max(1000, 'Los comentarios adicionales no pueden exceder 1000 caracteres')
+    .optional()
+    .or(z.literal('')),
+}).refine(
+  (data) => {
+    // Si hay reporte policial, debe haber número
+    if (data.hasPoliceReport && !data.policeReportNumber) {
+      return false
+    }
+    return true
+  },
+  {
+    message: 'Si existe reporte policial, debes proporcionar el número de referencia',
+    path: ['policeReportNumber'],
+  }
+).refine(
+  (data) => {
+    // Si hay lesiones, debe haber detalles
+    if (data.injuries && !data.injuryDetails) {
+      return false
+    }
+    return true
+  },
+  {
+    message: 'Si hay lesiones, debes proporcionar los detalles',
+    path: ['injuryDetails'],
+  }
+)
 
 export type ClaimFormData = z.infer<typeof claimFormSchema>
 
+// Alias para compatibilidad con la API
+export const ClaimSchema = claimFormSchema
+
 // =====================================================
-// FORMULARIO DE PERFIL DE USUARIO
+// FORMULARIO DE PERFIL DE USUARIO (ProfileSchema)
 // =====================================================
 export const profileFormSchema = z.object({
   // Datos personales
   name: z
-    .string()
+    .string({ required_error: 'El nombre es obligatorio' })
     .min(2, 'El nombre debe tener al menos 2 caracteres')
     .max(100, 'El nombre no puede exceder 100 caracteres')
-    .regex(/^[a-zA-ZaeiouAEIOUn\s'-]+$/, 'El nombre contiene caracteres invalidos')
+    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]+$/, 'El nombre contiene caracteres no válidos')
     .transform((val) => val.trim()),
 
   surname: z
     .string()
     .min(2, 'Los apellidos deben tener al menos 2 caracteres')
     .max(100, 'Los apellidos no pueden exceder 100 caracteres')
-    .regex(/^[a-zA-ZaeiouAEIOUn\s'-]+$/, 'Los apellidos contienen caracteres invalidos')
+    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]+$/, 'Los apellidos contienen caracteres no válidos')
     .transform((val) => val.trim())
     .optional(),
 
   dni: z
     .string()
-    .regex(dniNieRegex, 'DNI/NIE invalido')
+    .regex(dniNieRegex, 'DNI/NIE no válido (formato: 12345678A o X1234567A)')
     .transform((val) => val.toUpperCase())
-    .optional(),
+    .optional()
+    .or(z.literal('')),
 
   birthDate: z
     .string()
     .refine((date) => {
+      if (!date) return true // Campo opcional
       const birth = new Date(date)
       const today = new Date()
       const minAge = new Date()
@@ -122,51 +174,64 @@ export const profileFormSchema = z.object({
       const maxAge = new Date()
       maxAge.setFullYear(maxAge.getFullYear() - 120)
       return birth <= minAge && birth >= maxAge
-    }, 'Debes ser mayor de 18 anos')
-    .optional(),
-
-  // Datos de contacto
-  email: z
-    .string()
-    .email('Email invalido')
-    .max(100, 'Email demasiado largo')
-    .transform((val) => val.toLowerCase().trim()),
-
-  phone: z
-    .string()
-    .regex(phoneRegex, 'Telefono invalido (ej: 612345678 o +34612345678)'),
-
-  alternativePhone: z
-    .string()
-    .regex(phoneRegex, 'Telefono alternativo invalido')
+    }, 'Debes ser mayor de 18 años para crear un perfil')
     .optional()
     .or(z.literal('')),
 
-  // Direccion
+  // Datos de contacto
+  email: z
+    .string({ required_error: 'El email es obligatorio' })
+    .email('El email proporcionado no es válido')
+    .max(100, 'El email no puede exceder 100 caracteres')
+    .transform((val) => val.toLowerCase().trim()),
+
+  phone: z
+    .string({ required_error: 'El teléfono es obligatorio' })
+    .regex(phoneRegex, 'Teléfono no válido (formato: 612345678 o +34612345678)'),
+
+  alternativePhone: z
+    .string()
+    .regex(phoneRegex, 'Teléfono alternativo no válido')
+    .optional()
+    .or(z.literal('')),
+
+  // Dirección
   address: z
     .string()
-    .min(5, 'La direccion debe tener al menos 5 caracteres')
-    .max(200, 'La direccion no puede exceder 200 caracteres')
-    .transform((val) => val.trim()),
+    .min(5, 'La dirección debe tener al menos 5 caracteres')
+    .max(200, 'La dirección no puede exceder 200 caracteres')
+    .transform((val) => val.trim())
+    .optional()
+    .or(z.literal('')),
 
   postalCode: z
     .string()
-    .regex(postalCodeRegex, 'Codigo postal invalido (5 digitos)'),
+    .regex(postalCodeRegex, 'Código postal no válido (debe tener 5 dígitos)')
+    .optional()
+    .or(z.literal('')),
 
   city: z
     .string()
     .min(2, 'La ciudad debe tener al menos 2 caracteres')
     .max(100, 'La ciudad no puede exceder 100 caracteres')
-    .transform((val) => val.trim()),
+    .transform((val) => val.trim())
+    .optional()
+    .or(z.literal('')),
 
   province: z
     .string()
     .min(2, 'La provincia debe tener al menos 2 caracteres')
     .max(50, 'La provincia no puede exceder 50 caracteres')
-    .transform((val) => val.trim()),
+    .transform((val) => val.trim())
+    .optional()
+    .or(z.literal('')),
 
-  // Preferencias de comunicacion
-  preferredContact: z.enum(['email', 'phone', 'sms', 'whatsapp']).default('email'),
+  // Preferencias de comunicación
+  preferredContact: z
+    .enum(['email', 'phone', 'sms', 'whatsapp'], {
+      errorMap: () => ({ message: 'Selecciona un método de contacto válido' })
+    })
+    .default('email'),
 
   marketingConsent: z.boolean().default(false),
   dataProcessingConsent: z.boolean().default(true),
@@ -174,67 +239,79 @@ export const profileFormSchema = z.object({
 
 export type ProfileFormData = z.infer<typeof profileFormSchema>
 
+// Alias para compatibilidad con la API
+export const ProfileSchema = profileFormSchema
+
 // =====================================================
-// FORMULARIO DE CONTACTO
+// FORMULARIO DE CONTACTO (ContactSchema)
 // =====================================================
 export const contactFormSchema = z.object({
   // Datos del remitente
   name: z
-    .string()
+    .string({ required_error: 'El nombre es obligatorio' })
     .min(2, 'El nombre debe tener al menos 2 caracteres')
     .max(100, 'El nombre no puede exceder 100 caracteres')
     .transform((val) => val.trim()),
 
   email: z
-    .string()
-    .email('Email invalido')
-    .max(100, 'Email demasiado largo')
+    .string({ required_error: 'El email es obligatorio' })
+    .email('El email proporcionado no es válido')
+    .max(100, 'El email no puede exceder 100 caracteres')
     .transform((val) => val.toLowerCase().trim()),
 
   phone: z
     .string()
-    .regex(phoneRegex, 'Telefono invalido')
+    .regex(phoneRegex, 'Teléfono no válido (formato: 612345678 o +34612345678)')
     .optional()
     .or(z.literal('')),
 
   // Mensaje
   subject: z.enum(
     ['info', 'quote', 'claim', 'complaint', 'suggestion', 'other'],
-    { errorMap: () => ({ message: 'Selecciona un asunto valido' }) }
+    { errorMap: () => ({ message: 'Selecciona un asunto válido' }) }
   ),
 
   message: z
-    .string()
-    .min(10, 'El mensaje debe tener al menos 10 caracteres')
+    .string({ required_error: 'El mensaje es obligatorio' })
+    .min(10, 'El mensaje debe tener al menos 10 caracteres para proporcionar detalles suficientes')
     .max(5000, 'El mensaje no puede exceder 5000 caracteres')
     .transform((val) => val.trim()),
 
   // Preferencia de respuesta
-  preferredResponse: z.enum(['email', 'phone']).default('email'),
+  preferredResponse: z
+    .enum(['email', 'phone'], {
+      errorMap: () => ({ message: 'Selecciona un método de respuesta válido' })
+    })
+    .default('email'),
 
   // Horario preferido para llamadas
   preferredCallTime: z
-    .enum(['morning', 'afternoon', 'evening', 'any'])
+    .enum(['morning', 'afternoon', 'evening', 'any'], {
+      errorMap: () => ({ message: 'Selecciona un horario válido' })
+    })
     .default('any')
     .optional(),
 
   // Consentimientos
   privacyConsent: z
-    .boolean()
-    .refine((val) => val === true, 'Debes aceptar la politica de privacidad'),
+    .boolean({ required_error: 'Debes aceptar la política de privacidad' })
+    .refine((val) => val === true, 'Debes aceptar la política de privacidad para continuar'),
 
   // Urgencia
   isUrgent: z.boolean().default(false),
 
-  // Numero de poliza (opcional, para clientes)
+  // Número de póliza (opcional, para clientes)
   policyNumber: z
     .string()
-    .max(50, 'Numero de poliza demasiado largo')
+    .max(50, 'El número de póliza no puede exceder 50 caracteres')
     .optional()
     .or(z.literal('')),
 })
 
 export type ContactFormData = z.infer<typeof contactFormSchema>
+
+// Alias para compatibilidad con la API
+export const ContactSchema = contactFormSchema
 
 // =====================================================
 // FORMULARIO DE LOGIN

@@ -6,7 +6,7 @@ import { z } from 'zod'
 import {
   User, Mail, Phone, MapPin, Save, Camera, Briefcase,
   Users, CreditCard, GraduationCap, Share2, Car, Home,
-  Check, AlertCircle, ChevronRight
+  Check, AlertCircle, ChevronRight, Heart, Clock, Shield
 } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import { Tabs, TabList, Tab, TabPanels, TabPanel } from '@/components/ui/Tabs'
@@ -14,49 +14,63 @@ import toast from 'react-hot-toast'
 import { cn } from '@/lib/utils'
 
 // ============================================
-// ZOD SCHEMAS
+// ZOD VALIDATION SCHEMAS
 // ============================================
 
 const datosPersonalesSchema = z.object({
   nombre: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
-  apellido1: z.string().min(2, 'El apellido debe tener al menos 2 caracteres'),
+  apellido1: z.string().min(2, 'El primer apellido es obligatorio'),
   apellido2: z.string().optional(),
-  dni: z.string(),
+  dni: z.string().min(1, 'El DNI/NIE es obligatorio'),
   fechaNacimiento: z.string().min(1, 'La fecha de nacimiento es obligatoria'),
-  genero: z.enum(['hombre', 'mujer', 'otro', 'prefiero_no_decir']),
+  genero: z.enum(['hombre', 'mujer', 'otro', 'prefiero_no_decir'], {
+    required_error: 'Selecciona una opción'
+  }),
   nacionalidad: z.string().min(2, 'La nacionalidad es obligatoria'),
-  estadoCivil: z.enum(['soltero', 'casado', 'divorciado', 'viudo', 'pareja_de_hecho']),
+  estadoCivil: z.enum(['soltero', 'casado', 'divorciado', 'viudo', 'pareja_de_hecho'], {
+    required_error: 'Selecciona una opción'
+  }),
   fotoPerfil: z.string().optional(),
 })
 
 const datosContactoSchema = z.object({
-  emailPrincipal: z.string().email('Email no valido'),
-  emailSecundario: z.string().email('Email no valido').optional().or(z.literal('')),
-  telefonoMovil: z.string().min(9, 'El telefono debe tener al menos 9 digitos'),
+  emailPrincipal: z.string().email('Email no válido'),
+  emailSecundario: z.string().email('Email no válido').optional().or(z.literal('')),
+  telefonoMovil: z.string().min(9, 'El teléfono móvil debe tener al menos 9 dígitos'),
   telefonoFijo: z.string().optional(),
-  direccion: z.string().min(5, 'La direccion es obligatoria'),
+  direccion: z.string().min(5, 'La dirección es obligatoria'),
   numeroPisoPuerta: z.string().optional(),
-  codigoPostal: z.string().min(5, 'El codigo postal debe tener 5 digitos'),
+  codigoPostal: z.string().min(5, 'El código postal debe tener 5 dígitos'),
   ciudad: z.string().min(2, 'La ciudad es obligatoria'),
   provincia: z.string().min(2, 'La provincia es obligatoria'),
-  pais: z.string().min(2, 'El pais es obligatorio'),
+  pais: z.string().min(2, 'El país es obligatorio'),
 })
 
 const datosLaboralesSchema = z.object({
-  situacionLaboral: z.enum(['empleado', 'autonomo', 'desempleado', 'jubilado', 'estudiante']),
+  situacionLaboral: z.enum(['empleado', 'autonomo', 'desempleado', 'jubilado', 'estudiante'], {
+    required_error: 'Selecciona una opción'
+  }),
   profesion: z.string().optional(),
   empresa: z.string().optional(),
   cargo: z.string().optional(),
   antiguedad: z.string().optional(),
-  ingresosAnuales: z.enum(['menos_15000', '15000_30000', '30000_50000', '50000_75000', '75000_100000', 'mas_100000', 'prefiero_no_decir']),
+  ingresosAnuales: z.enum([
+    'menos_15k',
+    '15k_25k',
+    '25k_40k',
+    '40k_60k',
+    'mas_60k'
+  ], {
+    required_error: 'Selecciona un rango'
+  }),
   sector: z.string().optional(),
 })
 
 const datosFamiliaresSchema = z.object({
-  numeroHijos: z.number().min(0),
+  numeroHijos: z.number().min(0, 'El número no puede ser negativo'),
   edadesHijos: z.string().optional(),
-  personasACargo: z.number().min(0),
-  convivientesHogar: z.number().min(1),
+  personasACargo: z.number().min(0, 'El número no puede ser negativo'),
+  convivientesHogar: z.number().min(1, 'Debe haber al menos 1 conviviente'),
   tieneMascotas: z.boolean(),
   tipoMascotas: z.string().optional(),
   cantidadMascotas: z.number().min(0).optional(),
@@ -66,20 +80,26 @@ const datosFinancierosSchema = z.object({
   bancoPrincipal: z.string().optional(),
   iban: z.string().optional(),
   titularCuenta: z.string().optional(),
-  formaPagoPreferida: z.enum(['domiciliacion', 'tarjeta', 'transferencia']),
+  formaPagoPreferida: z.enum(['domiciliacion', 'tarjeta', 'transferencia'], {
+    required_error: 'Selecciona una opción'
+  }),
 })
 
 const datosEducativosSchema = z.object({
-  nivelEstudios: z.enum(['sin_estudios', 'primaria', 'secundaria', 'bachillerato', 'fp', 'grado', 'master', 'doctorado']),
+  nivelEstudios: z.enum([
+    'sin_estudios',
+    'primaria',
+    'eso',
+    'bachillerato',
+    'fp',
+    'grado',
+    'master',
+    'doctorado'
+  ], {
+    required_error: 'Selecciona una opción'
+  }),
   titulacion: z.string().optional(),
   centroEstudios: z.string().optional(),
-})
-
-const datosSocialesSchema = z.object({
-  linkedin: z.string().url('URL no valida').optional().or(z.literal('')),
-  comoNosConociste: z.string().optional(),
-  preferenciaComunicacion: z.array(z.enum(['email', 'sms', 'whatsapp', 'llamada'])),
-  horarioContacto: z.enum(['manana', 'tarde', 'noche', 'cualquiera']),
 })
 
 const datosVehiculoSchema = z.object({
@@ -87,21 +107,39 @@ const datosVehiculoSchema = z.object({
   marca: z.string().optional(),
   modelo: z.string().optional(),
   ano: z.string().optional(),
-  tipoCombustible: z.enum(['gasolina', 'diesel', 'hibrido', 'electrico', 'glp', 'otro']).optional(),
+  tipoCombustible: z.enum([
+    'gasolina',
+    'diesel',
+    'hibrido',
+    'electrico'
+  ]).optional(),
   usoVehiculo: z.enum(['particular', 'profesional', 'mixto']).optional(),
 })
 
 const datosViviendaSchema = z.object({
-  tipoVivienda: z.enum(['piso', 'casa', 'chalet', 'atico', 'duplex', 'otro']).optional(),
+  tipoVivienda: z.enum([
+    'piso',
+    'casa',
+    'chalet',
+    'atico',
+    'duplex'
+  ]).optional(),
   metrosCuadrados: z.number().min(0).optional(),
   anoConstruccion: z.string().optional(),
-  regimen: z.enum(['propietario', 'alquiler', 'otro']).optional(),
+  regimen: z.enum(['propiedad', 'alquiler']).optional(),
   tieneAlarma: z.boolean(),
   tienePiscina: z.boolean(),
 })
 
+const datosPreferenciasSchema = z.object({
+  linkedinUrl: z.string().url('URL no válida').optional().or(z.literal('')),
+  comoNosConociste: z.string().optional(),
+  preferenciaComunicacion: z.array(z.enum(['email', 'sms', 'whatsapp', 'llamada'])),
+  horarioPreferidoContacto: z.string().optional(),
+})
+
 // ============================================
-// TYPES
+// TYPE DEFINITIONS
 // ============================================
 
 type DatosPersonales = z.infer<typeof datosPersonalesSchema>
@@ -110,9 +148,9 @@ type DatosLaborales = z.infer<typeof datosLaboralesSchema>
 type DatosFamiliares = z.infer<typeof datosFamiliaresSchema>
 type DatosFinancieros = z.infer<typeof datosFinancierosSchema>
 type DatosEducativos = z.infer<typeof datosEducativosSchema>
-type DatosSociales = z.infer<typeof datosSocialesSchema>
 type DatosVehiculo = z.infer<typeof datosVehiculoSchema>
 type DatosVivienda = z.infer<typeof datosViviendaSchema>
+type DatosPreferencias = z.infer<typeof datosPreferenciasSchema>
 
 interface FormErrors {
   [key: string]: string | undefined
@@ -124,12 +162,12 @@ interface FormErrors {
 
 const initialDatosPersonales: DatosPersonales = {
   nombre: 'Juan',
-  apellido1: 'Garcia',
-  apellido2: 'Lopez',
+  apellido1: 'García',
+  apellido2: 'López',
   dni: '12345678A',
   fechaNacimiento: '1985-06-15',
   genero: 'hombre',
-  nacionalidad: 'Espanola',
+  nacionalidad: 'Española',
   estadoCivil: 'casado',
   fotoPerfil: '',
 }
@@ -140,11 +178,11 @@ const initialDatosContacto: DatosContacto = {
   telefonoMovil: '666123456',
   telefonoFijo: '',
   direccion: 'Calle Mayor 15',
-  numeroPisoPuerta: '2o B',
+  numeroPisoPuerta: '2º B',
   codigoPostal: '03570',
   ciudad: 'Villajoyosa',
   provincia: 'Alicante',
-  pais: 'Espana',
+  pais: 'España',
 }
 
 const initialDatosLaborales: DatosLaborales = {
@@ -152,9 +190,9 @@ const initialDatosLaborales: DatosLaborales = {
   profesion: 'Ingeniero de Software',
   empresa: 'Tech Solutions S.L.',
   cargo: 'Senior Developer',
-  antiguedad: '5 anos',
-  ingresosAnuales: '30000_50000',
-  sector: 'Tecnologia',
+  antiguedad: '5 años',
+  ingresosAnuales: '25k_40k',
+  sector: 'Tecnología',
 }
 
 const initialDatosFamiliares: DatosFamiliares = {
@@ -170,21 +208,14 @@ const initialDatosFamiliares: DatosFamiliares = {
 const initialDatosFinancieros: DatosFinancieros = {
   bancoPrincipal: 'BBVA',
   iban: 'ES91 2100 **** **** **** 1234',
-  titularCuenta: 'Juan Garcia Lopez',
+  titularCuenta: 'Juan García López',
   formaPagoPreferida: 'domiciliacion',
 }
 
 const initialDatosEducativos: DatosEducativos = {
   nivelEstudios: 'grado',
-  titulacion: 'Ingenieria Informatica',
+  titulacion: 'Ingeniería Informática',
   centroEstudios: 'Universidad de Alicante',
-}
-
-const initialDatosSociales: DatosSociales = {
-  linkedin: 'https://linkedin.com/in/juangarcia',
-  comoNosConociste: 'Recomendacion de un amigo',
-  preferenciaComunicacion: ['email', 'whatsapp'],
-  horarioContacto: 'tarde',
 }
 
 const initialDatosVehiculo: DatosVehiculo = {
@@ -200,13 +231,20 @@ const initialDatosVivienda: DatosVivienda = {
   tipoVivienda: 'piso',
   metrosCuadrados: 95,
   anoConstruccion: '2005',
-  regimen: 'propietario',
+  regimen: 'propiedad',
   tieneAlarma: true,
   tienePiscina: false,
 }
 
+const initialDatosPreferencias: DatosPreferencias = {
+  linkedinUrl: 'https://linkedin.com/in/juangarcia',
+  comoNosConociste: 'Recomendación de un amigo',
+  preferenciaComunicacion: ['email', 'whatsapp'],
+  horarioPreferidoContacto: 'Tarde (14:00 - 20:00)',
+}
+
 // ============================================
-// HELPER COMPONENTS
+// REUSABLE FORM COMPONENTS
 // ============================================
 
 interface InputFieldProps {
@@ -219,10 +257,22 @@ interface InputFieldProps {
   disabled?: boolean
   required?: boolean
   placeholder?: string
+  className?: string
 }
 
-const InputField = ({ label, name, type = 'text', value, onChange, error, disabled, required, placeholder }: InputFieldProps) => (
-  <div>
+const InputField = ({
+  label,
+  name,
+  type = 'text',
+  value,
+  onChange,
+  error,
+  disabled,
+  required,
+  placeholder,
+  className
+}: InputFieldProps) => (
+  <div className={className}>
     <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
       {label} {required && <span className="text-red-500">*</span>}
     </label>
@@ -234,16 +284,20 @@ const InputField = ({ label, name, type = 'text', value, onChange, error, disabl
       disabled={disabled}
       placeholder={placeholder}
       className={cn(
-        'input',
-        disabled && 'bg-slate-50 dark:bg-slate-800 cursor-not-allowed',
-        error && 'border-red-500 focus:ring-red-500/20'
+        'w-full px-4 py-2.5 rounded-xl border-2 transition-all duration-200',
+        'focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500',
+        'disabled:bg-slate-50 dark:disabled:bg-slate-800 disabled:cursor-not-allowed',
+        error
+          ? 'border-red-500 bg-red-50 dark:bg-red-900/10'
+          : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900',
+        'text-slate-900 dark:text-white placeholder:text-slate-400'
       )}
     />
     {error && (
       <motion.p
         initial={{ opacity: 0, y: -5 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-red-500 text-xs mt-1 flex items-center gap-1"
+        className="text-red-500 text-xs mt-1.5 flex items-center gap-1"
       >
         <AlertCircle className="w-3 h-3" /> {error}
       </motion.p>
@@ -259,10 +313,20 @@ interface SelectFieldProps {
   options: { value: string; label: string }[]
   error?: string
   required?: boolean
+  className?: string
 }
 
-const SelectField = ({ label, name, value, onChange, options, error, required }: SelectFieldProps) => (
-  <div>
+const SelectField = ({
+  label,
+  name,
+  value,
+  onChange,
+  options,
+  error,
+  required,
+  className
+}: SelectFieldProps) => (
+  <div className={className}>
     <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
       {label} {required && <span className="text-red-500">*</span>}
     </label>
@@ -270,17 +334,26 @@ const SelectField = ({ label, name, value, onChange, options, error, required }:
       name={name}
       value={value}
       onChange={onChange}
-      className={cn('input', error && 'border-red-500 focus:ring-red-500/20')}
+      className={cn(
+        'w-full px-4 py-2.5 rounded-xl border-2 transition-all duration-200',
+        'focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500',
+        error
+          ? 'border-red-500 bg-red-50 dark:bg-red-900/10'
+          : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900',
+        'text-slate-900 dark:text-white'
+      )}
     >
       {options.map(opt => (
-        <option key={opt.value} value={opt.value}>{opt.label}</option>
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
       ))}
     </select>
     {error && (
       <motion.p
         initial={{ opacity: 0, y: -5 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-red-500 text-xs mt-1 flex items-center gap-1"
+        className="text-red-500 text-xs mt-1.5 flex items-center gap-1"
       >
         <AlertCircle className="w-3 h-3" /> {error}
       </motion.p>
@@ -296,7 +369,7 @@ interface CheckboxFieldProps {
 }
 
 const CheckboxField = ({ label, name, checked, onChange }: CheckboxFieldProps) => (
-  <label className="flex items-center gap-3 cursor-pointer">
+  <label className="flex items-center gap-3 cursor-pointer group">
     <div className="relative">
       <input
         type="checkbox"
@@ -305,16 +378,21 @@ const CheckboxField = ({ label, name, checked, onChange }: CheckboxFieldProps) =
         onChange={onChange}
         className="sr-only peer"
       />
-      <div className={cn(
-        'w-5 h-5 rounded border-2 transition-all duration-200',
-        checked
-          ? 'bg-red-500 border-red-500'
-          : 'border-slate-300 dark:border-slate-600'
-      )}>
-        {checked && <Check className="w-4 h-4 text-white absolute top-0.5 left-0.5" />}
+      <div
+        className={cn(
+          'w-5 h-5 rounded border-2 transition-all duration-200',
+          'flex items-center justify-center',
+          checked
+            ? 'bg-red-500 border-red-500'
+            : 'border-slate-300 dark:border-slate-600 group-hover:border-red-400'
+        )}
+      >
+        {checked && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
       </div>
     </div>
-    <span className="text-sm" style={{ color: 'var(--color-text)' }}>{label}</span>
+    <span className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+      {label}
+    </span>
   </label>
 )
 
@@ -323,11 +401,14 @@ interface MultiCheckboxFieldProps {
   options: { value: string; label: string }[]
   selected: string[]
   onChange: (values: string[]) => void
+  required?: boolean
 }
 
-const MultiCheckboxField = ({ label, options, selected, onChange }: MultiCheckboxFieldProps) => (
+const MultiCheckboxField = ({ label, options, selected, onChange, required }: MultiCheckboxFieldProps) => (
   <div>
-    <label className="block text-sm font-medium mb-3" style={{ color: 'var(--color-text)' }}>{label}</label>
+    <label className="block text-sm font-medium mb-3" style={{ color: 'var(--color-text)' }}>
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
     <div className="flex flex-wrap gap-3">
       {options.map(opt => {
         const isSelected = selected.includes(opt.value)
@@ -343,10 +424,11 @@ const MultiCheckboxField = ({ label, options, selected, onChange }: MultiCheckbo
               }
             }}
             className={cn(
-              'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border-2',
+              'px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border-2',
+              'hover:scale-105 active:scale-95',
               isSelected
-                ? 'bg-red-500 border-red-500 text-white'
-                : 'border-slate-200 dark:border-slate-700 hover:border-red-300'
+                ? 'bg-red-500 border-red-500 text-white shadow-lg shadow-red-500/25'
+                : 'border-slate-200 dark:border-slate-700 hover:border-red-300 dark:hover:border-red-700'
             )}
             style={{ color: isSelected ? 'white' : 'var(--color-text)' }}
           >
@@ -358,26 +440,41 @@ const MultiCheckboxField = ({ label, options, selected, onChange }: MultiCheckbo
   </div>
 )
 
-const SaveButton = ({ onClick, loading }: { onClick: () => void; loading?: boolean }) => (
+interface SaveButtonProps {
+  onClick: () => void
+  loading?: boolean
+}
+
+const SaveButton = ({ onClick, loading }: SaveButtonProps) => (
   <motion.button
     type="button"
     onClick={onClick}
     disabled={loading}
-    whileHover={{ scale: 1.02 }}
-    whileTap={{ scale: 0.98 }}
-    className="btn-primary mt-6"
+    whileHover={{ scale: loading ? 1 : 1.02 }}
+    whileTap={{ scale: loading ? 1 : 0.98 }}
+    className={cn(
+      'mt-8 px-6 py-3 rounded-xl font-semibold transition-all duration-200',
+      'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/25',
+      'disabled:opacity-50 disabled:cursor-not-allowed',
+      'flex items-center gap-2'
+    )}
   >
     {loading ? (
-      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+      <>
+        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+        Guardando...
+      </>
     ) : (
-      <Save className="w-4 h-4 mr-2" />
+      <>
+        <Save className="w-4 h-4" />
+        Guardar cambios
+      </>
     )}
-    Guardar cambios
   </motion.button>
 )
 
 // ============================================
-// SECTION COMPONENTS
+// TAB SECTION COMPONENTS
 // ============================================
 
 interface SectionDatosPersonalesProps {
@@ -414,7 +511,7 @@ const SectionDatosPersonales = ({ data, setData, errors, setErrors }: SectionDat
         toast.error('Por favor, corrige los errores del formulario')
         return
       }
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 800))
       toast.success('Datos personales guardados correctamente')
     } finally {
       setLoading(false)
@@ -425,47 +522,65 @@ const SectionDatosPersonales = ({ data, setData, errors, setErrors }: SectionDat
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card p-6"
+      transition={{ duration: 0.3 }}
+      className="rounded-2xl p-6 lg:p-8 border-2"
+      style={{
+        backgroundColor: 'var(--color-bg)',
+        borderColor: 'var(--color-border)'
+      }}
     >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-          <User className="w-5 h-5 text-red-600 dark:text-red-400" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Datos Personales</h2>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Informacion basica de tu perfil</p>
-        </div>
-      </div>
-
       {/* Foto de perfil */}
       <div className="flex items-center gap-6 mb-8 pb-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
         <div className="relative">
-          <div className="w-24 h-24 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center overflow-hidden">
+          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center overflow-hidden shadow-xl">
             {data.fotoPerfil ? (
               <img src={data.fotoPerfil} alt="Perfil" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-3xl font-bold text-red-600 dark:text-red-400">
-                {user?.name?.charAt(0) || 'U'}
+              <span className="text-3xl font-bold text-white">
+                {user?.name?.charAt(0).toUpperCase() || 'U'}
               </span>
             )}
           </div>
           <button
             type="button"
-            className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
+            className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-white dark:bg-slate-800 border-2 border-red-500 text-red-500 flex items-center justify-center shadow-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
           >
             <Camera className="w-4 h-4" />
           </button>
         </div>
         <div>
-          <p className="font-medium" style={{ color: 'var(--color-text)' }}>Foto de perfil</p>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>JPG, PNG o GIF. Max 2MB</p>
-          <button type="button" className="text-sm text-red-500 hover:text-red-600 mt-1 font-medium">
+          <p className="font-semibold text-lg" style={{ color: 'var(--color-text)' }}>
+            Foto de perfil
+          </p>
+          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            JPG, PNG o GIF. Máximo 2MB
+          </p>
+          <button
+            type="button"
+            className="text-sm text-red-500 hover:text-red-600 mt-2 font-medium hover:underline"
+          >
             Cambiar foto
           </button>
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Badge DNI no editable */}
+      <div className="mb-6 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+        <div className="flex items-center gap-2 mb-1">
+          <Shield className="w-4 h-4 text-slate-500" />
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            DNI/NIE
+          </span>
+        </div>
+        <p className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>
+          {data.dni}
+        </p>
+        <p className="text-xs text-slate-500 mt-1">
+          El DNI/NIE no es editable por seguridad
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <InputField
           label="Nombre"
           name="nombre"
@@ -490,14 +605,6 @@ const SectionDatosPersonales = ({ data, setData, errors, setErrors }: SectionDat
           error={errors.apellido2}
         />
         <InputField
-          label="DNI/NIE"
-          name="dni"
-          value={data.dni}
-          onChange={handleChange}
-          disabled
-          required
-        />
-        <InputField
           label="Fecha de Nacimiento"
           name="fechaNacimiento"
           type="date"
@@ -507,7 +614,7 @@ const SectionDatosPersonales = ({ data, setData, errors, setErrors }: SectionDat
           required
         />
         <SelectField
-          label="Genero"
+          label="Género"
           name="genero"
           value={data.genero}
           onChange={handleChange}
@@ -517,6 +624,7 @@ const SectionDatosPersonales = ({ data, setData, errors, setErrors }: SectionDat
             { value: 'otro', label: 'Otro' },
             { value: 'prefiero_no_decir', label: 'Prefiero no decir' },
           ]}
+          error={errors.genero}
           required
         />
         <InputField
@@ -539,6 +647,7 @@ const SectionDatosPersonales = ({ data, setData, errors, setErrors }: SectionDat
             { value: 'viudo', label: 'Viudo/a' },
             { value: 'pareja_de_hecho', label: 'Pareja de hecho' },
           ]}
+          error={errors.estadoCivil}
           required
         />
       </div>
@@ -581,7 +690,7 @@ const SectionDatosContacto = ({ data, setData, errors, setErrors }: SectionDatos
         toast.error('Por favor, corrige los errores del formulario')
         return
       }
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 800))
       toast.success('Datos de contacto guardados correctamente')
     } finally {
       setLoading(false)
@@ -592,19 +701,14 @@ const SectionDatosContacto = ({ data, setData, errors, setErrors }: SectionDatos
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card p-6"
+      transition={{ duration: 0.3 }}
+      className="rounded-2xl p-6 lg:p-8 border-2"
+      style={{
+        backgroundColor: 'var(--color-bg)',
+        borderColor: 'var(--color-border)'
+      }}
     >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-          <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Datos de Contacto</h2>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Como podemos contactarte</p>
-        </div>
-      </div>
-
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <InputField
           label="Email Principal"
           name="emailPrincipal"
@@ -623,7 +727,7 @@ const SectionDatosContacto = ({ data, setData, errors, setErrors }: SectionDatos
           error={errors.emailSecundario}
         />
         <InputField
-          label="Telefono Movil"
+          label="Teléfono Móvil"
           name="telefonoMovil"
           type="tel"
           value={data.telefonoMovil}
@@ -632,7 +736,7 @@ const SectionDatosContacto = ({ data, setData, errors, setErrors }: SectionDatos
           required
         />
         <InputField
-          label="Telefono Fijo"
+          label="Teléfono Fijo"
           name="telefonoFijo"
           type="tel"
           value={data.telefonoFijo || ''}
@@ -640,29 +744,31 @@ const SectionDatosContacto = ({ data, setData, errors, setErrors }: SectionDatos
         />
       </div>
 
-      <div className="mt-6 pt-6 border-t" style={{ borderColor: 'var(--color-border)' }}>
-        <h3 className="font-medium mb-4" style={{ color: 'var(--color-text)' }}>Direccion</h3>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="sm:col-span-2">
-            <InputField
-              label="Direccion"
-              name="direccion"
-              value={data.direccion}
-              onChange={handleChange}
-              error={errors.direccion}
-              required
-              placeholder="Calle, Avenida, Plaza..."
-            />
-          </div>
+      <div className="mt-8 pt-8 border-t" style={{ borderColor: 'var(--color-border)' }}>
+        <h3 className="font-semibold text-lg mb-6 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
+          <MapPin className="w-5 h-5 text-red-500" />
+          Dirección
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
           <InputField
-            label="Numero/Piso/Puerta"
+            label="Dirección"
+            name="direccion"
+            value={data.direccion}
+            onChange={handleChange}
+            error={errors.direccion}
+            required
+            placeholder="Calle, Avenida, Plaza..."
+            className="md:col-span-2"
+          />
+          <InputField
+            label="Número/Piso/Puerta"
             name="numeroPisoPuerta"
             value={data.numeroPisoPuerta || ''}
             onChange={handleChange}
-            placeholder="Ej: 15, 2o B"
+            placeholder="Ej: 15, 2º B"
           />
           <InputField
-            label="Codigo Postal"
+            label="Código Postal"
             name="codigoPostal"
             value={data.codigoPostal}
             onChange={handleChange}
@@ -686,7 +792,7 @@ const SectionDatosContacto = ({ data, setData, errors, setErrors }: SectionDatos
             required
           />
           <InputField
-            label="Pais"
+            label="País"
             name="pais"
             value={data.pais}
             onChange={handleChange}
@@ -734,7 +840,7 @@ const SectionDatosLaborales = ({ data, setData, errors, setErrors }: SectionDato
         toast.error('Por favor, corrige los errores del formulario')
         return
       }
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 800))
       toast.success('Datos laborales guardados correctamente')
     } finally {
       setLoading(false)
@@ -745,35 +851,31 @@ const SectionDatosLaborales = ({ data, setData, errors, setErrors }: SectionDato
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card p-6"
+      transition={{ duration: 0.3 }}
+      className="rounded-2xl p-6 lg:p-8 border-2"
+      style={{
+        backgroundColor: 'var(--color-bg)',
+        borderColor: 'var(--color-border)'
+      }}
     >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-          <Briefcase className="w-5 h-5 text-green-600 dark:text-green-400" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Datos Laborales</h2>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Tu situacion profesional</p>
-        </div>
-      </div>
-
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <SelectField
-          label="Situacion Laboral"
+          label="Situación Laboral"
           name="situacionLaboral"
           value={data.situacionLaboral}
           onChange={handleChange}
           options={[
             { value: 'empleado', label: 'Empleado/a' },
-            { value: 'autonomo', label: 'Autonomo/a' },
+            { value: 'autonomo', label: 'Autónomo/a' },
             { value: 'desempleado', label: 'Desempleado/a' },
             { value: 'jubilado', label: 'Jubilado/a' },
             { value: 'estudiante', label: 'Estudiante' },
           ]}
+          error={errors.situacionLaboral}
           required
         />
         <InputField
-          label="Profesion"
+          label="Profesión"
           name="profesion"
           value={data.profesion || ''}
           onChange={handleChange}
@@ -791,26 +893,25 @@ const SectionDatosLaborales = ({ data, setData, errors, setErrors }: SectionDato
           onChange={handleChange}
         />
         <InputField
-          label="Antiguedad"
+          label="Antigüedad"
           name="antiguedad"
           value={data.antiguedad || ''}
           onChange={handleChange}
-          placeholder="Ej: 5 anos"
+          placeholder="Ej: 5 años"
         />
         <SelectField
-          label="Ingresos Anuales Aproximados"
+          label="Ingresos Anuales"
           name="ingresosAnuales"
           value={data.ingresosAnuales}
           onChange={handleChange}
           options={[
-            { value: 'menos_15000', label: 'Menos de 15.000 EUR' },
-            { value: '15000_30000', label: '15.000 - 30.000 EUR' },
-            { value: '30000_50000', label: '30.000 - 50.000 EUR' },
-            { value: '50000_75000', label: '50.000 - 75.000 EUR' },
-            { value: '75000_100000', label: '75.000 - 100.000 EUR' },
-            { value: 'mas_100000', label: 'Mas de 100.000 EUR' },
-            { value: 'prefiero_no_decir', label: 'Prefiero no decir' },
+            { value: 'menos_15k', label: '< 15.000 EUR' },
+            { value: '15k_25k', label: '15.000 - 25.000 EUR' },
+            { value: '25k_40k', label: '25.000 - 40.000 EUR' },
+            { value: '40k_60k', label: '40.000 - 60.000 EUR' },
+            { value: 'mas_60k', label: '> 60.000 EUR' },
           ]}
+          error={errors.ingresosAnuales}
           required
         />
         <InputField
@@ -818,7 +919,7 @@ const SectionDatosLaborales = ({ data, setData, errors, setErrors }: SectionDato
           name="sector"
           value={data.sector || ''}
           onChange={handleChange}
-          placeholder="Ej: Tecnologia, Sanidad..."
+          placeholder="Ej: Tecnología, Salud, Educación..."
         />
       </div>
 
@@ -841,6 +942,9 @@ const SectionDatosFamiliares = ({ data, setData, errors, setErrors }: SectionDat
     const { name, value, type } = e.target
     const finalValue = type === 'number' ? parseInt(value) || 0 : value
     setData(prev => ({ ...prev, [name]: finalValue }))
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }))
+    }
   }
 
   const handleCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -863,7 +967,7 @@ const SectionDatosFamiliares = ({ data, setData, errors, setErrors }: SectionDat
         toast.error('Por favor, corrige los errores del formulario')
         return
       }
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 800))
       toast.success('Datos familiares guardados correctamente')
     } finally {
       setLoading(false)
@@ -874,25 +978,21 @@ const SectionDatosFamiliares = ({ data, setData, errors, setErrors }: SectionDat
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card p-6"
+      transition={{ duration: 0.3 }}
+      className="rounded-2xl p-6 lg:p-8 border-2"
+      style={{
+        backgroundColor: 'var(--color-bg)',
+        borderColor: 'var(--color-border)'
+      }}
     >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-          <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Datos Familiares</h2>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Informacion sobre tu nucleo familiar</p>
-        </div>
-      </div>
-
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <InputField
-          label="Numero de Hijos"
+          label="Número de Hijos"
           name="numeroHijos"
           type="number"
           value={data.numeroHijos}
           onChange={handleChange}
+          error={errors.numeroHijos}
         />
         <InputField
           label="Edades de los Hijos"
@@ -907,6 +1007,7 @@ const SectionDatosFamiliares = ({ data, setData, errors, setErrors }: SectionDat
           type="number"
           value={data.personasACargo}
           onChange={handleChange}
+          error={errors.personasACargo}
         />
         <InputField
           label="Convivientes en el Hogar"
@@ -914,22 +1015,32 @@ const SectionDatosFamiliares = ({ data, setData, errors, setErrors }: SectionDat
           type="number"
           value={data.convivientesHogar}
           onChange={handleChange}
+          error={errors.convivientesHogar}
+          required
         />
       </div>
 
-      <div className="mt-6 pt-6 border-t" style={{ borderColor: 'var(--color-border)' }}>
-        <h3 className="font-medium mb-4" style={{ color: 'var(--color-text)' }}>Mascotas</h3>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="flex items-center">
-            <CheckboxField
-              label="Tengo mascotas"
-              name="tieneMascotas"
-              checked={data.tieneMascotas}
-              onChange={handleCheckbox}
-            />
-          </div>
+      <div className="mt-8 pt-8 border-t" style={{ borderColor: 'var(--color-border)' }}>
+        <h3 className="font-semibold text-lg mb-6 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
+          <Heart className="w-5 h-5 text-red-500" />
+          Mascotas
+        </h3>
+        <div className="mb-6">
+          <CheckboxField
+            label="Tengo mascotas"
+            name="tieneMascotas"
+            checked={data.tieneMascotas}
+            onChange={handleCheckbox}
+          />
+        </div>
+        <AnimatePresence>
           {data.tieneMascotas && (
-            <>
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6"
+            >
               <InputField
                 label="Tipo de Mascotas"
                 name="tipoMascotas"
@@ -944,9 +1055,9 @@ const SectionDatosFamiliares = ({ data, setData, errors, setErrors }: SectionDat
                 value={data.cantidadMascotas || 0}
                 onChange={handleChange}
               />
-            </>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
       </div>
 
       <SaveButton onClick={handleSave} loading={loading} />
@@ -967,6 +1078,9 @@ const SectionDatosFinancieros = ({ data, setData, errors, setErrors }: SectionDa
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setData(prev => ({ ...prev, [name]: value }))
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }))
+    }
   }
 
   const handleSave = async () => {
@@ -984,7 +1098,7 @@ const SectionDatosFinancieros = ({ data, setData, errors, setErrors }: SectionDa
         toast.error('Por favor, corrige los errores del formulario')
         return
       }
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 800))
       toast.success('Datos financieros guardados correctamente')
     } finally {
       setLoading(false)
@@ -995,19 +1109,28 @@ const SectionDatosFinancieros = ({ data, setData, errors, setErrors }: SectionDa
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card p-6"
+      transition={{ duration: 0.3 }}
+      className="rounded-2xl p-6 lg:p-8 border-2"
+      style={{
+        backgroundColor: 'var(--color-bg)',
+        borderColor: 'var(--color-border)'
+      }}
     >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
-          <CreditCard className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Datos Financieros</h2>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Informacion de pago y cuenta bancaria</p>
+      <div className="mb-6 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+        <div className="flex items-start gap-3">
+          <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-1">
+              Información protegida
+            </p>
+            <p className="text-xs text-amber-700 dark:text-amber-300">
+              Por seguridad, el IBAN se muestra parcialmente enmascarado. Para modificarlo, contacta con tu agente.
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <InputField
           label="Banco Principal"
           name="bancoPrincipal"
@@ -1015,11 +1138,12 @@ const SectionDatosFinancieros = ({ data, setData, errors, setErrors }: SectionDa
           onChange={handleChange}
         />
         <InputField
-          label="IBAN (enmascarado)"
+          label="IBAN"
           name="iban"
           value={data.iban || ''}
           onChange={handleChange}
           placeholder="ES91 2100 **** **** **** 1234"
+          disabled
         />
         <InputField
           label="Titular de la Cuenta"
@@ -1033,19 +1157,13 @@ const SectionDatosFinancieros = ({ data, setData, errors, setErrors }: SectionDa
           value={data.formaPagoPreferida}
           onChange={handleChange}
           options={[
-            { value: 'domiciliacion', label: 'Domiciliacion Bancaria' },
-            { value: 'tarjeta', label: 'Tarjeta de Credito/Debito' },
+            { value: 'domiciliacion', label: 'Domiciliación Bancaria' },
+            { value: 'tarjeta', label: 'Tarjeta de Crédito/Débito' },
             { value: 'transferencia', label: 'Transferencia Bancaria' },
           ]}
+          error={errors.formaPagoPreferida}
           required
         />
-      </div>
-
-      <div className="mt-4 p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
-        <p className="text-sm text-yellow-800 dark:text-yellow-200">
-          <strong>Nota:</strong> Por seguridad, el IBAN se muestra parcialmente enmascarado.
-          Para modificarlo, contacta con tu agente.
-        </p>
       </div>
 
       <SaveButton onClick={handleSave} loading={loading} />
@@ -1066,6 +1184,9 @@ const SectionDatosEducativos = ({ data, setData, errors, setErrors }: SectionDat
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setData(prev => ({ ...prev, [name]: value }))
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }))
+    }
   }
 
   const handleSave = async () => {
@@ -1083,7 +1204,7 @@ const SectionDatosEducativos = ({ data, setData, errors, setErrors }: SectionDat
         toast.error('Por favor, corrige los errores del formulario')
         return
       }
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 800))
       toast.success('Datos educativos guardados correctamente')
     } finally {
       setLoading(false)
@@ -1094,19 +1215,14 @@ const SectionDatosEducativos = ({ data, setData, errors, setErrors }: SectionDat
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card p-6"
+      transition={{ duration: 0.3 }}
+      className="rounded-2xl p-6 lg:p-8 border-2"
+      style={{
+        backgroundColor: 'var(--color-bg)',
+        borderColor: 'var(--color-border)'
+      }}
     >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-          <GraduationCap className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Datos Educativos</h2>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Tu formacion academica</p>
-        </div>
-      </div>
-
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         <SelectField
           label="Nivel de Estudios"
           name="nivelEstudios"
@@ -1114,22 +1230,23 @@ const SectionDatosEducativos = ({ data, setData, errors, setErrors }: SectionDat
           onChange={handleChange}
           options={[
             { value: 'sin_estudios', label: 'Sin estudios' },
-            { value: 'primaria', label: 'Educacion Primaria' },
-            { value: 'secundaria', label: 'Educacion Secundaria (ESO)' },
+            { value: 'primaria', label: 'Educación Primaria' },
+            { value: 'eso', label: 'ESO' },
             { value: 'bachillerato', label: 'Bachillerato' },
-            { value: 'fp', label: 'Formacion Profesional' },
+            { value: 'fp', label: 'Formación Profesional' },
             { value: 'grado', label: 'Grado Universitario' },
-            { value: 'master', label: 'Master' },
+            { value: 'master', label: 'Máster' },
             { value: 'doctorado', label: 'Doctorado' },
           ]}
+          error={errors.nivelEstudios}
           required
         />
         <InputField
-          label="Titulacion"
+          label="Titulación"
           name="titulacion"
           value={data.titulacion || ''}
           onChange={handleChange}
-          placeholder="Ej: Ingenieria Informatica"
+          placeholder="Ej: Ingeniería Informática"
         />
         <InputField
           label="Centro de Estudios"
@@ -1137,115 +1254,6 @@ const SectionDatosEducativos = ({ data, setData, errors, setErrors }: SectionDat
           value={data.centroEstudios || ''}
           onChange={handleChange}
           placeholder="Ej: Universidad de Alicante"
-        />
-      </div>
-
-      <SaveButton onClick={handleSave} loading={loading} />
-    </motion.div>
-  )
-}
-
-interface SectionDatosSocialesProps {
-  data: DatosSociales
-  setData: React.Dispatch<React.SetStateAction<DatosSociales>>
-  errors: FormErrors
-  setErrors: React.Dispatch<React.SetStateAction<FormErrors>>
-}
-
-const SectionDatosSociales = ({ data, setData, errors, setErrors }: SectionDatosSocialesProps) => {
-  const [loading, setLoading] = useState(false)
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setData(prev => ({ ...prev, [name]: value }))
-  }
-
-  const handleSave = async () => {
-    setLoading(true)
-    try {
-      const result = datosSocialesSchema.safeParse(data)
-      if (!result.success) {
-        const fieldErrors: FormErrors = {}
-        result.error.errors.forEach(err => {
-          if (err.path[0]) {
-            fieldErrors[err.path[0] as string] = err.message
-          }
-        })
-        setErrors(fieldErrors)
-        toast.error('Por favor, corrige los errores del formulario')
-        return
-      }
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      toast.success('Preferencias guardadas correctamente')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="card p-6"
-    >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center">
-          <Share2 className="w-5 h-5 text-pink-600 dark:text-pink-400" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Preferencias y Redes</h2>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Como prefieres que te contactemos</p>
-        </div>
-      </div>
-
-      <div className="grid sm:grid-cols-2 gap-4">
-        <InputField
-          label="LinkedIn"
-          name="linkedin"
-          value={data.linkedin || ''}
-          onChange={handleChange}
-          error={errors.linkedin}
-          placeholder="https://linkedin.com/in/tu-perfil"
-        />
-        <InputField
-          label="Como nos conociste"
-          name="comoNosConociste"
-          value={data.comoNosConociste || ''}
-          onChange={handleChange}
-          placeholder="Ej: Recomendacion, Internet..."
-        />
-      </div>
-
-      <div className="mt-6">
-        <MultiCheckboxField
-          label="Preferencias de Comunicacion"
-          options={[
-            { value: 'email', label: 'Email' },
-            { value: 'sms', label: 'SMS' },
-            { value: 'whatsapp', label: 'WhatsApp' },
-            { value: 'llamada', label: 'Llamada' },
-          ]}
-          selected={data.preferenciaComunicacion}
-          onChange={(values) => setData(prev => ({
-            ...prev,
-            preferenciaComunicacion: values as ('email' | 'sms' | 'whatsapp' | 'llamada')[]
-          }))}
-        />
-      </div>
-
-      <div className="mt-6">
-        <SelectField
-          label="Horario Preferido de Contacto"
-          name="horarioContacto"
-          value={data.horarioContacto}
-          onChange={handleChange}
-          options={[
-            { value: 'manana', label: 'Manana (9:00 - 14:00)' },
-            { value: 'tarde', label: 'Tarde (14:00 - 20:00)' },
-            { value: 'noche', label: 'Noche (20:00 - 22:00)' },
-            { value: 'cualquiera', label: 'Cualquier horario' },
-          ]}
-          required
         />
       </div>
 
@@ -1268,6 +1276,9 @@ const SectionDatosVehiculo = ({ data, setData, errors, setErrors, hasAutoPolicy 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setData(prev => ({ ...prev, [name]: value }))
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }))
+    }
   }
 
   const handleSave = async () => {
@@ -1285,8 +1296,8 @@ const SectionDatosVehiculo = ({ data, setData, errors, setErrors, hasAutoPolicy 
         toast.error('Por favor, corrige los errores del formulario')
         return
       }
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      toast.success('Datos del vehiculo guardados correctamente')
+      await new Promise(resolve => setTimeout(resolve, 800))
+      toast.success('Datos del vehículo guardados correctamente')
     } finally {
       setLoading(false)
     }
@@ -1296,35 +1307,25 @@ const SectionDatosVehiculo = ({ data, setData, errors, setErrors, hasAutoPolicy 
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card p-6"
+      transition={{ duration: 0.3 }}
+      className="rounded-2xl p-6 lg:p-8 border-2"
+      style={{
+        backgroundColor: 'var(--color-bg)',
+        borderColor: 'var(--color-border)'
+      }}
     >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-          <Car className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Datos del Vehiculo</h2>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-            {hasAutoPolicy
-              ? 'Informacion de tu vehiculo asegurado'
-              : 'Completa estos datos si tienes un vehiculo'
-            }
-          </p>
-        </div>
-      </div>
-
       {hasAutoPolicy && (
-        <div className="mb-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+        <div className="mb-6 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
           <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
-            <Check className="w-4 h-4" />
-            <span className="text-sm font-medium">Tienes una poliza de auto activa</span>
+            <Check className="w-5 h-5" />
+            <span className="font-semibold">Tienes una póliza de auto activa</span>
           </div>
         </div>
       )}
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         <InputField
-          label="Matricula"
+          label="Matrícula"
           name="matricula"
           value={data.matricula || ''}
           onChange={handleChange}
@@ -1345,29 +1346,27 @@ const SectionDatosVehiculo = ({ data, setData, errors, setErrors, hasAutoPolicy 
           placeholder="Ej: Ibiza, Golf..."
         />
         <InputField
-          label="Ano de Matriculacion"
+          label="Año"
           name="ano"
           value={data.ano || ''}
           onChange={handleChange}
           placeholder="Ej: 2020"
         />
         <SelectField
-          label="Tipo de Combustible"
+          label="Combustible"
           name="tipoCombustible"
           value={data.tipoCombustible || ''}
           onChange={handleChange}
           options={[
             { value: '', label: 'Selecciona...' },
             { value: 'gasolina', label: 'Gasolina' },
-            { value: 'diesel', label: 'Diesel' },
-            { value: 'hibrido', label: 'Hibrido' },
-            { value: 'electrico', label: 'Electrico' },
-            { value: 'glp', label: 'GLP/GNC' },
-            { value: 'otro', label: 'Otro' },
+            { value: 'diesel', label: 'Diésel' },
+            { value: 'hibrido', label: 'Híbrido' },
+            { value: 'electrico', label: 'Eléctrico' },
           ]}
         />
         <SelectField
-          label="Uso del Vehiculo"
+          label="Uso"
           name="usoVehiculo"
           value={data.usoVehiculo || ''}
           onChange={handleChange}
@@ -1400,6 +1399,9 @@ const SectionDatosVivienda = ({ data, setData, errors, setErrors, hasHomePolicy 
     const { name, value, type } = e.target
     const finalValue = type === 'number' ? parseInt(value) || 0 : value
     setData(prev => ({ ...prev, [name]: finalValue }))
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }))
+    }
   }
 
   const handleCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1422,7 +1424,7 @@ const SectionDatosVivienda = ({ data, setData, errors, setErrors, hasHomePolicy 
         toast.error('Por favor, corrige los errores del formulario')
         return
       }
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 800))
       toast.success('Datos de la vivienda guardados correctamente')
     } finally {
       setLoading(false)
@@ -1433,35 +1435,25 @@ const SectionDatosVivienda = ({ data, setData, errors, setErrors, hasHomePolicy 
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card p-6"
+      transition={{ duration: 0.3 }}
+      className="rounded-2xl p-6 lg:p-8 border-2"
+      style={{
+        backgroundColor: 'var(--color-bg)',
+        borderColor: 'var(--color-border)'
+      }}
     >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
-          <Home className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Datos de la Vivienda</h2>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-            {hasHomePolicy
-              ? 'Informacion de tu vivienda asegurada'
-              : 'Completa estos datos si tienes una vivienda'
-            }
-          </p>
-        </div>
-      </div>
-
       {hasHomePolicy && (
-        <div className="mb-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+        <div className="mb-6 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
           <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
-            <Check className="w-4 h-4" />
-            <span className="text-sm font-medium">Tienes una poliza de hogar activa</span>
+            <Check className="w-5 h-5" />
+            <span className="font-semibold">Tienes una póliza de hogar activa</span>
           </div>
         </div>
       )}
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         <SelectField
-          label="Tipo de Vivienda"
+          label="Tipo"
           name="tipoVivienda"
           value={data.tipoVivienda || ''}
           onChange={handleChange}
@@ -1470,13 +1462,12 @@ const SectionDatosVivienda = ({ data, setData, errors, setErrors, hasHomePolicy 
             { value: 'piso', label: 'Piso' },
             { value: 'casa', label: 'Casa' },
             { value: 'chalet', label: 'Chalet' },
-            { value: 'atico', label: 'Atico' },
-            { value: 'duplex', label: 'Duplex' },
-            { value: 'otro', label: 'Otro' },
+            { value: 'atico', label: 'Ático' },
+            { value: 'duplex', label: 'Dúplex' },
           ]}
         />
         <InputField
-          label="Metros Cuadrados"
+          label="M²"
           name="metrosCuadrados"
           type="number"
           value={data.metrosCuadrados || ''}
@@ -1484,37 +1475,38 @@ const SectionDatosVivienda = ({ data, setData, errors, setErrors, hasHomePolicy 
           placeholder="Ej: 90"
         />
         <InputField
-          label="Ano de Construccion"
+          label="Año de Construcción"
           name="anoConstruccion"
           value={data.anoConstruccion || ''}
           onChange={handleChange}
           placeholder="Ej: 2005"
         />
         <SelectField
-          label="Regimen"
+          label="Régimen"
           name="regimen"
           value={data.regimen || ''}
           onChange={handleChange}
           options={[
             { value: '', label: 'Selecciona...' },
-            { value: 'propietario', label: 'Propietario' },
+            { value: 'propiedad', label: 'Propiedad' },
             { value: 'alquiler', label: 'Alquiler' },
-            { value: 'otro', label: 'Otro' },
           ]}
         />
       </div>
 
-      <div className="mt-6 pt-6 border-t" style={{ borderColor: 'var(--color-border)' }}>
-        <h3 className="font-medium mb-4" style={{ color: 'var(--color-text)' }}>Caracteristicas adicionales</h3>
+      <div className="mt-8 pt-8 border-t" style={{ borderColor: 'var(--color-border)' }}>
+        <h3 className="font-semibold text-lg mb-6" style={{ color: 'var(--color-text)' }}>
+          Características
+        </h3>
         <div className="flex flex-wrap gap-6">
           <CheckboxField
-            label="Dispone de alarma"
+            label="Alarma"
             name="tieneAlarma"
             checked={data.tieneAlarma}
             onChange={handleCheckbox}
           />
           <CheckboxField
-            label="Dispone de piscina"
+            label="Piscina"
             name="tienePiscina"
             checked={data.tienePiscina}
             onChange={handleCheckbox}
@@ -1527,8 +1519,138 @@ const SectionDatosVivienda = ({ data, setData, errors, setErrors, hasHomePolicy 
   )
 }
 
+interface SectionDatosPreferenciasProps {
+  data: DatosPreferencias
+  setData: React.Dispatch<React.SetStateAction<DatosPreferencias>>
+  errors: FormErrors
+  setErrors: React.Dispatch<React.SetStateAction<FormErrors>>
+}
+
+const SectionDatosPreferencias = ({ data, setData, errors, setErrors }: SectionDatosPreferenciasProps) => {
+  const [loading, setLoading] = useState(false)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setData(prev => ({ ...prev, [name]: value }))
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }))
+    }
+  }
+
+  const handleSave = async () => {
+    setLoading(true)
+    try {
+      const result = datosPreferenciasSchema.safeParse(data)
+      if (!result.success) {
+        const fieldErrors: FormErrors = {}
+        result.error.errors.forEach(err => {
+          if (err.path[0]) {
+            fieldErrors[err.path[0] as string] = err.message
+          }
+        })
+        setErrors(fieldErrors)
+        toast.error('Por favor, corrige los errores del formulario')
+        return
+      }
+      await new Promise(resolve => setTimeout(resolve, 800))
+      toast.success('Preferencias guardadas correctamente')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="rounded-2xl p-6 lg:p-8 border-2"
+      style={{
+        backgroundColor: 'var(--color-bg)',
+        borderColor: 'var(--color-border)'
+      }}
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-8">
+        <InputField
+          label="LinkedIn URL"
+          name="linkedinUrl"
+          value={data.linkedinUrl || ''}
+          onChange={handleChange}
+          error={errors.linkedinUrl}
+          placeholder="https://linkedin.com/in/tu-perfil"
+        />
+        <InputField
+          label="Cómo nos conociste"
+          name="comoNosConociste"
+          value={data.comoNosConociste || ''}
+          onChange={handleChange}
+          placeholder="Ej: Recomendación, Internet..."
+        />
+      </div>
+
+      <div className="mb-8">
+        <MultiCheckboxField
+          label="Preferencia de Comunicación"
+          options={[
+            { value: 'email', label: 'Email' },
+            { value: 'sms', label: 'SMS' },
+            { value: 'whatsapp', label: 'WhatsApp' },
+            { value: 'llamada', label: 'Llamada' },
+          ]}
+          selected={data.preferenciaComunicacion}
+          onChange={(values) =>
+            setData(prev => ({
+              ...prev,
+              preferenciaComunicacion: values as ('email' | 'sms' | 'whatsapp' | 'llamada')[],
+            }))
+          }
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-3" style={{ color: 'var(--color-text)' }}>
+          <Clock className="w-4 h-4 inline mr-2 text-red-500" />
+          Horario Preferido de Contacto
+        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            { value: 'Mañana (9:00 - 14:00)', label: 'Mañana', icon: '☀️' },
+            { value: 'Tarde (14:00 - 20:00)', label: 'Tarde', icon: '🌤️' },
+            { value: 'Noche (20:00 - 22:00)', label: 'Noche', icon: '🌙' },
+            { value: 'Cualquier horario', label: 'Cualquiera', icon: '⏰' },
+          ].map(opt => {
+            const isSelected = data.horarioPreferidoContacto === opt.value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() =>
+                  setData(prev => ({ ...prev, horarioPreferidoContacto: opt.value }))
+                }
+                className={cn(
+                  'px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border-2',
+                  'hover:scale-105 active:scale-95',
+                  isSelected
+                    ? 'bg-red-500 border-red-500 text-white shadow-lg shadow-red-500/25'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-red-300 dark:hover:border-red-700'
+                )}
+                style={{ color: isSelected ? 'white' : 'var(--color-text)' }}
+              >
+                <span className="text-lg mr-2">{opt.icon}</span>
+                {opt.label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <SaveButton onClick={handleSave} loading={loading} />
+    </motion.div>
+  )
+}
+
 // ============================================
-// PROGRESS BAR COMPONENT
+// PROFILE PROGRESS BAR
 // ============================================
 
 interface ProfileProgressProps {
@@ -1539,22 +1661,35 @@ const ProfileProgress = ({ percentage }: ProfileProgressProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="card p-6 mb-6"
+    className="rounded-2xl p-6 border-2 mb-6"
+    style={{
+      backgroundColor: 'var(--color-bg)',
+      borderColor: 'var(--color-border)'
+    }}
   >
     <div className="flex items-center justify-between mb-4">
       <div>
-        <h3 className="font-semibold" style={{ color: 'var(--color-text)' }}>Perfil completado</h3>
+        <h3 className="font-bold text-lg" style={{ color: 'var(--color-text)' }}>
+          Perfil completado
+        </h3>
         <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
           Completa tu perfil para mejorar tu experiencia
         </p>
       </div>
       <div className="text-right">
-        <span className="text-3xl font-bold text-red-500">{percentage}%</span>
+        <motion.span
+          key={percentage}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="text-4xl font-bold text-red-500"
+        >
+          {percentage}%
+        </motion.span>
       </div>
     </div>
-    <div className="progress-bar">
+    <div className="relative h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
       <motion.div
-        className="progress-bar-fill"
+        className="absolute top-0 left-0 h-full bg-gradient-to-r from-red-500 to-red-600 rounded-full"
         initial={{ width: 0 }}
         animate={{ width: `${percentage}%` }}
         transition={{ duration: 1, ease: 'easeOut' }}
@@ -1564,6 +1699,15 @@ const ProfileProgress = ({ percentage }: ProfileProgressProps) => (
       <p className="text-xs mt-3" style={{ color: 'var(--color-text-secondary)' }}>
         Completa las secciones restantes para desbloquear beneficios exclusivos
       </p>
+    )}
+    {percentage === 100 && (
+      <motion.p
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-sm mt-3 text-green-600 dark:text-green-400 font-medium flex items-center gap-2"
+      >
+        <Check className="w-4 h-4" /> ¡Perfil completo! Enhorabuena
+      </motion.p>
     )}
   </motion.div>
 )
@@ -1582,9 +1726,9 @@ export default function PerfilPage() {
   const [datosFamiliares, setDatosFamiliares] = useState<DatosFamiliares>(initialDatosFamiliares)
   const [datosFinancieros, setDatosFinancieros] = useState<DatosFinancieros>(initialDatosFinancieros)
   const [datosEducativos, setDatosEducativos] = useState<DatosEducativos>(initialDatosEducativos)
-  const [datosSociales, setDatosSociales] = useState<DatosSociales>(initialDatosSociales)
   const [datosVehiculo, setDatosVehiculo] = useState<DatosVehiculo>(initialDatosVehiculo)
   const [datosVivienda, setDatosVivienda] = useState<DatosVivienda>(initialDatosVivienda)
+  const [datosPreferencias, setDatosPreferencias] = useState<DatosPreferencias>(initialDatosPreferencias)
 
   // Errors state for each section
   const [errorsPersonales, setErrorsPersonales] = useState<FormErrors>({})
@@ -1593,9 +1737,9 @@ export default function PerfilPage() {
   const [errorsFamiliares, setErrorsFamiliares] = useState<FormErrors>({})
   const [errorsFinancieros, setErrorsFinancieros] = useState<FormErrors>({})
   const [errorsEducativos, setErrorsEducativos] = useState<FormErrors>({})
-  const [errorsSociales, setErrorsSociales] = useState<FormErrors>({})
   const [errorsVehiculo, setErrorsVehiculo] = useState<FormErrors>({})
   const [errorsVivienda, setErrorsVivienda] = useState<FormErrors>({})
+  const [errorsPreferencias, setErrorsPreferencias] = useState<FormErrors>({})
 
   // Check if user has specific policies
   const hasAutoPolicy = policies?.some(p => p.type === 'auto' && p.status === 'active') || false
@@ -1606,38 +1750,54 @@ export default function PerfilPage() {
     let completed = 0
     const total = 9
 
-    // Check each section
+    // Check each section for completion
     if (datosPersonales.nombre && datosPersonales.apellido1 && datosPersonales.fechaNacimiento) completed++
     if (datosContacto.emailPrincipal && datosContacto.telefonoMovil && datosContacto.direccion) completed++
     if (datosLaborales.situacionLaboral) completed++
     if (datosFamiliares.convivientesHogar > 0) completed++
     if (datosFinancieros.formaPagoPreferida) completed++
     if (datosEducativos.nivelEstudios) completed++
-    if (datosSociales.preferenciaComunicacion.length > 0) completed++
     if (datosVehiculo.matricula || !hasAutoPolicy) completed++
     if (datosVivienda.tipoVivienda || !hasHomePolicy) completed++
+    if (datosPreferencias.preferenciaComunicacion.length > 0) completed++
 
     return Math.round((completed / total) * 100)
-  }, [datosPersonales, datosContacto, datosLaborales, datosFamiliares, datosFinancieros, datosEducativos, datosSociales, datosVehiculo, datosVivienda, hasAutoPolicy, hasHomePolicy])
+  }, [
+    datosPersonales,
+    datosContacto,
+    datosLaborales,
+    datosFamiliares,
+    datosFinancieros,
+    datosEducativos,
+    datosVehiculo,
+    datosVivienda,
+    datosPreferencias,
+    hasAutoPolicy,
+    hasHomePolicy,
+  ])
 
   const tabs = [
-    { id: 'personal', label: 'Personal', icon: <User className="w-4 h-4" /> },
+    { id: 'personal', label: 'Datos Personales', icon: <User className="w-4 h-4" /> },
     { id: 'contacto', label: 'Contacto', icon: <Mail className="w-4 h-4" /> },
     { id: 'laboral', label: 'Laboral', icon: <Briefcase className="w-4 h-4" /> },
     { id: 'familiar', label: 'Familiar', icon: <Users className="w-4 h-4" /> },
     { id: 'financiero', label: 'Financiero', icon: <CreditCard className="w-4 h-4" /> },
-    { id: 'educativo', label: 'Educativo', icon: <GraduationCap className="w-4 h-4" /> },
-    { id: 'social', label: 'Preferencias', icon: <Share2 className="w-4 h-4" /> },
-    { id: 'vehiculo', label: 'Vehiculo', icon: <Car className="w-4 h-4" /> },
+    { id: 'educativo', label: 'Educación', icon: <GraduationCap className="w-4 h-4" /> },
+    { id: 'vehiculo', label: 'Vehículo', icon: <Car className="w-4 h-4" /> },
     { id: 'vivienda', label: 'Vivienda', icon: <Home className="w-4 h-4" /> },
+    { id: 'preferencias', label: 'Preferencias', icon: <Share2 className="w-4 h-4" /> },
   ]
 
   return (
     <div className="space-y-6 pb-20">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Mi Perfil</h1>
-        <p style={{ color: 'var(--color-text-secondary)' }}>Gestiona toda tu informacion personal</p>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--color-text)' }}>
+          Mi Perfil
+        </h1>
+        <p className="text-lg" style={{ color: 'var(--color-text-secondary)' }}>
+          Gestiona toda tu información personal
+        </p>
       </div>
 
       {/* Progress Bar */}
@@ -1645,11 +1805,11 @@ export default function PerfilPage() {
 
       {/* Tabs */}
       <Tabs defaultTab="personal" variant="pills">
-        <div className="overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
-          <TabList className="flex-nowrap min-w-max gap-2">
+        <div className="overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+          <TabList className="flex gap-2 min-w-max">
             {tabs.map(tab => (
               <Tab key={tab.id} id={tab.id} icon={tab.icon}>
-                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="whitespace-nowrap">{tab.label}</span>
               </Tab>
             ))}
           </TabList>
@@ -1710,15 +1870,6 @@ export default function PerfilPage() {
             />
           </TabPanel>
 
-          <TabPanel id="social">
-            <SectionDatosSociales
-              data={datosSociales}
-              setData={setDatosSociales}
-              errors={errorsSociales}
-              setErrors={setErrorsSociales}
-            />
-          </TabPanel>
-
           <TabPanel id="vehiculo">
             <SectionDatosVehiculo
               data={datosVehiculo}
@@ -1736,6 +1887,15 @@ export default function PerfilPage() {
               errors={errorsVivienda}
               setErrors={setErrorsVivienda}
               hasHomePolicy={hasHomePolicy}
+            />
+          </TabPanel>
+
+          <TabPanel id="preferencias">
+            <SectionDatosPreferencias
+              data={datosPreferencias}
+              setData={setDatosPreferencias}
+              errors={errorsPreferencias}
+              setErrors={setErrorsPreferencias}
             />
           </TabPanel>
         </TabPanels>

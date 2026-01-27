@@ -101,25 +101,80 @@ const defaultSegments: WheelSegment[] = [
   },
 ]
 
-// Normalize probabilities to ensure they sum to 1.0
+/**
+ * SEGURIDAD: Normaliza probabilidades para asegurar que sumen exactamente 1.0
+ * Esto previene manipulación de probabilidades y garantiza distribución justa
+ */
 function normalizeProbabilities(segments: WheelSegment[]): WheelSegment[] {
-  const total = segments.reduce((sum, seg) => sum + seg.probability, 0)
-  
-  // Validate in development
-  if (process.env.NODE_ENV === 'development' && Math.abs(total - 1.0) > 0.001) {
-    console.warn(
-      `⚠️ SpinWheel: Probabilities sum to ${total.toFixed(3)}, expected 1.0. Auto-normalizing...`
-    )
+  // Validar que existan segmentos
+  if (!segments || segments.length === 0) {
+    console.error('⚠️ SpinWheel: No hay segmentos definidos')
+    return []
   }
-  
-  // Normalize if needed
-  if (Math.abs(total - 1.0) > 0.001) {
+
+  // Validar que todas las probabilidades sean números válidos y no negativos
+  const invalidSegments = segments.filter(
+    seg => typeof seg.probability !== 'number' ||
+           seg.probability < 0 ||
+           isNaN(seg.probability) ||
+           !isFinite(seg.probability)
+  )
+
+  if (invalidSegments.length > 0) {
+    console.error('⚠️ SpinWheel: Probabilidades inválidas detectadas:', invalidSegments)
+    // Asignar probabilidades iguales si hay valores inválidos
+    const equalProbability = 1.0 / segments.length
     return segments.map(seg => ({
+      ...seg,
+      probability: equalProbability
+    }))
+  }
+
+  // Calcular suma total de probabilidades
+  const total = segments.reduce((sum, seg) => sum + seg.probability, 0)
+
+  // Validar que la suma no sea cero
+  if (total === 0) {
+    console.error('⚠️ SpinWheel: La suma de probabilidades es 0. Asignando probabilidades iguales.')
+    const equalProbability = 1.0 / segments.length
+    return segments.map(seg => ({
+      ...seg,
+      probability: equalProbability
+    }))
+  }
+
+  // Normalizar SIEMPRE para garantizar que sumen exactamente 1.0
+  // Umbral de tolerancia muy pequeño (0.0001)
+  const needsNormalization = Math.abs(total - 1.0) > 0.0001
+
+  if (needsNormalization) {
+    // Advertir en desarrollo
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(
+        `⚠️ SpinWheel: Probabilidades suman ${total.toFixed(6)}, normalizando a 1.0...`,
+        '\nSegmentos:', segments.map(s => ({ label: s.label, probability: s.probability }))
+      )
+    }
+
+    // Normalizar dividiendo cada probabilidad por el total
+    const normalized = segments.map(seg => ({
       ...seg,
       probability: seg.probability / total
     }))
+
+    // Verificar que la normalización fue exitosa
+    const normalizedTotal = normalized.reduce((sum, seg) => sum + seg.probability, 0)
+
+    if (process.env.NODE_ENV === 'development') {
+      console.info(
+        `✅ SpinWheel: Probabilidades normalizadas. Nueva suma: ${normalizedTotal.toFixed(6)}`
+      )
+    }
+
+    return normalized
   }
-  
+
+  // Las probabilidades ya suman 1.0, retornar sin cambios
   return segments
 }
 

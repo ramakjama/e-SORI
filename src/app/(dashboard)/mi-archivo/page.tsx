@@ -1,1259 +1,888 @@
 'use client'
 
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  FolderArchive, Upload, Search, Filter, X, Download, Eye, Edit2, Trash2,
-  Zap, Wifi, DollarSign, Car, Home, User, Briefcase, MoreHorizontal,
-  Calendar, AlertTriangle, FileText, Image, File, Plus, ChevronDown, ChevronRight,
-  Clock, CheckCircle, Bell
+  FolderOpen, Upload, Search, Grid3x3, List, Download, Eye, Trash2,
+  X, FileText, Calendar, StickyNote, HardDrive, Filter, ChevronDown,
+  Home, Wifi, CreditCard, Car, Shield, FileCheck, Dumbbell, Scale,
+  Heart, GraduationCap, Briefcase, FolderArchive, ChevronUp
 } from 'lucide-react'
-import { cn, formatDateShort } from '@/lib/utils'
-import Modal from '@/components/ui/Modal'
-import { ConfirmModal } from '@/components/ui/Modal'
-import { Skeleton } from '@/components/ui/Skeleton'
-import Progress from '@/components/ui/Progress'
 
-// Types
-interface PersonalDocument {
+// Categorías con iconos
+const categories = [
+  { id: 'hogar', name: 'Hogar', icon: Home, color: 'from-blue-500 to-blue-600', docs: [] as Document[] },
+  { id: 'telecomunicaciones', name: 'Telecomunicaciones', icon: Wifi, color: 'from-purple-500 to-purple-600', docs: [] as Document[] },
+  { id: 'financiero', name: 'Financiero', icon: CreditCard, color: 'from-green-500 to-green-600', docs: [] as Document[] },
+  { id: 'vehiculos', name: 'Vehículos', icon: Car, color: 'from-red-500 to-red-600', docs: [] as Document[] },
+  { id: 'seguridad', name: 'Seguridad', icon: Shield, color: 'from-yellow-500 to-yellow-600', docs: [] as Document[] },
+  { id: 'renting', name: 'Renting/Leasing', icon: FileCheck, color: 'from-indigo-500 to-indigo-600', docs: [] as Document[] },
+  { id: 'suscripciones', name: 'Suscripciones', icon: Dumbbell, color: 'from-pink-500 to-pink-600', docs: [] as Document[] },
+  { id: 'legal', name: 'Legal', icon: Scale, color: 'from-gray-600 to-gray-700', docs: [] as Document[] },
+  { id: 'salud', name: 'Salud', icon: Heart, color: 'from-rose-500 to-rose-600', docs: [] as Document[] },
+  { id: 'educacion', name: 'Educación', icon: GraduationCap, color: 'from-cyan-500 to-cyan-600', docs: [] as Document[] },
+  { id: 'laboral', name: 'Laboral', icon: Briefcase, color: 'from-orange-500 to-orange-600', docs: [] as Document[] },
+  { id: 'otros', name: 'Otros', icon: FolderArchive, color: 'from-slate-500 to-slate-600', docs: [] as Document[] },
+]
+
+interface Document {
   id: string
   name: string
-  category: DocumentCategory
-  subcategory: string
+  category: string
+  date: string
   uploadDate: string
-  expirationDate?: string
   size: string
-  sizeBytes: number
-  type: 'pdf' | 'jpg' | 'png' | 'doc' | 'docx'
-  url: string
-  thumbnail?: string
-}
-
-type DocumentCategory =
-  | 'suministros'
-  | 'telecomunicaciones'
-  | 'financieros'
-  | 'vehiculos'
-  | 'hogar'
-  | 'personales'
-  | 'laborales'
-  | 'otros'
-
-// Category Configuration
-const categories: Record<DocumentCategory, {
-  label: string
-  icon: typeof Zap
-  color: string
-  bgColor: string
-  subcategories: string[]
-}> = {
-  suministros: {
-    label: 'Suministros',
-    icon: Zap,
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-100 dark:bg-yellow-900/30',
-    subcategories: ['Contrato de luz', 'Contrato de gas', 'Contrato de agua', 'Facturas de suministros']
-  },
-  telecomunicaciones: {
-    label: 'Telecomunicaciones',
-    icon: Wifi,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100 dark:bg-blue-900/30',
-    subcategories: ['Contrato de internet/fibra', 'Contrato de movil', 'Facturas de telecomunicaciones']
-  },
-  financieros: {
-    label: 'Financieros',
-    icon: DollarSign,
-    color: 'text-green-600',
-    bgColor: 'bg-green-100 dark:bg-green-900/30',
-    subcategories: ['Prestamos personales', 'Creditos', 'Hipoteca', 'Extractos bancarios', 'Declaracion de la renta']
-  },
-  vehiculos: {
-    label: 'Vehiculos',
-    icon: Car,
-    color: 'text-red-600',
-    bgColor: 'bg-red-100 dark:bg-red-900/30',
-    subcategories: ['Permiso de circulacion', 'Ficha tecnica (ITV)', 'Contrato de renting', 'Contrato de leasing', 'Facturas de mantenimiento']
-  },
-  hogar: {
-    label: 'Hogar',
-    icon: Home,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-100 dark:bg-purple-900/30',
-    subcategories: ['Escritura de la vivienda', 'Contrato de alquiler', 'Contrato de alarma', 'Comunidad de propietarios']
-  },
-  personales: {
-    label: 'Personales',
-    icon: User,
-    color: 'text-pink-600',
-    bgColor: 'bg-pink-100 dark:bg-pink-900/30',
-    subcategories: ['DNI/NIE', 'Pasaporte', 'Carnet de conducir', 'Tarjeta sanitaria', 'Libro de familia', 'Certificados (nacimiento, matrimonio, etc.)']
-  },
-  laborales: {
-    label: 'Laborales',
-    icon: Briefcase,
-    color: 'text-indigo-600',
-    bgColor: 'bg-indigo-100 dark:bg-indigo-900/30',
-    subcategories: ['Contrato de trabajo', 'Nominas', 'Vida laboral', 'Certificados de empresa']
-  },
-  otros: {
-    label: 'Otros',
-    icon: MoreHorizontal,
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-100 dark:bg-gray-900/30',
-    subcategories: ['Documentos varios']
-  }
-}
-
-// File type icons
-const getFileIcon = (type: string) => {
-  switch (type) {
-    case 'pdf':
-      return <FileText className="w-5 h-5 text-red-500" />
-    case 'jpg':
-    case 'png':
-      return <Image className="w-5 h-5 text-blue-500" />
-    case 'doc':
-    case 'docx':
-      return <File className="w-5 h-5 text-blue-600" />
-    default:
-      return <File className="w-5 h-5 text-gray-500" />
-  }
+  notes?: string
+  type: 'pdf' | 'image' | 'doc'
 }
 
 // Mock data
-const mockDocuments: PersonalDocument[] = [
-  {
-    id: '1',
-    name: 'DNI Juan Garcia.pdf',
-    category: 'personales',
-    subcategory: 'DNI/NIE',
-    uploadDate: '2024-01-15',
-    expirationDate: '2030-05-20',
-    size: '1.2 MB',
-    sizeBytes: 1258291,
-    type: 'pdf',
-    url: '#'
-  },
-  {
-    id: '2',
-    name: 'Contrato Luz Iberdrola.pdf',
-    category: 'suministros',
-    subcategory: 'Contrato de luz',
-    uploadDate: '2024-03-10',
-    size: '856 KB',
-    sizeBytes: 876544,
-    type: 'pdf',
-    url: '#'
-  },
-  {
-    id: '3',
-    name: 'Ficha tecnica ITV.pdf',
-    category: 'vehiculos',
-    subcategory: 'Ficha tecnica (ITV)',
-    uploadDate: '2024-02-20',
-    expirationDate: '2025-02-20',
-    size: '2.3 MB',
-    sizeBytes: 2411724,
-    type: 'pdf',
-    url: '#'
-  },
-  {
-    id: '4',
-    name: 'Nomina Enero 2024.pdf',
-    category: 'laborales',
-    subcategory: 'Nominas',
-    uploadDate: '2024-01-31',
-    size: '145 KB',
-    sizeBytes: 148480,
-    type: 'pdf',
-    url: '#'
-  },
-  {
-    id: '5',
-    name: 'Escritura Vivienda.pdf',
-    category: 'hogar',
-    subcategory: 'Escritura de la vivienda',
-    uploadDate: '2023-06-15',
-    size: '5.8 MB',
-    sizeBytes: 6082150,
-    type: 'pdf',
-    url: '#'
-  },
-  {
-    id: '6',
-    name: 'Carnet de conducir.jpg',
-    category: 'personales',
-    subcategory: 'Carnet de conducir',
-    uploadDate: '2024-01-05',
-    expirationDate: '2026-03-15',
-    size: '980 KB',
-    sizeBytes: 1003520,
-    type: 'jpg',
-    url: '#'
-  },
-  {
-    id: '7',
-    name: 'Factura Vodafone Marzo.pdf',
-    category: 'telecomunicaciones',
-    subcategory: 'Facturas de telecomunicaciones',
-    uploadDate: '2024-03-05',
-    size: '234 KB',
-    sizeBytes: 239616,
-    type: 'pdf',
-    url: '#'
-  },
-  {
-    id: '8',
-    name: 'Extracto BBVA Febrero.pdf',
-    category: 'financieros',
-    subcategory: 'Extractos bancarios',
-    uploadDate: '2024-03-01',
-    size: '456 KB',
-    sizeBytes: 466944,
-    type: 'pdf',
-    url: '#'
-  }
+const mockDocuments: Document[] = [
+  // Hogar
+  { id: '1', name: 'Contrato Endesa Luz', category: 'hogar', date: '2024-01-15', uploadDate: '2024-01-20', size: '2.3 MB', type: 'pdf', notes: 'Contrato anual renovable' },
+  { id: '2', name: 'Recibo Agua Enero 2024', category: 'hogar', date: '2024-01-10', uploadDate: '2024-01-12', size: '856 KB', type: 'pdf' },
+  { id: '3', name: 'Contrato Comunidad', category: 'hogar', date: '2023-06-01', uploadDate: '2023-06-05', size: '1.8 MB', type: 'pdf' },
+  { id: '4', name: 'Factura Gas Natural', category: 'hogar', date: '2024-02-01', uploadDate: '2024-02-03', size: '1.2 MB', type: 'pdf' },
+
+  // Telecomunicaciones
+  { id: '5', name: 'Contrato Fibra Movistar', category: 'telecomunicaciones', date: '2023-09-01', uploadDate: '2023-09-05', size: '3.1 MB', type: 'pdf', notes: 'Fibra 600MB + TV' },
+  { id: '6', name: 'Factura Móvil Diciembre', category: 'telecomunicaciones', date: '2023-12-15', uploadDate: '2023-12-20', size: '654 KB', type: 'pdf' },
+  { id: '7', name: 'Cambio Tarifa Orange', category: 'telecomunicaciones', date: '2024-01-10', uploadDate: '2024-01-12', size: '892 KB', type: 'pdf' },
+
+  // Financiero
+  { id: '8', name: 'Contrato Hipoteca', category: 'financiero', date: '2020-03-15', uploadDate: '2020-03-20', size: '8.5 MB', type: 'pdf', notes: 'Hipoteca variable Euribor + 0.99%' },
+  { id: '9', name: 'Préstamo Personal BBVA', category: 'financiero', date: '2023-07-01', uploadDate: '2023-07-05', size: '2.8 MB', type: 'pdf' },
+  { id: '10', name: 'Tarjeta Crédito Visa', category: 'financiero', date: '2024-01-01', uploadDate: '2024-01-03', size: '1.1 MB', type: 'pdf' },
+  { id: '11', name: 'Extracto Cuenta Enero', category: 'financiero', date: '2024-02-01', uploadDate: '2024-02-02', size: '756 KB', type: 'pdf' },
+
+  // Vehículos
+  { id: '12', name: 'ITV Pasada 2024', category: 'vehiculos', date: '2024-01-15', uploadDate: '2024-01-16', size: '1.5 MB', type: 'pdf', notes: 'Próxima ITV: Enero 2026' },
+  { id: '13', name: 'Permiso Circulación', category: 'vehiculos', date: '2020-05-10', uploadDate: '2023-01-15', size: '892 KB', type: 'image' },
+  { id: '14', name: 'Ficha Técnica Vehículo', category: 'vehiculos', date: '2020-05-10', uploadDate: '2023-01-15', size: '2.1 MB', type: 'pdf' },
+
+  // Seguridad
+  { id: '15', name: 'Contrato Alarma Securitas', category: 'seguridad', date: '2023-03-01', uploadDate: '2023-03-05', size: '2.4 MB', type: 'pdf', notes: 'Mantenimiento incluido' },
+  { id: '16', name: 'Manual Cámaras Seguridad', category: 'seguridad', date: '2023-06-15', uploadDate: '2023-06-16', size: '5.2 MB', type: 'pdf' },
+  { id: '17', name: 'Garantía Cerradura Digital', category: 'seguridad', date: '2024-01-20', uploadDate: '2024-01-22', size: '1.3 MB', type: 'pdf' },
+
+  // Renting
+  { id: '18', name: 'Contrato Renting Audi A4', category: 'renting', date: '2023-04-01', uploadDate: '2023-04-05', size: '4.2 MB', type: 'pdf', notes: 'Vencimiento: Abril 2027' },
+  { id: '19', name: 'Factura Renting Enero', category: 'renting', date: '2024-01-01', uploadDate: '2024-01-05', size: '856 KB', type: 'pdf' },
+  { id: '20', name: 'Leasing Equipos Oficina', category: 'renting', date: '2023-09-01', uploadDate: '2023-09-10', size: '3.1 MB', type: 'pdf' },
+
+  // Suscripciones
+  { id: '21', name: 'Abono Gimnasio GO fit', category: 'suscripciones', date: '2023-01-15', uploadDate: '2023-01-20', size: '1.2 MB', type: 'pdf', notes: 'Anual con descuento' },
+  { id: '22', name: 'Suscripción Netflix Premium', category: 'suscripciones', date: '2023-06-01', uploadDate: '2023-06-01', size: '456 KB', type: 'pdf' },
+  { id: '23', name: 'Adobe Creative Cloud', category: 'suscripciones', date: '2023-11-01', uploadDate: '2023-11-01', size: '892 KB', type: 'pdf' },
+
+  // Legal
+  { id: '24', name: 'Testamento Notaría', category: 'legal', date: '2022-05-10', uploadDate: '2022-05-15', size: '6.8 MB', type: 'pdf', notes: 'Documento original en notaría' },
+  { id: '25', name: 'Poder Notarial General', category: 'legal', date: '2023-02-15', uploadDate: '2023-02-20', size: '3.2 MB', type: 'pdf' },
+  { id: '26', name: 'Escritura Vivienda', category: 'legal', date: '2020-03-15', uploadDate: '2020-03-20', size: '12.5 MB', type: 'pdf' },
+
+  // Salud
+  { id: '27', name: 'Analítica Sangre 2024', category: 'salud', date: '2024-01-10', uploadDate: '2024-01-12', size: '1.8 MB', type: 'pdf', notes: 'Todos los valores normales' },
+  { id: '28', name: 'Informe Médico Traumatólogo', category: 'salud', date: '2023-11-20', uploadDate: '2023-11-22', size: '2.3 MB', type: 'pdf' },
+  { id: '29', name: 'Receta Medicación Crónica', category: 'salud', date: '2024-02-01', uploadDate: '2024-02-01', size: '654 KB', type: 'image' },
+  { id: '30', name: 'Cartilla Vacunación', category: 'salud', date: '2023-06-01', uploadDate: '2023-06-05', size: '1.1 MB', type: 'pdf' },
+
+  // Educación
+  { id: '31', name: 'Título Universitario', category: 'educacion', date: '2015-07-01', uploadDate: '2023-01-10', size: '4.5 MB', type: 'pdf', notes: 'Grado en Administración' },
+  { id: '32', name: 'Certificado Master', category: 'educacion', date: '2018-09-15', uploadDate: '2023-01-10', size: '3.8 MB', type: 'pdf' },
+  { id: '33', name: 'Curso Google Analytics', category: 'educacion', date: '2023-05-20', uploadDate: '2023-05-22', size: '1.2 MB', type: 'pdf' },
+
+  // Laboral
+  { id: '34', name: 'Contrato Trabajo Actual', category: 'laboral', date: '2021-09-01', uploadDate: '2021-09-10', size: '2.8 MB', type: 'pdf', notes: 'Indefinido a jornada completa' },
+  { id: '35', name: 'Nómina Enero 2024', category: 'laboral', date: '2024-01-31', uploadDate: '2024-02-01', size: '456 KB', type: 'pdf' },
+  { id: '36', name: 'Vida Laboral 2024', category: 'laboral', date: '2024-01-15', uploadDate: '2024-01-16', size: '892 KB', type: 'pdf' },
+  { id: '37', name: 'Certificado Empresa', category: 'laboral', date: '2023-12-20', uploadDate: '2023-12-22', size: '654 KB', type: 'pdf' },
+
+  // Otros
+  { id: '38', name: 'Garantía Electrodomésticos', category: 'otros', date: '2023-08-15', uploadDate: '2023-08-20', size: '2.1 MB', type: 'pdf' },
+  { id: '39', name: 'Manual Usuario TV', category: 'otros', date: '2023-11-01', uploadDate: '2023-11-05', size: '8.5 MB', type: 'pdf' },
+  { id: '40', name: 'Recibo Donación ONG', category: 'otros', date: '2024-01-10', uploadDate: '2024-01-12', size: '456 KB', type: 'pdf' },
 ]
 
-// Upload Modal Component
-interface UploadModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onUpload: (files: File[], category: DocumentCategory, subcategory: string, expirationDate?: string) => void
-}
+export default function MiArchivoPage() {
+  const [documents, setDocuments] = useState<Document[]>(mockDocuments)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [sortBy, setSortBy] = useState<'date' | 'name' | 'size'>('date')
+  const [showUploadModal, setShowUploadModal] = useState(false)
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
 
-function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
-  const [selectedCategory, setSelectedCategory] = useState<DocumentCategory | null>(null)
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('')
-  const [expirationDate, setExpirationDate] = useState<string>('')
-  const [files, setFiles] = useState<File[]>([])
-  const [isDragging, setIsDragging] = useState(false)
-  const [uploading, setUploading] = useState(false)
+  // Upload form state
+  const [uploadForm, setUploadForm] = useState({
+    name: '',
+    category: '',
+    date: '',
+    notes: '',
+    file: null as File | null
+  })
   const [uploadProgress, setUploadProgress] = useState(0)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isUploading, setIsUploading] = useState(false)
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }, [])
+  // Estadísticas
+  const stats = useMemo(() => {
+    const totalDocs = documents.length
+    const categoriesUsed = new Set(documents.map(d => d.category)).size
+    const lastUploaded = documents.sort((a, b) =>
+      new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
+    )[0]?.uploadDate || 'N/A'
 
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-  }, [])
+    const totalSize = documents.reduce((acc, doc) => {
+      const size = parseFloat(doc.size)
+      const unit = doc.size.includes('MB') ? 1024 : 1
+      return acc + (size * unit)
+    }, 0)
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-    const droppedFiles = Array.from(e.dataTransfer.files).filter(file => {
-      const ext = file.name.split('.').pop()?.toLowerCase()
-      const validTypes = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx']
-      const validSize = file.size <= 10 * 1024 * 1024 // 10MB
-      return validTypes.includes(ext || '') && validSize
+    return {
+      total: totalDocs,
+      categories: categoriesUsed,
+      lastUploaded,
+      totalSize: (totalSize / 1024).toFixed(1) + ' GB',
+      usedPercentage: Math.min((totalSize / (1024 * 10)) * 100, 100) // Max 10GB
+    }
+  }, [documents])
+
+  // Filtrar y ordenar documentos
+  const filteredDocuments = useMemo(() => {
+    let filtered = documents
+
+    if (searchQuery) {
+      filtered = filtered.filter(doc =>
+        doc.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    if (selectedCategory) {
+      filtered = filtered.filter(doc => doc.category === selectedCategory)
+    }
+
+    // Ordenar
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name)
+        case 'size':
+          return parseFloat(b.size) - parseFloat(a.size)
+        case 'date':
+        default:
+          return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
+      }
     })
-    setFiles(prev => [...prev, ...droppedFiles])
-  }, [])
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const selectedFiles = Array.from(e.target.files).filter(file => {
-        const ext = file.name.split('.').pop()?.toLowerCase()
-        const validTypes = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx']
-        const validSize = file.size <= 10 * 1024 * 1024
-        return validTypes.includes(ext || '') && validSize
+    return filtered
+  }, [documents, searchQuery, selectedCategory, sortBy])
+
+  // Agrupar documentos por categoría
+  const documentsByCategory = useMemo(() => {
+    const grouped = categories.map(cat => ({
+      ...cat,
+      docs: filteredDocuments.filter(doc => doc.category === cat.id)
+    }))
+    return grouped
+  }, [filteredDocuments])
+
+  // Manejar upload
+  const handleUpload = () => {
+    if (!uploadForm.name || !uploadForm.category || !uploadForm.file) {
+      alert('Por favor completa todos los campos obligatorios')
+      return
+    }
+
+    setIsUploading(true)
+    setUploadProgress(0)
+
+    // Simular upload
+    const interval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval)
+
+          // Añadir documento
+          const newDoc: Document = {
+            id: Date.now().toString(),
+            name: uploadForm.name,
+            category: uploadForm.category,
+            date: uploadForm.date || new Date().toISOString().split('T')[0],
+            uploadDate: new Date().toISOString().split('T')[0],
+            size: `${(uploadForm.file!.size / 1024 / 1024).toFixed(2)} MB`,
+            notes: uploadForm.notes,
+            type: uploadForm.file!.type.includes('pdf') ? 'pdf' :
+                  uploadForm.file!.type.includes('image') ? 'image' : 'doc'
+          }
+
+          setDocuments(prev => [newDoc, ...prev])
+          setShowUploadModal(false)
+          setIsUploading(false)
+          setUploadProgress(0)
+          setUploadForm({ name: '', category: '', date: '', notes: '', file: null })
+
+          return 100
+        }
+        return prev + 10
       })
-      setFiles(prev => [...prev, ...selectedFiles])
+    }, 200)
+  }
+
+  const handleDelete = (id: string) => {
+    if (confirm('¿Estás seguro de que quieres eliminar este documento?')) {
+      setDocuments(prev => prev.filter(doc => doc.id !== id))
+      setSelectedDocument(null)
     }
   }
 
-  const removeFile = (index: number) => {
-    setFiles(prev => prev.filter((_, i) => i !== index))
-  }
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return bytes + ' B'
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
-  }
-
-  const handleUpload = async () => {
-    if (!selectedCategory || !selectedSubcategory || files.length === 0) return
-
-    setUploading(true)
-    setUploadProgress(0)
-
-    // Simulate upload progress
-    for (let i = 0; i <= 100; i += 10) {
-      await new Promise(resolve => setTimeout(resolve, 150))
-      setUploadProgress(i)
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setUploadForm(prev => ({ ...prev, file, name: prev.name || file.name }))
     }
-
-    onUpload(files, selectedCategory, selectedSubcategory, expirationDate || undefined)
-
-    // Reset state
-    setUploading(false)
-    setUploadProgress(0)
-    setFiles([])
-    setSelectedCategory(null)
-    setSelectedSubcategory('')
-    setExpirationDate('')
-    onClose()
   }
-
-  const resetModal = () => {
-    setFiles([])
-    setSelectedCategory(null)
-    setSelectedSubcategory('')
-    setExpirationDate('')
-    setUploading(false)
-    setUploadProgress(0)
-  }
-
-  useEffect(() => {
-    if (!isOpen) {
-      resetModal()
-    }
-  }, [isOpen])
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Subir Documentos" size="lg">
-      <div className="space-y-6">
-        {/* Drop Zone */}
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          className={cn(
-            'border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200',
-            isDragging
-              ? 'border-occident bg-occident/10'
-              : 'border-slate-300 dark:border-slate-600 hover:border-occident hover:bg-slate-50 dark:hover:bg-slate-800'
-          )}
+    <div className="min-h-screen p-6 lg:p-8" style={{ backgroundColor: 'var(--color-bg)' }}>
+      <div className="max-w-7xl mx-auto space-y-6">
+
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="card-glass p-6 rounded-2xl"
         >
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-            onChange={handleFileSelect}
-            className="hidden"
-          />
-          <Upload className={cn('w-12 h-12 mx-auto mb-4', isDragging ? 'text-occident' : 'text-slate-400')} />
-          <p className="text-lg font-medium" style={{ color: 'var(--color-text)' }}>
-            Arrastra tus archivos aqui
-          </p>
-          <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-            o haz clic para seleccionar
-          </p>
-          <p className="text-xs mt-3 text-slate-400">
-            PDF, JPG, PNG, DOC (Max. 10MB por archivo)
-          </p>
-        </div>
-
-        {/* Selected Files */}
-        {files.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="font-medium text-sm" style={{ color: 'var(--color-text)' }}>
-              Archivos seleccionados ({files.length})
-            </h4>
-            <div className="max-h-40 overflow-y-auto space-y-2">
-              {files.map((file, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    {getFileIcon(file.name.split('.').pop() || '')}
-                    <div>
-                      <p className="text-sm font-medium truncate max-w-[200px]" style={{ color: 'var(--color-text)' }}>
-                        {file.name}
-                      </p>
-                      <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                        {formatFileSize(file.size)}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      removeFile(index)
-                    }}
-                    className="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-full transition-colors"
-                  >
-                    <X className="w-4 h-4 text-red-500" />
-                  </button>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Category Selection */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
-              Categoria *
-            </label>
-            <select
-              value={selectedCategory || ''}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value as DocumentCategory)
-                setSelectedSubcategory('')
-              }}
-              className="input w-full"
-            >
-              <option value="">Selecciona categoria</option>
-              {Object.entries(categories).map(([key, cat]) => (
-                <option key={key} value={key}>{cat.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
-              Tipo de documento *
-            </label>
-            <select
-              value={selectedSubcategory}
-              onChange={(e) => setSelectedSubcategory(e.target.value)}
-              disabled={!selectedCategory}
-              className="input w-full"
-            >
-              <option value="">Selecciona tipo</option>
-              {selectedCategory && categories[selectedCategory].subcategories.map((sub) => (
-                <option key={sub} value={sub}>{sub}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Expiration Date */}
-        <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
-            Fecha de vencimiento (opcional)
-          </label>
-          <input
-            type="date"
-            value={expirationDate}
-            onChange={(e) => setExpirationDate(e.target.value)}
-            className="input w-full"
-          />
-        </div>
-
-        {/* Upload Progress */}
-        {uploading && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span style={{ color: 'var(--color-text-secondary)' }}>Subiendo...</span>
-              <span className="font-medium" style={{ color: 'var(--color-text)' }}>{uploadProgress}%</span>
-            </div>
-            <Progress value={uploadProgress} variant="default" size="md" />
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex gap-3 pt-4">
-          <button
-            onClick={onClose}
-            disabled={uploading}
-            className="flex-1 btn-secondary"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleUpload}
-            disabled={!selectedCategory || !selectedSubcategory || files.length === 0 || uploading}
-            className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {uploading ? 'Subiendo...' : `Subir ${files.length > 0 ? `(${files.length})` : ''}`}
-          </button>
-        </div>
-      </div>
-    </Modal>
-  )
-}
-
-// Preview Modal Component
-interface PreviewModalProps {
-  isOpen: boolean
-  onClose: () => void
-  document: PersonalDocument | null
-}
-
-function PreviewModal({ isOpen, onClose, document }: PreviewModalProps) {
-  if (!document) return null
-
-  const isImage = ['jpg', 'png'].includes(document.type)
-  const isPdf = document.type === 'pdf'
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} title={document.name} size="full">
-      <div className="h-[70vh] flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-xl">
-        {isImage ? (
-          <div className="text-center">
-            <Image className="w-24 h-24 mx-auto text-slate-400 mb-4" />
-            <p style={{ color: 'var(--color-text-secondary)' }}>Vista previa de imagen</p>
-            <p className="text-sm mt-2" style={{ color: 'var(--color-text)' }}>{document.name}</p>
-          </div>
-        ) : isPdf ? (
-          <div className="text-center">
-            <FileText className="w-24 h-24 mx-auto text-red-400 mb-4" />
-            <p style={{ color: 'var(--color-text-secondary)' }}>Vista previa de PDF</p>
-            <p className="text-sm mt-2" style={{ color: 'var(--color-text)' }}>{document.name}</p>
-          </div>
-        ) : (
-          <div className="text-center">
-            <File className="w-24 h-24 mx-auto text-slate-400 mb-4" />
-            <p style={{ color: 'var(--color-text-secondary)' }}>Vista previa no disponible</p>
-            <p className="text-sm mt-2" style={{ color: 'var(--color-text)' }}>{document.name}</p>
-          </div>
-        )}
-      </div>
-      <div className="flex gap-3 mt-6">
-        <button onClick={onClose} className="flex-1 btn-secondary">
-          Cerrar
-        </button>
-        <button className="flex-1 btn-primary flex items-center justify-center gap-2">
-          <Download className="w-4 h-4" />
-          Descargar
-        </button>
-      </div>
-    </Modal>
-  )
-}
-
-// Edit Name Modal Component
-interface EditNameModalProps {
-  isOpen: boolean
-  onClose: () => void
-  document: PersonalDocument | null
-  onSave: (id: string, newName: string) => void
-}
-
-function EditNameModal({ isOpen, onClose, document, onSave }: EditNameModalProps) {
-  const [name, setName] = useState('')
-
-  useEffect(() => {
-    if (document) {
-      setName(document.name)
-    }
-  }, [document])
-
-  if (!document) return null
-
-  const handleSave = () => {
-    if (name.trim()) {
-      onSave(document.id, name.trim())
-      onClose()
-    }
-  }
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Editar nombre" size="sm">
-      <div className="space-y-4">
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="input w-full"
-          placeholder="Nombre del documento"
-        />
-        <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 btn-secondary">
-            Cancelar
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={!name.trim()}
-            className="flex-1 btn-primary disabled:opacity-50"
-          >
-            Guardar
-          </button>
-        </div>
-      </div>
-    </Modal>
-  )
-}
-
-// Document Card Component
-interface DocumentCardProps {
-  document: PersonalDocument
-  onView: () => void
-  onDownload: () => void
-  onEdit: () => void
-  onDelete: () => void
-}
-
-function DocumentCard({ document, onView, onDownload, onEdit, onDelete }: DocumentCardProps) {
-  const category = categories[document.category]
-  const Icon = category.icon
-
-  const isExpiringSoon = () => {
-    if (!document.expirationDate) return false
-    const expDate = new Date(document.expirationDate)
-    const today = new Date()
-    const diffDays = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-    return diffDays > 0 && diffDays <= 30
-  }
-
-  const isExpired = () => {
-    if (!document.expirationDate) return false
-    return new Date(document.expirationDate) < new Date()
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      whileHover={{ y: -4 }}
-      className="card p-4 group"
-    >
-      {/* Thumbnail / Icon */}
-      <div className={cn(
-        'aspect-[4/3] rounded-lg flex items-center justify-center mb-4 relative overflow-hidden',
-        category.bgColor
-      )}>
-        <Icon className={cn('w-12 h-12', category.color)} />
-
-        {/* Expiration Badge */}
-        {isExpiringSoon() && (
-          <div className="absolute top-2 right-2 bg-amber-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-            <Bell className="w-3 h-3" />
-            <span>Pronto</span>
-          </div>
-        )}
-        {isExpired() && (
-          <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-            <AlertTriangle className="w-3 h-3" />
-            <span>Vencido</span>
-          </div>
-        )}
-
-        {/* Hover Actions */}
-        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2">
-          <button
-            onClick={onView}
-            className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
-            title="Ver"
-          >
-            <Eye className="w-4 h-4 text-slate-700" />
-          </button>
-          <button
-            onClick={onDownload}
-            className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
-            title="Descargar"
-          >
-            <Download className="w-4 h-4 text-slate-700" />
-          </button>
-          <button
-            onClick={onEdit}
-            className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
-            title="Editar"
-          >
-            <Edit2 className="w-4 h-4 text-slate-700" />
-          </button>
-          <button
-            onClick={onDelete}
-            className="p-2 bg-white rounded-full hover:bg-red-100 transition-colors"
-            title="Eliminar"
-          >
-            <Trash2 className="w-4 h-4 text-red-500" />
-          </button>
-        </div>
-      </div>
-
-      {/* Document Info */}
-      <div className="space-y-2">
-        <div className="flex items-start gap-2">
-          {getFileIcon(document.type)}
-          <div className="flex-1 min-w-0">
-            <h4 className="font-medium text-sm truncate" style={{ color: 'var(--color-text)' }} title={document.name}>
-              {document.name}
-            </h4>
-            <p className="text-xs truncate" style={{ color: 'var(--color-text-secondary)' }}>
-              {document.subcategory}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-          <div className="flex items-center gap-1">
-            <Calendar className="w-3 h-3" />
-            <span>{formatDateShort(document.uploadDate)}</span>
-          </div>
-          <span>{document.size}</span>
-        </div>
-
-        {document.expirationDate && (
-          <div className={cn(
-            'flex items-center gap-1 text-xs',
-            isExpired() ? 'text-red-500' : isExpiringSoon() ? 'text-amber-500' : 'text-green-500'
-          )}>
-            <Clock className="w-3 h-3" />
-            <span>
-              {isExpired()
-                ? `Vencido el ${formatDateShort(document.expirationDate)}`
-                : `Vence: ${formatDateShort(document.expirationDate)}`
-              }
-            </span>
-          </div>
-        )}
-      </div>
-    </motion.div>
-  )
-}
-
-// Category Accordion Component
-interface CategoryAccordionProps {
-  categoryKey: DocumentCategory
-  documents: PersonalDocument[]
-  isExpanded: boolean
-  onToggle: () => void
-  onViewDocument: (doc: PersonalDocument) => void
-  onDownloadDocument: (doc: PersonalDocument) => void
-  onEditDocument: (doc: PersonalDocument) => void
-  onDeleteDocument: (doc: PersonalDocument) => void
-}
-
-function CategoryAccordion({
-  categoryKey,
-  documents,
-  isExpanded,
-  onToggle,
-  onViewDocument,
-  onDownloadDocument,
-  onEditDocument,
-  onDeleteDocument
-}: CategoryAccordionProps) {
-  const category = categories[categoryKey]
-  const Icon = category.icon
-  const docCount = documents.length
-
-  const expiringCount = documents.filter(d => {
-    if (!d.expirationDate) return false
-    const expDate = new Date(d.expirationDate)
-    const today = new Date()
-    const diffDays = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-    return diffDays > 0 && diffDays <= 30
-  }).length
-
-  return (
-    <div className="card overflow-hidden">
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-      >
-        <div className="flex items-center gap-3">
-          <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', category.bgColor)}>
-            <Icon className={cn('w-5 h-5', category.color)} />
-          </div>
-          <div className="text-left">
-            <h3 className="font-semibold" style={{ color: 'var(--color-text)' }}>
-              {category.label}
-            </h3>
-            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-              {docCount} documento{docCount !== 1 ? 's' : ''}
-              {expiringCount > 0 && (
-                <span className="ml-2 text-amber-500">
-                  ({expiringCount} por vencer)
-                </span>
-              )}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {expiringCount > 0 && (
-            <span className="bg-amber-100 text-amber-600 text-xs px-2 py-1 rounded-full flex items-center gap-1">
-              <Bell className="w-3 h-3" />
-              {expiringCount}
-            </span>
-          )}
-          {isExpanded ? (
-            <ChevronDown className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
-          ) : (
-            <ChevronRight className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
-          )}
-        </div>
-      </button>
-
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="p-4 pt-0 border-t" style={{ borderColor: 'var(--color-border)' }}>
-              {documents.length === 0 ? (
-                <div className="text-center py-8">
-                  <FolderArchive className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" />
-                  <p style={{ color: 'var(--color-text-secondary)' }}>
-                    No hay documentos en esta categoria
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 bg-gradient-to-br from-occident to-occident-600 rounded-xl flex items-center justify-center shadow-glow">
+                  <FolderOpen className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold" style={{ color: 'var(--color-text)' }}>
+                    Mi Archivo
+                  </h1>
+                  <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                    Todos tus documentos en un solo lugar
                   </p>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-4">
-                  {documents.map(doc => (
-                    <DocumentCard
-                      key={doc.id}
-                      document={doc}
-                      onView={() => onViewDocument(doc)}
-                      onDownload={() => onDownloadDocument(doc)}
-                      onEdit={() => onEditDocument(doc)}
-                      onDelete={() => onDeleteDocument(doc)}
-                    />
-                  ))}
-                </div>
-              )}
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="btn-primary flex items-center gap-2 px-6 py-3 rounded-xl font-semibold shadow-lg"
+            >
+              <Upload className="w-5 h-5" />
+              Subir documento
+            </button>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+            <div className="card-glass p-4 rounded-xl">
+              <div className="text-2xl font-bold mb-1" style={{ color: 'var(--color-text)' }}>
+                {stats.total}
+              </div>
+              <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                Total documentos
+              </div>
+            </div>
+
+            <div className="card-glass p-4 rounded-xl">
+              <div className="text-2xl font-bold mb-1" style={{ color: 'var(--color-text)' }}>
+                {stats.categories}
+              </div>
+              <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                Categorías usadas
+              </div>
+            </div>
+
+            <div className="card-glass p-4 rounded-xl">
+              <div className="text-2xl font-bold mb-1" style={{ color: 'var(--color-text)' }}>
+                {new Date(stats.lastUploaded).toLocaleDateString()}
+              </div>
+              <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                Último subido
+              </div>
+            </div>
+
+            <div className="card-glass p-4 rounded-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <HardDrive className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
+                <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                  {stats.totalSize} / 10 GB
+                </span>
+              </div>
+              <div className="progress-bar">
+                <div className="progress-bar-fill" style={{ width: `${stats.usedPercentage}%` }} />
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Barra de búsqueda y filtros */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="card-glass p-4 rounded-2xl"
+        >
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Búsqueda */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
+              <input
+                type="text"
+                placeholder="Buscar documentos..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input-field pl-10 w-full"
+              />
+            </div>
+
+            {/* Filtro categoría */}
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
+              <select
+                value={selectedCategory || ''}
+                onChange={(e) => setSelectedCategory(e.target.value || null)}
+                className="input-field pl-10 pr-10 appearance-none cursor-pointer"
+              >
+                <option value="">Todas las categorías</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" style={{ color: 'var(--color-text-secondary)' }} />
+            </div>
+
+            {/* Ordenar */}
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="input-field pr-10 appearance-none cursor-pointer"
+              >
+                <option value="date">Más reciente</option>
+                <option value="name">Nombre</option>
+                <option value="size">Tamaño</option>
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none" style={{ color: 'var(--color-text-secondary)' }} />
+            </div>
+
+            {/* Vista */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded-lg transition-colors ${
+                  viewMode === 'grid'
+                    ? 'bg-occident text-white'
+                    : 'bg-white/50 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10'
+                }`}
+              >
+                <Grid3x3 className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-lg transition-colors ${
+                  viewMode === 'list'
+                    ? 'bg-occident text-white'
+                    : 'bg-white/50 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10'
+                }`}
+              >
+                <List className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Contenido principal */}
+        {viewMode === 'grid' ? (
+          // Vista Grid - Categorías
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {documentsByCategory.map((category, index) => {
+              const Icon = category.icon
+              const isExpanded = expandedCategory === category.id
+
+              return (
+                <motion.div
+                  key={category.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className={`card-glass rounded-2xl overflow-hidden ${
+                    isExpanded ? 'col-span-full' : ''
+                  }`}
+                >
+                  <button
+                    onClick={() => setExpandedCategory(isExpanded ? null : category.id)}
+                    className="w-full p-6 text-left hover:bg-white/50 dark:hover:bg-white/5 transition-colors"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${category.color} flex items-center justify-center shadow-lg`}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      {isExpanded ? (
+                        <ChevronUp className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
+                      ) : (
+                        <ChevronDown className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
+                      )}
+                    </div>
+
+                    <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
+                      {category.name}
+                    </h3>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                        {category.docs.length} documento{category.docs.length !== 1 ? 's' : ''}
+                      </span>
+                      {category.docs.length > 0 && (
+                        <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          {new Date(category.docs[0].uploadDate).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+
+                  {/* Lista de documentos expandida */}
+                  <AnimatePresence>
+                    {isExpanded && category.docs.length > 0 && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="border-t overflow-hidden" style={{ borderColor: 'var(--color-border)' }}
+                      >
+                        <div className="p-4 space-y-2">
+                          {category.docs.map(doc => (
+                            <div
+                              key={doc.id}
+                              className="flex items-center justify-between p-3 rounded-lg bg-white/30 dark:bg-white/5 hover:bg-white/50 dark:hover:bg-white/10 transition-colors"
+                            >
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <FileText className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--color-text-secondary)' }} />
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-medium truncate" style={{ color: 'var(--color-text)' }}>
+                                    {doc.name}
+                                  </p>
+                                  <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                                    {doc.size} • {new Date(doc.uploadDate).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setSelectedDocument(doc)
+                                  }}
+                                  className="p-2 rounded-lg hover:bg-occident/20 transition-colors"
+                                  title="Ver"
+                                >
+                                  <Eye className="w-4 h-4" style={{ color: 'var(--color-text)' }} />
+                                </button>
+                                <button
+                                  className="p-2 rounded-lg hover:bg-blue-500/20 transition-colors"
+                                  title="Descargar"
+                                >
+                                  <Download className="w-4 h-4 text-blue-500" />
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleDelete(doc.id)
+                                  }}
+                                  className="p-2 rounded-lg hover:bg-red-500/20 transition-colors"
+                                  title="Eliminar"
+                                >
+                                  <Trash2 className="w-4 h-4 text-red-500" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              )
+            })}
+          </div>
+        ) : (
+          // Vista Lista
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="card-glass rounded-2xl overflow-hidden"
+          >
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="border-b" style={{ borderColor: 'var(--color-border)' }}>
+                  <tr>
+                    <th className="text-left p-4 font-semibold" style={{ color: 'var(--color-text)' }}>Documento</th>
+                    <th className="text-left p-4 font-semibold" style={{ color: 'var(--color-text)' }}>Categoría</th>
+                    <th className="text-left p-4 font-semibold" style={{ color: 'var(--color-text)' }}>Fecha</th>
+                    <th className="text-left p-4 font-semibold" style={{ color: 'var(--color-text)' }}>Tamaño</th>
+                    <th className="text-right p-4 font-semibold" style={{ color: 'var(--color-text)' }}>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredDocuments.map((doc, index) => {
+                    const category = categories.find(c => c.id === doc.category)
+                    const Icon = category?.icon || FileText
+
+                    return (
+                      <motion.tr
+                        key={doc.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.03 }}
+                        className="border-b hover:bg-white/30 dark:hover:bg-white/5 transition-colors"
+                        style={{ borderColor: 'var(--color-border)' }}
+                      >
+                        <td className="p-4">
+                          <div className="flex items-center gap-3">
+                            <FileText className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
+                            <div>
+                              <p className="font-medium" style={{ color: 'var(--color-text)' }}>{doc.name}</p>
+                              {doc.notes && (
+                                <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{doc.notes}</p>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            <Icon className="w-4 h-4" style={{ color: 'var(--color-text-secondary)' }} />
+                            <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                              {category?.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                            {new Date(doc.uploadDate).toLocaleDateString()}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                            {doc.size}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => setSelectedDocument(doc)}
+                              className="p-2 rounded-lg hover:bg-occident/20 transition-colors"
+                              title="Ver"
+                            >
+                              <Eye className="w-4 h-4" style={{ color: 'var(--color-text)' }} />
+                            </button>
+                            <button
+                              className="p-2 rounded-lg hover:bg-blue-500/20 transition-colors"
+                              title="Descargar"
+                            >
+                              <Download className="w-4 h-4 text-blue-500" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(doc.id)}
+                              className="p-2 rounded-lg hover:bg-red-500/20 transition-colors"
+                              title="Eliminar"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-500" />
+                            </button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
-    </div>
-  )
-}
 
-// Empty State Component
-function EmptyState({ onUpload }: { onUpload: () => void }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="card p-12 text-center"
-    >
-      <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-occident/20 to-occident/5 rounded-full flex items-center justify-center">
-        <FolderArchive className="w-12 h-12 text-occident" />
-      </div>
-      <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text)' }}>
-        Tu archivo esta vacio
-      </h2>
-      <p className="mb-6 max-w-md mx-auto" style={{ color: 'var(--color-text-secondary)' }}>
-        Organiza todos tus documentos personales en un solo lugar. Sube contratos, facturas, documentos de identidad y mucho mas.
-      </p>
-      <button
-        onClick={onUpload}
-        className="btn-primary inline-flex items-center gap-2"
-      >
-        <Upload className="w-5 h-5" />
-        Subir primer documento
-      </button>
-    </motion.div>
-  )
-}
-
-// Loading Skeleton Component
-function LoadingSkeleton() {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Skeleton variant="text" width={200} height={32} />
-        <Skeleton variant="rounded" width={150} height={44} />
-      </div>
-      <div className="flex gap-4">
-        <Skeleton variant="rounded" width="100%" height={48} className="flex-1" />
-        <Skeleton variant="rounded" width={150} height={48} />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="card p-4">
-            <Skeleton variant="rounded" height={120} className="mb-4" />
-            <Skeleton variant="text" width="80%" className="mb-2" />
-            <Skeleton variant="text" width="60%" height={12} />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// Main Page Component
-export default function MiArchivoPage() {
-  const [documents, setDocuments] = useState<PersonalDocument[]>(mockDocuments)
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [filterCategory, setFilterCategory] = useState<DocumentCategory | null>(null)
-  const [sortBy, setSortBy] = useState<'date' | 'name' | 'expiration'>('date')
-  const [viewMode, setViewMode] = useState<'accordion' | 'grid'>('accordion')
-  const [expandedCategories, setExpandedCategories] = useState<Set<DocumentCategory>>(new Set())
-
-  // Modal states
-  const [uploadModalOpen, setUploadModalOpen] = useState(false)
-  const [previewModalOpen, setPreviewModalOpen] = useState(false)
-  const [editModalOpen, setEditModalOpen] = useState(false)
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-  const [selectedDocument, setSelectedDocument] = useState<PersonalDocument | null>(null)
-
-  // Simulate loading
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000)
-    return () => clearTimeout(timer)
-  }, [])
-
-  // Filter and sort documents
-  const filteredDocuments = documents.filter(doc => {
-    const matchesSearch = doc.name.toLowerCase().includes(search.toLowerCase()) ||
-      doc.subcategory.toLowerCase().includes(search.toLowerCase())
-    const matchesCategory = !filterCategory || doc.category === filterCategory
-    return matchesSearch && matchesCategory
-  }).sort((a, b) => {
-    switch (sortBy) {
-      case 'name':
-        return a.name.localeCompare(b.name)
-      case 'expiration':
-        if (!a.expirationDate) return 1
-        if (!b.expirationDate) return -1
-        return new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime()
-      default:
-        return new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
-    }
-  })
-
-  // Group documents by category
-  const documentsByCategory = Object.keys(categories).reduce((acc, cat) => {
-    acc[cat as DocumentCategory] = filteredDocuments.filter(d => d.category === cat)
-    return acc
-  }, {} as Record<DocumentCategory, PersonalDocument[]>)
-
-  // Count expiring documents
-  const expiringDocuments = documents.filter(d => {
-    if (!d.expirationDate) return false
-    const expDate = new Date(d.expirationDate)
-    const today = new Date()
-    const diffDays = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-    return diffDays > 0 && diffDays <= 30
-  })
-
-  // Handlers
-  const toggleCategory = (category: DocumentCategory) => {
-    setExpandedCategories(prev => {
-      const next = new Set(prev)
-      if (next.has(category)) {
-        next.delete(category)
-      } else {
-        next.add(category)
-      }
-      return next
-    })
-  }
-
-  const handleUpload = (files: File[], category: DocumentCategory, subcategory: string, expirationDate?: string) => {
-    const newDocs: PersonalDocument[] = files.map((file, index) => ({
-      id: `new-${Date.now()}-${index}`,
-      name: file.name,
-      category,
-      subcategory,
-      uploadDate: new Date().toISOString().split('T')[0],
-      expirationDate,
-      size: file.size < 1024 * 1024
-        ? `${(file.size / 1024).toFixed(0)} KB`
-        : `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-      sizeBytes: file.size,
-      type: file.name.split('.').pop()?.toLowerCase() as PersonalDocument['type'],
-      url: '#'
-    }))
-    setDocuments(prev => [...newDocs, ...prev])
-    setExpandedCategories(prev => new Set([...prev, category]))
-  }
-
-  const handleViewDocument = (doc: PersonalDocument) => {
-    setSelectedDocument(doc)
-    setPreviewModalOpen(true)
-  }
-
-  const handleDownloadDocument = (doc: PersonalDocument) => {
-    // In a real app, this would trigger a download
-    console.log('Downloading:', doc.name)
-  }
-
-  const handleEditDocument = (doc: PersonalDocument) => {
-    setSelectedDocument(doc)
-    setEditModalOpen(true)
-  }
-
-  const handleDeleteClick = (doc: PersonalDocument) => {
-    setSelectedDocument(doc)
-    setDeleteModalOpen(true)
-  }
-
-  const handleDeleteConfirm = () => {
-    if (selectedDocument) {
-      setDocuments(prev => prev.filter(d => d.id !== selectedDocument.id))
-    }
-    setDeleteModalOpen(false)
-    setSelectedDocument(null)
-  }
-
-  const handleSaveName = (id: string, newName: string) => {
-    setDocuments(prev => prev.map(d =>
-      d.id === id ? { ...d, name: newName } : d
-    ))
-  }
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <LoadingSkeleton />
-      </div>
-    )
-  }
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-3" style={{ color: 'var(--color-text)' }}>
-            <FolderArchive className="w-8 h-8 text-occident" />
-            Mi Archivo
-          </h1>
-          <p style={{ color: 'var(--color-text-secondary)' }}>
-            Organiza y gestiona todos tus documentos personales
-          </p>
-        </div>
-        <button
-          onClick={() => setUploadModalOpen(true)}
-          className="btn-primary flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          Subir documento
-        </button>
-      </div>
-
-      {/* Expiring Documents Alert */}
-      {expiringDocuments.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-amber-100 dark:bg-amber-800/50 rounded-full flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5 text-amber-600" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-amber-800 dark:text-amber-200">
-                Documentos por vencer
-              </h3>
-              <p className="text-sm text-amber-700 dark:text-amber-300">
-                Tienes {expiringDocuments.length} documento{expiringDocuments.length > 1 ? 's' : ''} que vence{expiringDocuments.length > 1 ? 'n' : ''} en los proximos 30 dias
-              </p>
-            </div>
-            <button
-              onClick={() => {
-                setFilterCategory(null)
-                setSortBy('expiration')
-              }}
-              className="text-sm font-medium text-amber-700 dark:text-amber-300 hover:underline"
-            >
-              Ver todos
-            </button>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="card p-4"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
-                {documents.length}
-              </p>
-              <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                Documentos
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="card p-4"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
-                {Object.keys(categories).filter(cat =>
-                  documents.some(d => d.category === cat)
-                ).length}
-              </p>
-              <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                Categorias
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="card p-4"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
-              <Bell className="w-5 h-5 text-amber-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
-                {expiringDocuments.length}
-              </p>
-              <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                Por vencer
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="card p-4"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-              <FolderArchive className="w-5 h-5 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
-                {(documents.reduce((acc, d) => acc + d.sizeBytes, 0) / (1024 * 1024)).toFixed(1)}
-              </p>
-              <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                MB usados
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Buscar documento..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="input pl-12 w-full"
-          />
-        </div>
-        <div className="flex gap-2">
-          <select
-            value={filterCategory || ''}
-            onChange={(e) => setFilterCategory(e.target.value as DocumentCategory || null)}
-            className="input w-40"
-          >
-            <option value="">Todas las categorias</option>
-            {Object.entries(categories).map(([key, cat]) => (
-              <option key={key} value={key}>{cat.label}</option>
-            ))}
-          </select>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            className="input w-40"
-          >
-            <option value="date">Por fecha</option>
-            <option value="name">Por nombre</option>
-            <option value="expiration">Por vencimiento</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Documents */}
-      {documents.length === 0 ? (
-        <EmptyState onUpload={() => setUploadModalOpen(true)} />
-      ) : filteredDocuments.length === 0 ? (
-        <div className="card p-12 text-center">
-          <Search className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
-          <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
-            Sin resultados
-          </h3>
-          <p style={{ color: 'var(--color-text-secondary)' }}>
-            No se encontraron documentos que coincidan con tu busqueda
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {Object.entries(documentsByCategory).map(([cat, docs]) => {
-            if (docs.length === 0 && filterCategory) return null
-            return (
-              <CategoryAccordion
-                key={cat}
-                categoryKey={cat as DocumentCategory}
-                documents={docs}
-                isExpanded={expandedCategories.has(cat as DocumentCategory)}
-                onToggle={() => toggleCategory(cat as DocumentCategory)}
-                onViewDocument={handleViewDocument}
-                onDownloadDocument={handleDownloadDocument}
-                onEditDocument={handleEditDocument}
-                onDeleteDocument={handleDeleteClick}
+        {/* Modal subir documento */}
+        <AnimatePresence>
+          {showUploadModal && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => !isUploading && setShowUploadModal(false)}
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
               />
-            )
-          })}
-        </div>
-      )}
 
-      {/* Modals */}
-      <UploadModal
-        isOpen={uploadModalOpen}
-        onClose={() => setUploadModalOpen(false)}
-        onUpload={handleUpload}
-      />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              >
+                <div
+                  className="card-glass rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
+                      Subir documento
+                    </h2>
+                    {!isUploading && (
+                      <button
+                        onClick={() => setShowUploadModal(false)}
+                        className="p-2 rounded-lg hover:bg-white/50 dark:hover:bg-white/10 transition-colors"
+                      >
+                        <X className="w-5 h-5" style={{ color: 'var(--color-text)' }} />
+                      </button>
+                    )}
+                  </div>
 
-      <PreviewModal
-        isOpen={previewModalOpen}
-        onClose={() => {
-          setPreviewModalOpen(false)
-          setSelectedDocument(null)
-        }}
-        document={selectedDocument}
-      />
+                  <div className="space-y-4">
+                    {/* Dropzone */}
+                    <div className="border-2 border-dashed rounded-xl p-8 text-center hover:border-occident transition-colors cursor-pointer"
+                      style={{ borderColor: 'var(--color-border)' }}
+                      onClick={() => document.getElementById('file-upload')?.click()}
+                    >
+                      <Upload className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--color-text-secondary)' }} />
+                      <p className="text-lg font-medium mb-2" style={{ color: 'var(--color-text)' }}>
+                        {uploadForm.file ? uploadForm.file.name : 'Arrastra y suelta tu archivo aquí'}
+                      </p>
+                      <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                        o haz clic para seleccionar
+                      </p>
+                      <input
+                        id="file-upload"
+                        type="file"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      />
+                    </div>
 
-      <EditNameModal
-        isOpen={editModalOpen}
-        onClose={() => {
-          setEditModalOpen(false)
-          setSelectedDocument(null)
-        }}
-        document={selectedDocument}
-        onSave={handleSaveName}
-      />
+                    {/* Nombre */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
+                        Nombre del documento *
+                      </label>
+                      <input
+                        type="text"
+                        value={uploadForm.name}
+                        onChange={(e) => setUploadForm(prev => ({ ...prev, name: e.target.value }))}
+                        className="input-field w-full"
+                        placeholder="Ej: Contrato Endesa Luz"
+                      />
+                    </div>
 
-      <ConfirmModal
-        isOpen={deleteModalOpen}
-        onClose={() => {
-          setDeleteModalOpen(false)
-          setSelectedDocument(null)
-        }}
-        onConfirm={handleDeleteConfirm}
-        title="Eliminar documento"
-        message={`¿Estas seguro de que quieres eliminar "${selectedDocument?.name}"? Esta accion no se puede deshacer.`}
-        confirmText="Eliminar"
-        cancelText="Cancelar"
-        variant="danger"
-      />
+                    {/* Categoría */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
+                        Categoría *
+                      </label>
+                      <select
+                        value={uploadForm.category}
+                        onChange={(e) => setUploadForm(prev => ({ ...prev, category: e.target.value }))}
+                        className="input-field w-full"
+                      >
+                        <option value="">Seleccionar categoría</option>
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Fecha */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
+                        Fecha del documento
+                      </label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
+                        <input
+                          type="date"
+                          value={uploadForm.date}
+                          onChange={(e) => setUploadForm(prev => ({ ...prev, date: e.target.value }))}
+                          className="input-field w-full pl-10"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Notas */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
+                        Notas (opcional)
+                      </label>
+                      <div className="relative">
+                        <StickyNote className="absolute left-3 top-3 w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
+                        <textarea
+                          value={uploadForm.notes}
+                          onChange={(e) => setUploadForm(prev => ({ ...prev, notes: e.target.value }))}
+                          className="input-field w-full pl-10 min-h-[100px]"
+                          placeholder="Añade cualquier información relevante..."
+                        />
+                      </div>
+                    </div>
+
+                    {/* Progress bar */}
+                    {isUploading && (
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+                            Subiendo...
+                          </span>
+                          <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                            {uploadProgress}%
+                          </span>
+                        </div>
+                        <div className="progress-bar">
+                          <div className="progress-bar-fill" style={{ width: `${uploadProgress}%` }} />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Botones */}
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        onClick={() => setShowUploadModal(false)}
+                        disabled={isUploading}
+                        className="btn-secondary flex-1"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={handleUpload}
+                        disabled={isUploading || !uploadForm.name || !uploadForm.category || !uploadForm.file}
+                        className="btn-primary flex-1"
+                      >
+                        {isUploading ? 'Subiendo...' : 'Subir documento'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Modal ver documento */}
+        <AnimatePresence>
+          {selectedDocument && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedDocument(null)}
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+              />
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              >
+                <div
+                  className="card-glass rounded-2xl p-6 max-w-2xl w-full"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
+                      Detalles del documento
+                    </h2>
+                    <button
+                      onClick={() => setSelectedDocument(null)}
+                      className="p-2 rounded-lg hover:bg-white/50 dark:hover:bg-white/10 transition-colors"
+                    >
+                      <X className="w-5 h-5" style={{ color: 'var(--color-text)' }} />
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4 p-4 rounded-xl bg-white/30 dark:bg-white/5">
+                      <FileText className="w-12 h-12" style={{ color: 'var(--color-text-secondary)' }} />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg mb-1" style={{ color: 'var(--color-text)' }}>
+                          {selectedDocument.name}
+                        </h3>
+                        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                          {categories.find(c => c.id === selectedDocument.category)?.name}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="card-glass p-4 rounded-xl">
+                        <p className="text-sm mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                          Fecha documento
+                        </p>
+                        <p className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                          {new Date(selectedDocument.date).toLocaleDateString()}
+                        </p>
+                      </div>
+
+                      <div className="card-glass p-4 rounded-xl">
+                        <p className="text-sm mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                          Fecha subida
+                        </p>
+                        <p className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                          {new Date(selectedDocument.uploadDate).toLocaleDateString()}
+                        </p>
+                      </div>
+
+                      <div className="card-glass p-4 rounded-xl">
+                        <p className="text-sm mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                          Tamaño
+                        </p>
+                        <p className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                          {selectedDocument.size}
+                        </p>
+                      </div>
+
+                      <div className="card-glass p-4 rounded-xl">
+                        <p className="text-sm mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                          Tipo
+                        </p>
+                        <p className="font-semibold" style={{ color: 'var(--color-text)' }}>
+                          {selectedDocument.type.toUpperCase()}
+                        </p>
+                      </div>
+                    </div>
+
+                    {selectedDocument.notes && (
+                      <div className="card-glass p-4 rounded-xl">
+                        <p className="text-sm mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                          Notas
+                        </p>
+                        <p style={{ color: 'var(--color-text)' }}>
+                          {selectedDocument.notes}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="flex gap-3 pt-4">
+                      <button className="btn-secondary flex-1 flex items-center justify-center gap-2">
+                        <Download className="w-5 h-5" />
+                        Descargar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(selectedDocument.id)}
+                        className="btn-primary flex-1 flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   )
 }

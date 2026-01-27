@@ -280,6 +280,174 @@ export function sanitizeMarkdown(markdown: string): string {
 }
 
 /**
+ * Sanitiza HTML para chat eliminando scripts, event handlers y contenido peligroso
+ * Implementación completa basada en regex sin dependencias externas
+ */
+export interface SanitizeHtmlOptions {
+  allowedTags?: string[]
+  allowedAttributes?: string[]
+  stripAllTags?: boolean
+}
+
+const DEFAULT_ALLOWED_TAGS = ['b', 'i', 'em', 'strong', 'br', 'p']
+const DEFAULT_ALLOWED_ATTRIBUTES: string[] = []
+
+export function sanitizeHtmlStrict(
+  html: string,
+  options: SanitizeHtmlOptions = {}
+): string {
+  if (!html || typeof html !== 'string') {
+    return ''
+  }
+
+  const {
+    allowedTags = DEFAULT_ALLOWED_TAGS,
+    allowedAttributes = DEFAULT_ALLOWED_ATTRIBUTES,
+    stripAllTags = false,
+  } = options
+
+  let sanitized = html
+
+  // 1. Eliminar todos los tags <script> (incluye variantes con mayúsculas, espacios, etc)
+  sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+  sanitized = sanitized.replace(/<script[\s\S]*?<\/script>/gi, '')
+
+  // 2. Eliminar <style> tags
+  sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+
+  // 3. Eliminar tags peligrosos (iframe, object, embed, link, meta, base, form)
+  sanitized = sanitized.replace(/<(iframe|object|embed|link|meta|base|form)[^>]*>[\s\S]*?<\/\1>/gi, '')
+  sanitized = sanitized.replace(/<(iframe|object|embed|link|meta|base|form|input|textarea|button)[^>]*\/?>/gi, '')
+
+  // 4. Eliminar event handlers (onclick, onerror, onload, onmouseover, etc.)
+  sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '')
+  sanitized = sanitized.replace(/\s*on\w+\s*=\s*[^\s>]*/gi, '')
+
+  // 5. Eliminar javascript: protocol
+  sanitized = sanitized.replace(/javascript\s*:/gi, '')
+  sanitized = sanitized.replace(/jAvAsCrIpT\s*:/gi, '') // variantes
+
+  // 6. Eliminar data: protocol (excepto imágenes base64 seguras)
+  sanitized = sanitized.replace(/\s*data:(?!image\/(png|jpg|jpeg|gif|svg\+xml);base64)[^"'\s>]*/gi, '')
+
+  // 7. Eliminar vbscript: protocol
+  sanitized = sanitized.replace(/vbscript\s*:/gi, '')
+
+  // 8. Eliminar atributos peligrosos
+  const dangerousAttrs = ['srcdoc', 'formaction', 'action', 'href', 'src', 'xlink:href', 'data']
+  dangerousAttrs.forEach(attr => {
+    sanitized = sanitized.replace(new RegExp(`\\s*${attr}\\s*=\\s*["'][^"']*["']`, 'gi'), '')
+  })
+
+  // 9. Si stripAllTags es true, eliminar todos los tags HTML
+  if (stripAllTags) {
+    sanitized = sanitized.replace(/<[^>]*>/g, '')
+    // Decodificar entidades HTML básicas
+    sanitized = sanitized
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#x27;/g, "'")
+      .replace(/&amp;/g, '&')
+    return sanitized
+  }
+
+  // 10. Filtrar tags no permitidos
+  if (allowedTags.length > 0) {
+    const tagPattern = /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi
+    sanitized = sanitized.replace(tagPattern, (match, tagName) => {
+      const normalizedTagName = tagName.toLowerCase()
+      if (allowedTags.includes(normalizedTagName)) {
+        // Tag permitido: filtrar atributos
+        if (allowedAttributes.length === 0) {
+          // Si no se permiten atributos, devolver tag limpio
+          const isClosing = match.startsWith('</')
+          const isSelfClosing = match.endsWith('/>')
+          if (isClosing) return `</${normalizedTagName}>`
+          if (isSelfClosing) return `<${normalizedTagName} />`
+          return `<${normalizedTagName}>`
+        }
+        return filterTagAttributes(match, allowedAttributes)
+      }
+      return '' // Tag no permitido: eliminar
+    })
+  } else {
+    // Si no hay tags permitidos, eliminar todos
+    sanitized = sanitized.replace(/<[^>]*>/g, '')
+  }
+
+  // 11. Eliminar entidades HTML que podrían ser peligrosas cuando están codificadas
+  sanitized = sanitized.replace(/&lt;script/gi, '')
+  sanitized = sanitized.replace(/&lt;iframe/gi, '')
+  sanitized = sanitized.replace(/&lt;object/gi, '')
+
+  // 12. Eliminar caracteres de control peligrosos
+  sanitized = sanitized.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+
+  return sanitized.trim()
+}
+
+/**
+ * Filtra atributos de un tag HTML, manteniendo solo los permitidos
+ */
+function filterTagAttributes(tag: string, allowedAttributes: string[]): string {
+  const tagNameMatch = tag.match(/<\/?([a-z][a-z0-9]*)/i)
+  if (!tagNameMatch) return tag
+
+  const tagName = tagNameMatch[1].toLowerCase()
+  const isClosing = tag.startsWith('</')
+  const isSelfClosing = tag.endsWith('/>')
+
+  if (isClosing) {
+    return `</${tagName}>`
+  }
+
+  // Extraer y filtrar atributos permitidos
+  let filteredTag = `<${tagName}`
+  const attributePattern = /\s+([a-z-]+)\s*=\s*["']([^"']*)["']/gi
+  let match
+
+  while ((match = attributePattern.exec(tag)) !== null) {
+    const [, attrName, attrValue] = match
+    if (allowedAttributes.includes(attrName.toLowerCase())) {
+      // Sanitizar el valor del atributo
+      const safeValue = attrValue
+        .replace(/javascript:/gi, '')
+        .replace(/data:/gi, '')
+        .replace(/vbscript:/gi, '')
+        .replace(/on\w+/gi, '')
+        .replace(/[<>"']/g, '')
+
+      filteredTag += ` ${attrName}="${safeValue}"`
+    }
+  }
+
+  filteredTag += isSelfClosing ? ' />' : '>'
+  return filteredTag
+}
+
+/**
+ * Formatea markdown simple a HTML sanitizado (para chat)
+ * Soporta: **bold**, saltos de línea
+ */
+export function formatMessageForChat(content: string): string {
+  if (!content || typeof content !== 'string') {
+    return ''
+  }
+
+  // Aplicar formateo markdown básico
+  let formatted = content
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') // **bold**
+    .replace(/\n/g, '<br />') // saltos de línea
+
+  // Sanitizar el resultado con configuración estricta
+  return sanitizeHtmlStrict(formatted, {
+    allowedTags: ['strong', 'br', 'b', 'i', 'em', 'p'],
+    allowedAttributes: [],
+  })
+}
+
+/**
  * Rate limit key sanitization
  * Ensures consistent and safe rate limit keys
  */

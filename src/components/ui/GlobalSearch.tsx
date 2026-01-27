@@ -2,87 +2,73 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, X, FileText, Shield, MessageSquare, AlertTriangle, ArrowRight, Command } from 'lucide-react'
+import { Search, X, FileText, Shield, MessageSquare, AlertTriangle, Command } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useGlobalSearch } from '@/hooks/useGlobalSearch'
-import { cn } from '@/lib/utils'
+import { useStore, Policy, Document, Message, Claim } from '@/store/useStore'
 
-interface ResultItemProps {
-  icon: React.ReactNode
-  title: string
-  subtitle: string
-  category: string
-  isSelected: boolean
-  onClick: () => void
-}
-
-function ResultItem({ icon, title, subtitle, category, isSelected, onClick }: ResultItemProps) {
-  return (
-    <motion.button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'w-full flex items-center gap-3 px-4 py-3 text-left transition-colors',
-        isSelected
-          ? 'bg-occident/10'
-          : 'hover:bg-slate-100 dark:hover:bg-slate-800'
-      )}
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 10 }}
-    >
-      <div className={cn(
-        'w-10 h-10 rounded-lg flex items-center justify-center',
-        isSelected ? 'bg-occident text-white' : 'bg-slate-100 dark:bg-slate-800'
-      )}>
-        {icon}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="font-medium truncate" style={{ color: 'var(--color-text)' }}>
-          {title}
-        </div>
-        <div className="text-sm truncate" style={{ color: 'var(--color-text-secondary)' }}>
-          {subtitle}
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800" style={{ color: 'var(--color-text-secondary)' }}>
-          {category}
-        </span>
-        {isSelected && (
-          <ArrowRight className="w-4 h-4 text-occident" />
-        )}
-      </div>
-    </motion.button>
-  )
+interface SearchResults {
+  policies: Policy[]
+  documents: Document[]
+  messages: Message[]
+  claims: Claim[]
 }
 
 export function GlobalSearch() {
   const router = useRouter()
-  const { query, setQuery, results, totalResults, isOpen, setIsOpen, clearSearch } = useGlobalSearch()
-  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [isOpen, setIsOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Build flat list of all results for keyboard navigation
-  const flatResults = results ? [
-    ...results.policies.map(p => ({ type: 'policy' as const, item: p, route: '/polizas' })),
-    ...results.documents.map(d => ({ type: 'document' as const, item: d, route: '/documentos' })),
-    ...results.messages.map(m => ({ type: 'message' as const, item: m, route: '/mensajes' })),
-    ...results.claims.map(c => ({ type: 'claim' as const, item: c, route: '/siniestros' })),
-  ] : []
+  const { policies, documents, messages, claims } = useStore()
+
+  // Debounce search query (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [query])
+
+  // Search results
+  const results: SearchResults | null = (() => {
+    if (!debouncedQuery.trim()) return null
+    const q = debouncedQuery.toLowerCase()
+
+    return {
+      policies: policies.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.number.toLowerCase().includes(q) ||
+        p.type.toLowerCase().includes(q)
+      ).slice(0, 5),
+      documents: documents.filter(d =>
+        d.name.toLowerCase().includes(q) ||
+        d.type.toLowerCase().includes(q)
+      ).slice(0, 5),
+      messages: messages.filter(m =>
+        m.subject.toLowerCase().includes(q) ||
+        m.content.toLowerCase().includes(q)
+      ).slice(0, 5),
+      claims: claims.filter(c =>
+        c.type.toLowerCase().includes(q) ||
+        c.description.toLowerCase().includes(q) ||
+        c.policyNumber.toLowerCase().includes(q)
+      ).slice(0, 5)
+    }
+  })()
+
+  const totalResults = results
+    ? results.policies.length + results.documents.length + results.messages.length + results.claims.length
+    : 0
 
   // Focus input when modal opens
   useEffect(() => {
     if (isOpen && inputRef.current) {
-      inputRef.current.focus()
+      setTimeout(() => inputRef.current?.focus(), 100)
     }
   }, [isOpen])
-
-  // Reset selection when results change
-  useEffect(() => {
-    setSelectedIndex(0)
-  }, [query])
 
   // Click outside to close
   useEffect(() => {
@@ -97,26 +83,28 @@ export function GlobalSearch() {
     }
 
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isOpen, setIsOpen])
+  }, [isOpen])
 
-  // Keyboard navigation
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setSelectedIndex(prev => Math.min(prev + 1, flatResults.length - 1))
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setSelectedIndex(prev => Math.max(prev - 1, 0))
-    } else if (e.key === 'Enter' && flatResults[selectedIndex]) {
-      e.preventDefault()
-      router.push(flatResults[selectedIndex].route)
-      clearSearch()
+  // Keyboard shortcut Ctrl+K
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setIsOpen(prev => !prev)
+      }
+      if (e.key === 'Escape' && isOpen) {
+        setIsOpen(false)
+      }
     }
-  }, [flatResults, selectedIndex, router, clearSearch])
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen])
 
   const handleResultClick = (route: string) => {
     router.push(route)
-    clearSearch()
+    setIsOpen(false)
+    setQuery('')
   }
 
   const getCategoryIcon = (type: string) => {
@@ -134,264 +122,233 @@ export function GlobalSearch() {
     }
   }
 
-  const getCategoryLabel = (type: string) => {
-    switch (type) {
-      case 'policy':
-        return 'Poliza'
-      case 'document':
-        return 'Documento'
-      case 'message':
-        return 'Mensaje'
-      case 'claim':
-        return 'Siniestro'
-      default:
-        return 'Otro'
-    }
-  }
-
-  const getItemTitle = (type: string, item: any) => {
-    switch (type) {
-      case 'policy':
-        return item.name
-      case 'document':
-        return item.name
-      case 'message':
-        return item.subject
-      case 'claim':
-        return item.type
-      default:
-        return 'Sin titulo'
-    }
-  }
-
-  const getItemSubtitle = (type: string, item: any) => {
-    switch (type) {
-      case 'policy':
-        return item.number
-      case 'document':
-        return item.date
-      case 'message':
-        return item.content.slice(0, 50) + '...'
-      case 'claim':
-        return item.description.slice(0, 50) + '...'
-      default:
-        return ''
-    }
-  }
-
   return (
     <div ref={containerRef} className="relative">
-      {/* Search Trigger Button */}
+      {/* Search Trigger Button - Desktop */}
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className={cn(
-          'hidden md:flex items-center gap-2 px-4 py-2.5 rounded-xl w-72 transition-all',
-          isOpen
-            ? 'ring-2 ring-occident shadow-lg'
-            : 'hover:shadow-md'
-        )}
-        style={{ backgroundColor: 'var(--color-bg-secondary)' }}
+        className="hidden md:flex items-center gap-3 px-4 py-2.5 rounded-xl w-72 bg-app-surface hover:bg-app-surfaceHover border border-app-border transition-all duration-200"
       >
-        <Search className="w-4 h-4" style={{ color: 'var(--color-text-secondary)' }} />
-        <span className="text-sm flex-1 text-left" style={{ color: 'var(--color-text-secondary)' }}>
-          Buscar polizas, documentos...
+        <Search className="w-4 h-4 text-t-muted" />
+        <span className="text-sm text-t-muted flex-1 text-left">
+          Buscar...
         </span>
-        <kbd className="hidden sm:flex items-center gap-1 px-2 py-1 text-xs rounded bg-slate-200 dark:bg-slate-700" style={{ color: 'var(--color-text-secondary)' }}>
+        <kbd className="hidden lg:flex items-center gap-1 px-2 py-1 text-xs rounded-lg bg-app-elevated border border-app-border text-t-faint">
           <Command className="w-3 h-3" />
           <span>K</span>
         </kbd>
       </button>
 
-      {/* Mobile Search Button */}
+      {/* Search Trigger Button - Mobile */}
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="md:hidden p-2.5 rounded-xl"
-        style={{ backgroundColor: 'var(--color-bg-secondary)' }}
+        className="md:hidden p-2.5 rounded-xl bg-app-surface hover:bg-app-surfaceHover border border-app-border transition-all duration-200"
         aria-label="Buscar"
       >
-        <Search className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
+        <Search className="w-5 h-5 text-t-muted" />
       </button>
 
-      {/* Search Modal/Dropdown */}
+      {/* Search Modal */}
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Backdrop for mobile */}
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 z-40 md:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90]"
               onClick={() => setIsOpen(false)}
             />
 
             {/* Search Panel */}
             <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className={cn(
-                'absolute z-50 overflow-hidden rounded-2xl shadow-2xl border',
-                'left-0 right-0 md:left-0 md:right-auto md:w-[480px]',
-                'top-0 md:top-full md:mt-2',
-                'fixed md:absolute inset-4 md:inset-auto'
-              )}
-              style={{
-                backgroundColor: 'var(--card-bg)',
-                borderColor: 'var(--color-border)'
-              }}
+              className="fixed top-20 left-1/2 -translate-x-1/2 z-[91] w-full max-w-2xl mx-4 rounded-2xl bg-app-elevated border border-app-border shadow-elevated overflow-hidden"
             >
               {/* Search Input */}
-              <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                <Search className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
+              <div className="flex items-center gap-3 px-5 py-4 border-b border-app-divider">
+                <Search className="w-5 h-5 text-t-muted flex-shrink-0" />
                 <input
                   ref={inputRef}
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Buscar polizas, documentos, mensajes..."
-                  className="flex-1 bg-transparent outline-none text-base"
-                  style={{ color: 'var(--color-text)' }}
+                  placeholder="Buscar pólizas, documentos, mensajes..."
+                  className="flex-1 bg-transparent outline-none text-base text-t-strong placeholder:text-t-faint"
                   autoComplete="off"
                 />
                 {query && (
                   <button
                     type="button"
                     onClick={() => setQuery('')}
-                    className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                    aria-label="Limpiar busqueda"
+                    className="p-1.5 rounded-lg hover:bg-app-surface transition-colors"
+                    aria-label="Limpiar"
                   >
-                    <X className="w-4 h-4" style={{ color: 'var(--color-text-secondary)' }} />
+                    <X className="w-4 h-4 text-t-muted" />
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors md:hidden"
+                  className="p-1.5 rounded-lg hover:bg-app-surface transition-colors"
                   aria-label="Cerrar"
                 >
-                  <X className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
+                  <X className="w-5 h-5 text-t-muted" />
                 </button>
               </div>
 
               {/* Results */}
               <div className="max-h-[60vh] overflow-y-auto">
-                {!query.trim() ? (
-                  <div className="px-4 py-8 text-center">
-                    <Search className="w-12 h-12 mx-auto mb-3 opacity-30" style={{ color: 'var(--color-text-secondary)' }} />
-                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                      Escribe para buscar en polizas, documentos, mensajes y siniestros
+                {!debouncedQuery.trim() ? (
+                  <div className="px-6 py-12 text-center">
+                    <Search className="w-16 h-16 mx-auto mb-4 text-t-faint" strokeWidth={1.5} />
+                    <p className="text-sm text-t-muted mb-6">
+                      Busca en tus pólizas, documentos, mensajes y siniestros
                     </p>
-                    <div className="flex items-center justify-center gap-2 mt-4 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                      <kbd className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">↑↓</kbd>
-                      <span>para navegar</span>
-                      <kbd className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Enter</kbd>
-                      <span>para seleccionar</span>
-                      <kbd className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Esc</kbd>
-                      <span>para cerrar</span>
+                    <div className="flex items-center justify-center gap-4 text-xs text-t-faint">
+                      <div className="flex items-center gap-1.5">
+                        <kbd className="px-2 py-1 rounded-lg bg-app-surface border border-app-border">
+                          <Command className="w-3 h-3 inline" /> K
+                        </kbd>
+                        <span>para abrir</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <kbd className="px-2 py-1 rounded-lg bg-app-surface border border-app-border">Esc</kbd>
+                        <span>para cerrar</span>
+                      </div>
                     </div>
                   </div>
                 ) : totalResults === 0 ? (
-                  <div className="px-4 py-8 text-center">
-                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                      No se encontraron resultados para "{query}"
+                  <div className="px-6 py-12 text-center">
+                    <p className="text-sm text-t-muted">
+                      No se encontraron resultados para <span className="font-medium text-t-strong">"{debouncedQuery}"</span>
                     </p>
                   </div>
                 ) : (
-                  <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
-                    {/* Policies Section */}
+                  <div>
+                    {/* Pólizas */}
                     {results?.policies && results.policies.length > 0 && (
-                      <div>
-                        <div className="px-4 py-2 text-xs font-semibold uppercase" style={{ color: 'var(--color-text-tertiary)', backgroundColor: 'var(--color-bg-secondary)' }}>
-                          Polizas ({results.policies.length})
+                      <div className="border-b border-app-divider">
+                        <div className="px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-t-faint bg-app-surface">
+                          Pólizas ({results.policies.length})
                         </div>
-                        {results.policies.map((policy, index) => {
-                          const globalIndex = index
-                          return (
-                            <ResultItem
-                              key={policy.id}
-                              icon={getCategoryIcon('policy')}
-                              title={getItemTitle('policy', policy)}
-                              subtitle={getItemSubtitle('policy', policy)}
-                              category={getCategoryLabel('policy')}
-                              isSelected={selectedIndex === globalIndex}
-                              onClick={() => handleResultClick('/polizas')}
-                            />
-                          )
-                        })}
+                        {results.policies.map((policy) => (
+                          <motion.button
+                            key={policy.id}
+                            onClick={() => handleResultClick('/polizas')}
+                            className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-app-surface transition-colors text-left"
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                          >
+                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                              {getCategoryIcon('policy')}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-t-strong truncate">
+                                {policy.name}
+                              </div>
+                              <div className="text-sm text-t-muted truncate">
+                                {policy.number}
+                              </div>
+                            </div>
+                          </motion.button>
+                        ))}
                       </div>
                     )}
 
-                    {/* Documents Section */}
+                    {/* Documentos */}
                     {results?.documents && results.documents.length > 0 && (
-                      <div>
-                        <div className="px-4 py-2 text-xs font-semibold uppercase" style={{ color: 'var(--color-text-tertiary)', backgroundColor: 'var(--color-bg-secondary)' }}>
+                      <div className="border-b border-app-divider">
+                        <div className="px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-t-faint bg-app-surface">
                           Documentos ({results.documents.length})
                         </div>
-                        {results.documents.map((doc, index) => {
-                          const globalIndex = (results?.policies?.length || 0) + index
-                          return (
-                            <ResultItem
-                              key={doc.id}
-                              icon={getCategoryIcon('document')}
-                              title={getItemTitle('document', doc)}
-                              subtitle={getItemSubtitle('document', doc)}
-                              category={getCategoryLabel('document')}
-                              isSelected={selectedIndex === globalIndex}
-                              onClick={() => handleResultClick('/documentos')}
-                            />
-                          )
-                        })}
+                        {results.documents.map((doc) => (
+                          <motion.button
+                            key={doc.id}
+                            onClick={() => handleResultClick('/documentos')}
+                            className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-app-surface transition-colors text-left"
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                          >
+                            <div className="w-10 h-10 rounded-lg bg-state-infoBg flex items-center justify-center text-state-info flex-shrink-0">
+                              {getCategoryIcon('document')}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-t-strong truncate">
+                                {doc.name}
+                              </div>
+                              <div className="text-sm text-t-muted truncate">
+                                {doc.date}
+                              </div>
+                            </div>
+                          </motion.button>
+                        ))}
                       </div>
                     )}
 
-                    {/* Messages Section */}
+                    {/* Mensajes */}
                     {results?.messages && results.messages.length > 0 && (
-                      <div>
-                        <div className="px-4 py-2 text-xs font-semibold uppercase" style={{ color: 'var(--color-text-tertiary)', backgroundColor: 'var(--color-bg-secondary)' }}>
+                      <div className="border-b border-app-divider">
+                        <div className="px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-t-faint bg-app-surface">
                           Mensajes ({results.messages.length})
                         </div>
-                        {results.messages.map((message, index) => {
-                          const globalIndex = (results?.policies?.length || 0) + (results?.documents?.length || 0) + index
-                          return (
-                            <ResultItem
-                              key={message.id}
-                              icon={getCategoryIcon('message')}
-                              title={getItemTitle('message', message)}
-                              subtitle={getItemSubtitle('message', message)}
-                              category={getCategoryLabel('message')}
-                              isSelected={selectedIndex === globalIndex}
-                              onClick={() => handleResultClick('/mensajes')}
-                            />
-                          )
-                        })}
+                        {results.messages.map((message) => (
+                          <motion.button
+                            key={message.id}
+                            onClick={() => handleResultClick('/mensajes')}
+                            className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-app-surface transition-colors text-left"
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                          >
+                            <div className="w-10 h-10 rounded-lg bg-state-successBg flex items-center justify-center text-state-success flex-shrink-0">
+                              {getCategoryIcon('message')}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-t-strong truncate">
+                                {message.subject}
+                              </div>
+                              <div className="text-sm text-t-muted truncate">
+                                {message.content.slice(0, 60)}...
+                              </div>
+                            </div>
+                          </motion.button>
+                        ))}
                       </div>
                     )}
 
-                    {/* Claims Section */}
+                    {/* Siniestros */}
                     {results?.claims && results.claims.length > 0 && (
                       <div>
-                        <div className="px-4 py-2 text-xs font-semibold uppercase" style={{ color: 'var(--color-text-tertiary)', backgroundColor: 'var(--color-bg-secondary)' }}>
+                        <div className="px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-t-faint bg-app-surface">
                           Siniestros ({results.claims.length})
                         </div>
-                        {results.claims.map((claim, index) => {
-                          const globalIndex = (results?.policies?.length || 0) + (results?.documents?.length || 0) + (results?.messages?.length || 0) + index
-                          return (
-                            <ResultItem
-                              key={claim.id}
-                              icon={getCategoryIcon('claim')}
-                              title={getItemTitle('claim', claim)}
-                              subtitle={getItemSubtitle('claim', claim)}
-                              category={getCategoryLabel('claim')}
-                              isSelected={selectedIndex === globalIndex}
-                              onClick={() => handleResultClick('/siniestros')}
-                            />
-                          )
-                        })}
+                        {results.claims.map((claim) => (
+                          <motion.button
+                            key={claim.id}
+                            onClick={() => handleResultClick('/siniestros')}
+                            className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-app-surface transition-colors text-left"
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                          >
+                            <div className="w-10 h-10 rounded-lg bg-state-warningBg flex items-center justify-center text-state-warning flex-shrink-0">
+                              {getCategoryIcon('claim')}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-t-strong truncate">
+                                {claim.type}
+                              </div>
+                              <div className="text-sm text-t-muted truncate">
+                                {claim.description.slice(0, 60)}...
+                              </div>
+                            </div>
+                          </motion.button>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -399,13 +356,11 @@ export function GlobalSearch() {
               </div>
 
               {/* Footer */}
-              {query.trim() && totalResults > 0 && (
-                <div className="px-4 py-3 border-t flex items-center justify-between text-xs" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-tertiary)' }}>
-                  <span>{totalResults} resultado{totalResults !== 1 ? 's' : ''} encontrado{totalResults !== 1 ? 's' : ''}</span>
-                  <div className="flex items-center gap-2">
-                    <kbd className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800">Enter</kbd>
-                    <span>para abrir</span>
-                  </div>
+              {debouncedQuery.trim() && totalResults > 0 && (
+                <div className="px-5 py-3 border-t border-app-divider flex items-center justify-between text-xs text-t-faint">
+                  <span>
+                    {totalResults} resultado{totalResults !== 1 ? 's' : ''} encontrado{totalResults !== 1 ? 's' : ''}
+                  </span>
                 </div>
               )}
             </motion.div>
@@ -415,3 +370,5 @@ export function GlobalSearch() {
     </div>
   )
 }
+
+export default GlobalSearch
