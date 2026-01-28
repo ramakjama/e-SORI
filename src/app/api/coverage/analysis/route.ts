@@ -5,7 +5,7 @@
  * POST /api/coverage/analysis - Actualiza perfil de segmentación
  */
 
-import { CoverageEngine, type UserSegmentData, type CurrentPolicy, type CoverageAnalysisResult } from '@/lib/coverage-engine'
+import { CoverageEngine, type UserSegmentData, type CurrentPolicy, type CoverageAnalysisResult } from '@/lib/coverage-engine-optimized'
 
 const DEMO_MODE = process.env.DEMO_MODE === 'true' || true
 

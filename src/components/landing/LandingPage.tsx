@@ -12,6 +12,7 @@ import {
   FAQSection,
   CTASection,
 } from './sections'
+import { ExitIntentModal } from '@/components/marketing/ExitIntentModal'
 
 interface LandingPageProps {
   content: LandingContent
@@ -81,6 +82,23 @@ export function LandingPage({ content, sections }: LandingPageProps) {
           gamificationPoints={config.gamificationPoints}
         />
       )}
+
+      {/* Exit Intent Modal */}
+      <ExitIntentModal
+        enabled={true}
+        cookieDays={30}
+        onLeadCaptured={(data) => {
+          // Track with analytics
+          if (typeof window !== 'undefined' && (window as any).gtag) {
+            ;(window as any).gtag('event', 'lead_captured', {
+              event_category: 'exit_intent',
+              event_label: config.insuranceType || 'unknown',
+              source: config.source,
+              campaign: config.campaign,
+            })
+          }
+        }}
+      />
     </div>
   )
 }

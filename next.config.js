@@ -11,9 +11,9 @@ const nextConfig = {
       },
     ],
   },
-  generateBuildId: async () => {
-    return 'ecliente-' + Date.now()
-  },
+  // generateBuildId: async () => {
+  //   return 'ecliente-' + Date.now()
+  // },
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb',

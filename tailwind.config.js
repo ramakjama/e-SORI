@@ -10,106 +10,120 @@ module.exports = {
     extend: {
       colors: {
         // ========================================
-        // APP - Fondos y superficies
+        // SORIANO BRAND - From Official Logo
         // ========================================
-        app: {
-          bg: 'var(--app-bg)',
-          bg2: 'var(--app-bg-2)',
-          surface: 'var(--app-surface)',
-          surfaceHover: 'var(--app-surface-hover)',
-          elevated: 'var(--app-elevated)',
-          border: 'var(--app-border)',
-          divider: 'var(--app-divider)',
+        soriano: {
+          // Primary grays from logo
+          DEFAULT: '#808080',
+          gray: '#808080',
+          'gray-light': '#a7a5a5',
+          'gray-lighter': '#c5c4c4',
+          'gray-dark': '#5a5a5a',
+          'gray-darker': '#3a3a3a',
+          dark: '#1a1a1a',
+          // Professional blue accent
+          blue: '#4A90E2',
+          'blue-light': '#6FA8EC',
+          'blue-dark': '#2E6DB8',
         },
 
         // ========================================
-        // T - Sistema de texto
-        // ========================================
-        t: {
-          strong: 'var(--text-strong)',
-          DEFAULT: 'var(--text)',
-          muted: 'var(--text-muted)',
-          faint: 'var(--text-faint)',
-          disabled: 'var(--text-disabled)',
-        },
-
-        // ========================================
-        // BRAND - Platas del logo Soriano
+        // SEMANTIC COLORS - Professional palette
         // ========================================
         brand: {
-          silver: 'var(--brand-silver)',
-          chrome: 'var(--brand-chrome)',
-          titanium: 'var(--brand-titanium)',
+          primary: '#808080',
+          'primary-light': '#a7a5a5',
+          'primary-dark': '#5a5a5a',
+          accent: '#4A90E2',
+          'accent-light': '#6FA8EC',
+          'accent-dark': '#2E6DB8',
         },
 
-        // ========================================
-        // PRIMARY - Acción (azul tech)
-        // ========================================
+        // Action color (replaces old primary)
         primary: {
-          DEFAULT: 'var(--primary)',
-          hover: 'var(--primary-hover)',
-          active: 'var(--primary-active)',
-          soft: 'var(--primary-soft-bg)',
+          DEFAULT: '#4A90E2',
+          50: '#EBF4FC',
+          100: '#D7E9F9',
+          200: '#AFD3F3',
+          300: '#87BDED',
+          400: '#6FA8EC',
+          500: '#4A90E2',
+          600: '#2E6DB8',
+          700: '#23528C',
+          800: '#183760',
+          900: '#0C1C34',
         },
 
         // ========================================
-        // STATE - Estados operativos
+        // STATE COLORS - Consistent semantics
         // ========================================
-        state: {
-          success: 'var(--success)',
-          successBg: 'var(--success-bg)',
-          warning: 'var(--warning)',
-          warningBg: 'var(--warning-bg)',
-          danger: 'var(--danger)',
-          dangerBg: 'var(--danger-bg)',
-          info: 'var(--info)',
-          infoBg: 'var(--info-bg)',
+        success: {
+          DEFAULT: '#2FBF97',
+          light: '#50D4AE',
+          dark: '#258F72',
+          bg: '#E8F8F3',
+        },
+        warning: {
+          DEFAULT: '#E0B04A',
+          light: '#EBC46F',
+          dark: '#B8913C',
+          bg: '#FDF5E6',
+        },
+        danger: {
+          DEFAULT: '#E30613',
+          light: '#F43F47',
+          dark: '#B8050F',
+          bg: '#FEE7E8',
+        },
+        info: {
+          DEFAULT: '#4A90E2',
+          light: '#6FA8EC',
+          dark: '#2E6DB8',
+          bg: '#EBF4FC',
         },
 
         // ========================================
-        // LEGACY - Compatibilidad con código existente
+        // LEGACY - Backward compatibility
         // ========================================
         occident: {
-          DEFAULT: '#E30613',
-          50: '#FEE7E8',
-          100: '#FDCFD1',
-          200: '#FA9FA3',
-          300: '#F76F75',
-          400: '#F43F47',
-          500: '#E30613',
-          600: '#B8050F',
-          700: '#8D040C',
-          800: '#620308',
-          900: '#370204',
-        },
-        apple: {
-          black: '#000000',
-          white: '#ffffff',
-          'gray-900': '#1d1d1f',
-          'gray-800': '#2d2d2f',
-          'gray-700': '#424245',
-          'gray-600': '#6e6e73',
-          'gray-500': '#86868b',
-          'gray-400': '#aeaeb2',
-          'gray-300': '#c7c7cc',
-          'gray-200': '#d1d1d6',
-          'gray-100': '#e5e5ea',
-          'gray-50': '#f5f5f7',
+          DEFAULT: '#4A90E2', // Redirect to new blue accent
+          50: '#EBF4FC',
+          100: '#D7E9F9',
+          200: '#AFD3F3',
+          300: '#87BDED',
+          400: '#6FA8EC',
+          500: '#4A90E2',
+          600: '#2E6DB8',
+          700: '#23528C',
+          800: '#183760',
+          900: '#0C1C34',
         },
         accent: {
-          blue: '#4FA3FF',
+          blue: '#4A90E2',
           green: '#2FBF97',
           orange: '#E0B04A',
-          red: '#D05B5B',
-          purple: '#AF52DE',
-          pink: '#FF2D55',
+          red: '#E30613',
+          purple: '#8B7FD6',
+          pink: '#FF6B9D',
           teal: '#5AC8FA',
           indigo: '#5856D6',
         },
-        soriano: {
-          gray: '#808080',
-          'gray-light': '#a7a5a5',
-          dark: '#1a1a1a',
+
+        // ========================================
+        // NEUTRAL GRAYS - Professional scale
+        // ========================================
+        gray: {
+          50: '#F8F9FA',
+          100: '#F1F3F5',
+          200: '#E8E9EA',
+          300: '#D1D3D5',
+          400: '#C5C4C4',
+          500: '#A7A5A5',
+          600: '#808080',
+          700: '#5A5A5A',
+          800: '#3A3A3A',
+          900: '#1A1A1A',
+          950: '#0A0A0A',
         },
       },
 

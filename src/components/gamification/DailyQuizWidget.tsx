@@ -63,101 +63,72 @@ interface SubmitResultsResponse {
 // ============================================================================
 
 async function fetchDailyQuiz(): Promise<QuizAPIResponse> {
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 800))
+  try {
+    const response = await fetch('/api/quiz/daily')
+    if (!response.ok) {
+      throw new Error('Failed to fetch quiz')
+    }
+    const data = await response.json()
 
-  const mockQuestions: Question[] = [
-    {
-      id: 'q1',
-      question: '¿Que cubre generalmente un seguro de responsabilidad civil?',
-      options: [
-        'Solo danos propios',
-        'Danos causados a terceros',
-        'Gastos medicos propios',
-        'Reparaciones del hogar',
-      ],
-      correctIndex: 1,
-      explanation:
-        'El seguro de responsabilidad civil cubre los danos que puedas causar a terceras personas, ya sean materiales o personales.',
-      category: 'seguros',
-    },
-    {
-      id: 'q2',
-      question: '¿Cual es el plazo maximo para declarar un siniestro de auto?',
-      options: ['24 horas', '48 horas', '7 dias', '30 dias'],
-      correctIndex: 2,
-      explanation:
-        'Generalmente tienes 7 dias para comunicar un siniestro a tu aseguradora, aunque es recomendable hacerlo lo antes posible.',
-      category: 'auto',
-    },
-    {
-      id: 'q3',
-      question: '¿Que es una franquicia en un seguro?',
-      options: [
-        'Un descuento en la prima',
-        'La cantidad que pagas del siniestro',
-        'El limite de cobertura',
-        'Un tipo de poliza',
-      ],
-      correctIndex: 1,
-      explanation:
-        'La franquicia es la cantidad fija que el asegurado debe pagar de su bolsillo en caso de siniestro antes de que la aseguradora cubra el resto.',
-      category: 'seguros',
-    },
-    {
-      id: 'q4',
-      question: '¿Que documento acredita que tienes un seguro vigente?',
-      options: [
-        'La factura de pago',
-        'El certificado de seguro',
-        'La carta de bienvenida',
-        'El DNI del titular',
-      ],
-      correctIndex: 1,
-      explanation:
-        'El certificado de seguro es el documento oficial que acredita la existencia de una poliza de seguro vigente.',
-      category: 'seguros',
-    },
-    {
-      id: 'q5',
-      question:
-        '¿Cual es el beneficio principal de un seguro de vida con ahorro?',
-      options: [
-        'Solo proteccion por fallecimiento',
-        'Acumulacion de capital + proteccion',
-        'Cobertura de gastos medicos',
-        'Descuentos en farmacias',
-      ],
-      correctIndex: 1,
-      explanation:
-        'Los seguros de vida con ahorro combinan la proteccion por fallecimiento con la posibilidad de acumular un capital que puedes rescatar.',
-      category: 'vida',
-    },
-  ]
+    // Transform API response to match QuizAPIResponse interface
+    const questions: Question[] = data.questions.map((q: any) => ({
+      id: q.id,
+      question: q.question,
+      options: q.options.map((opt: any) => opt.text),
+      correctIndex: -1, // Hidden from client
+      explanation: '', // Will come from submission response
+      category: q.category.toLowerCase() as 'seguros' | 'hogar' | 'auto' | 'vida' | 'salud' | 'general',
+    }))
 
-  return {
-    questions: mockQuestions,
-    streak: 3,
-    hasCompletedToday: false,
+    return {
+      questions,
+      streak: 0, // API should provide this
+      hasCompletedToday: data.alreadyCompleted || false,
+    }
+  } catch (error) {
+    console.error('Error fetching quiz:', error)
+    throw error
   }
 }
 
 async function submitQuizResults(
   results: QuizResult[]
 ): Promise<SubmitResultsResponse> {
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 500))
+  try {
+    // Transform results to match API expectations
+    const answers = results.map((r) => ({
+      questionId: r.questionId,
+      selectedIndex: r.selectedIndex,
+      timeSpent: r.timeSpent * 1000, // Convert to ms
+    }))
 
-  const correctCount = results.filter((r) => r.isCorrect).length
-  const isPerfect = correctCount === results.length
+    const response = await fetch('/api/quiz/daily', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answers }),
+    })
 
-  return {
-    xpEarned: correctCount * 20 + (isPerfect ? 50 : 0),
-    coinsEarned: correctCount * 5 + (isPerfect ? 15 : 0),
-    newStreak: 4,
-    newTotalXP: 1250,
-    newTotalCoins: 340,
-    achievements: isPerfect ? ['perfect_quiz'] : undefined,
+    if (!response.ok) {
+      throw new Error('Failed to submit quiz')
+    }
+
+    const data = await response.json()
+
+    // Calculate total XP and coins from results
+    const totalXP = data.results.reduce((acc: number, r: any) => acc + r.xpEarned, 0)
+    const totalCoins = data.results.reduce((acc: number, r: any) => acc + r.coinsEarned, 0)
+
+    return {
+      xpEarned: totalXP,
+      coinsEarned: totalCoins,
+      newStreak: data.streak || 1,
+      newTotalXP: totalXP,
+      newTotalCoins: totalCoins,
+      achievements: data.percentage === 100 ? ['perfect_quiz'] : undefined,
+    }
+  } catch (error) {
+    console.error('Error submitting quiz:', error)
+    throw error
   }
 }
 

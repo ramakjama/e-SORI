@@ -49,9 +49,20 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
+  // Security & 2FA
+  twoFactorEnabled   Boolean   @default(false)
+  twoFactorSecret    String?   // TOTP secret
+  backupCodes        Json?     // Array of backup codes
+  lastPasswordChange DateTime?
+  passwordExpiresAt  DateTime?
+
   // NextAuth Relations
   accounts       Account[]
   sessions       Session[]
+
+  // Security Relations
+  auditLogs      AuditLog[]
+  passwordHistory PasswordHistory[]
 
   // Core Business Relations
   policies       Policy[]
@@ -121,14 +132,24 @@ model Account {
 }
 
 model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
+  id               String   @id @default(cuid())
+  sessionToken     String   @unique
+  userId           String
+  expires          DateTime
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Security Fields
+  deviceFingerprint String?
+  ipAddress        String?
+  userAgent        String?  @db.Text
+  location         String?   // City, Country
+  lastActivity     DateTime? @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([deviceFingerprint])
   @@map("sessions")
 }
 
@@ -139,6 +160,43 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+// ========================================
+// SECURITY & AUDIT
+// ========================================
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  email     String?
+  eventType String   // LOGIN_SUCCESS, PASSWORD_CHANGE, etc.
+  ipAddress String
+  userAgent String   @db.Text
+  location  String?
+  metadata  Json?    // Additional event data
+  timestamp DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([timestamp])
+  @@index([ipAddress])
+  @@map("audit_logs")
+}
+
+model PasswordHistory {
+  id           String   @id @default(cuid())
+  userId       String
+  passwordHash String   @db.Text
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("password_history")
 }
 
 // ========================================
@@ -556,8 +614,6 @@ model QuizQuestion {
   active        Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-
-  attempts QuizAttempt[]
 
   @@index([category])
   @@index([difficulty])

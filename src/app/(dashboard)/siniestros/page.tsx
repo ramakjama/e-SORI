@@ -1,422 +1,220 @@
 'use client'
 
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect } from 'react'
 import {
-  AlertTriangle, Plus, Clock, CheckCircle, XCircle, FileText,
-  Calendar, User, Phone, MapPin, ChevronDown, ChevronUp,
-  MessageCircle, Upload, Package, Truck, ClipboardCheck
+  AlertTriangle,
+  Plus,
+  Clock,
+  CheckCircle,
+  XCircle,
+  FileText,
+  Euro,
+  Search,
+  Filter
 } from 'lucide-react'
-import { useStore, Claim } from '@/store/useStore'
-import { formatDateShort, cn } from '@/lib/utils'
-import toast from 'react-hot-toast'
+import { Card } from '@/components/ui/Card'
+import { Badge } from '@/components/ui/Badge'
+import Link from 'next/link'
 
-const statusConfig: Record<string, { label: string; color: string; bgColor: string; icon: typeof Clock }> = {
-  pending: { label: 'Pendiente', color: 'text-amber-600', bgColor: 'bg-amber-100 dark:bg-amber-900/30', icon: Clock },
-  in_progress: { label: 'En proceso', color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30', icon: Truck },
-  resolved: { label: 'Resuelto', color: 'text-green-600', bgColor: 'bg-green-100 dark:bg-green-900/30', icon: CheckCircle },
-  rejected: { label: 'Rechazado', color: 'text-red-600', bgColor: 'bg-red-100 dark:bg-red-900/30', icon: XCircle },
-}
-
-const timelineIcons: Record<string, typeof Package> = {
-  received: Package,
-  assigned: User,
-  documentation: FileText,
-  assessment: ClipboardCheck,
-  resolved: CheckCircle,
-}
-
-function ClaimCard({ claim, index }: { claim: Claim; index: number }) {
-  const [expanded, setExpanded] = useState(claim.status === 'in_progress')
-  const status = statusConfig[claim.status]
-  const StatusIcon = status.icon
-
-  const completedSteps = claim.timeline.filter((e) => e.completed).length
-  const totalSteps = claim.timeline.length
-  const progressPercent = (completedSteps / totalSteps) * 100
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-      className={cn(
-        'card overflow-hidden',
-        claim.status === 'in_progress' && 'border-l-4 border-l-occident'
-      )}
-    >
-      {/* Header */}
-      <div
-        className="p-6 cursor-pointer hover:bg-occident/5 transition-colors"
-        onClick={() => setExpanded(!expanded)}
-      >
-        <div className="flex items-start gap-4">
-          <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center', status.bgColor)}>
-            <AlertTriangle className={cn('w-6 h-6', status.color)} />
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="font-semibold" style={{ color: 'var(--color-text)' }}>
-                  {claim.type}
-                </h3>
-                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                  {claim.policyNumber}
-                </p>
-              </div>
-              <span className={cn('inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium', status.bgColor, status.color)}>
-                <StatusIcon className="w-3.5 h-3.5" />
-                {status.label}
-              </span>
-            </div>
-
-            {/* Progress Bar */}
-            {claim.status === 'in_progress' && (
-              <div className="mt-4">
-                <div className="flex justify-between text-xs mb-1">
-                  <span style={{ color: 'var(--color-text-secondary)' }}>
-                    Paso {completedSteps} de {totalSteps}
-                  </span>
-                  <span style={{ color: 'var(--color-text-secondary)' }}>
-                    {Math.round(progressPercent)}%
-                  </span>
-                </div>
-                <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--color-border)' }}>
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progressPercent}%` }}
-                    transition={{ duration: 0.5 }}
-                    className="h-full bg-gradient-to-r from-occident to-occident-600 rounded-full"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Summary Info */}
-            <div className="flex flex-wrap items-center gap-4 mt-4 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-              <span className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                {formatDateShort(claim.date)}
-              </span>
-              {claim.assignedAgent && (
-                <span className="flex items-center gap-1">
-                  <User className="w-4 h-4" />
-                  {claim.assignedAgent}
-                </span>
-              )}
-              {claim.documents.length > 0 && (
-                <span className="flex items-center gap-1">
-                  <FileText className="w-4 h-4" />
-                  {claim.documents.length} docs
-                </span>
-              )}
-            </div>
-          </div>
-
-          <button type="button" className="p-2 rounded-lg hover:bg-occident/10 transition-colors">
-            {expanded ? (
-              <ChevronUp className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
-            ) : (
-              <ChevronDown className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Expanded Timeline */}
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
-          >
-            <div className="px-6 pb-6 pt-2 border-t" style={{ borderColor: 'var(--color-border)' }}>
-              {/* Description */}
-              <div className="mb-6 p-4 rounded-xl" style={{ backgroundColor: 'var(--color-card)' }}>
-                <p className="text-sm font-medium mb-1" style={{ color: 'var(--color-text)' }}>
-                  Descripción del siniestro
-                </p>
-                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                  {claim.description}
-                </p>
-              </div>
-
-              {/* Timeline */}
-              <div className="mb-6">
-                <h4 className="font-medium mb-4 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
-                  <Truck className="w-4 h-4 text-occident" />
-                  Seguimiento en tiempo real
-                </h4>
-
-                <div className="relative">
-                  {claim.timeline.map((event, idx) => {
-                    const TimelineIcon = timelineIcons[event.status] || Package
-                    const isLast = idx === claim.timeline.length - 1
-
-                    return (
-                      <div key={event.id} className="flex gap-4 pb-6 last:pb-0">
-                        {/* Line and dot */}
-                        <div className="relative flex flex-col items-center">
-                          <div
-                            className={cn(
-                              'w-10 h-10 rounded-full flex items-center justify-center z-10 transition-all',
-                              event.completed
-                                ? 'bg-green-500 text-white'
-                                : 'border-2'
-                            )}
-                            style={{
-                              backgroundColor: event.completed ? undefined : 'var(--color-background)',
-                              borderColor: event.completed ? undefined : 'var(--color-border)'
-                            }}
-                          >
-                            {event.completed ? (
-                              <CheckCircle className="w-5 h-5" />
-                            ) : (
-                              <TimelineIcon className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
-                            )}
-                          </div>
-                          {!isLast && (
-                            <div
-                              className={cn(
-                                'absolute top-10 w-0.5 h-full',
-                                event.completed ? 'bg-green-500' : ''
-                              )}
-                              style={{ backgroundColor: event.completed ? undefined : 'var(--color-border)' }}
-                            />
-                          )}
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 pt-1">
-                          <p className={cn(
-                            'font-medium',
-                            event.completed ? '' : 'opacity-60'
-                          )} style={{ color: 'var(--color-text)' }}>
-                            {event.title}
-                          </p>
-                          <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
-                            {event.description}
-                          </p>
-                          {event.date && (
-                            <p className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-                              {event.date}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Estimated resolution */}
-              {claim.estimatedResolution && claim.status === 'in_progress' && (
-                <div className="p-4 rounded-xl bg-occident/5 border border-occident/20 mb-6">
-                  <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-occident" />
-                    <div>
-                      <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
-                        Resolución estimada
-                      </p>
-                      <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                        {formatDateShort(claim.estimatedResolution)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex flex-wrap gap-3">
-                <button type="button" className="btn-secondary">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Adjuntar documento
-                </button>
-                <button type="button" className="btn-secondary">
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Enviar mensaje
-                </button>
-                {claim.assignedAgent && (
-                  <button type="button" className="btn-secondary">
-                    <Phone className="w-4 h-4 mr-2" />
-                    Llamar agente
-                  </button>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  )
+interface Claim {
+  id: string
+  claimNumber: string
+  policyId: string
+  policyNumber: string
+  type: string
+  status: string
+  amountClaimed: number
+  amountApproved?: number
+  description: string
+  incidentDate: string
+  createdAt: string
+  resolvedAt?: string
 }
 
 export default function SiniestrosPage() {
-  const { claims, policies, addClaim } = useStore()
-  const [showForm, setShowForm] = useState(false)
-  const [formData, setFormData] = useState({
-    policyId: '',
-    type: '',
-    description: '',
-  })
+  const [claims, setClaims] = useState<Claim[]>([])
+  const [loading, setLoading] = useState(true)
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const policy = policies.find((p) => p.id === formData.policyId)
-    if (!policy) return
+  useEffect(() => {
+    fetchClaims()
+  }, [filterStatus])
 
-    addClaim({
-      policyId: formData.policyId,
-      policyNumber: policy.number,
-      type: formData.type,
-      status: 'pending',
-      date: new Date().toISOString().split('T')[0],
-      description: formData.description,
-      documents: [],
-    })
+  async function fetchClaims() {
+    try {
+      setLoading(true)
+      let url = '/api/claims?limit=50'
 
-    toast.success('Siniestro comunicado correctamente. Te contactaremos pronto.')
-    setShowForm(false)
-    setFormData({ policyId: '', type: '', description: '' })
+      if (filterStatus !== 'all') {
+        url += `&status=${filterStatus}`
+      }
+
+      const response = await fetch(url)
+      const data = await response.json()
+      setClaims(data.claims || [])
+    } catch (error) {
+      console.error('Error fetching claims:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  // Sort claims: in_progress first, then pending, then resolved/rejected
-  const sortedClaims = [...claims].sort((a, b) => {
-    const order = { in_progress: 0, pending: 1, resolved: 2, rejected: 3 }
-    return order[a.status] - order[b.status]
+  const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
+    PENDING: { label: 'Pendiente', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400', icon: Clock },
+    UNDER_REVIEW: { label: 'En revisión', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400', icon: FileText },
+    APPROVED: { label: 'Aprobado', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400', icon: CheckCircle },
+    REJECTED: { label: 'Rechazado', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400', icon: XCircle },
+    PAID: { label: 'Pagado', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400', icon: CheckCircle },
+  }
+
+  const filteredClaims = claims.filter(claim => {
+    const matchesSearch = searchQuery === '' ||
+      claim.claimNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      claim.type.toLowerCase().includes(searchQuery.toLowerCase())
+
+    return matchesSearch
   })
 
-  const activeClaims = claims.filter((c) => c.status === 'in_progress' || c.status === 'pending').length
+  if (loading) {
+    return (
+      <div className="container max-w-7xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <AlertTriangle className="w-8 h-8 animate-spin mx-auto mb-4 text-occident" />
+            <p className="text-gray-600 dark:text-gray-400">Cargando siniestros...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="container max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
-            Siniestros
-          </h1>
-          <p style={{ color: 'var(--color-text-secondary)' }}>
-            {activeClaims > 0
-              ? `${activeClaims} siniestro${activeClaims > 1 ? 's' : ''} activo${activeClaims > 1 ? 's' : ''}`
-              : 'Sin siniestros activos'}
+          <h1 className="text-3xl font-bold mb-2">Mis Siniestros</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Gestiona y da seguimiento a tus reclamaciones
           </p>
         </div>
-        <button type="button" onClick={() => setShowForm(true)} className="btn-primary">
-          <Plus className="w-5 h-5 mr-2" />
-          Comunicar siniestro
-        </button>
+        <Link
+          href="/siniestros/nuevo"
+          className="flex items-center gap-2 px-6 py-3 bg-occident text-white rounded-lg hover:bg-occident/90 transition-colors font-semibold"
+        >
+          <Plus className="w-5 h-5" />
+          Reportar Siniestro
+        </Link>
       </div>
 
-      {/* New Claim Form */}
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="card p-6"
-          >
-            <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>
-              Comunicar nuevo siniestro
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
-                  Póliza afectada
-                </label>
-                <select
-                  value={formData.policyId}
-                  onChange={(e) => setFormData({ ...formData, policyId: e.target.value })}
-                  className="input"
-                  required
-                  aria-label="Selecciona la póliza afectada"
-                >
-                  <option value="">Selecciona una póliza</option>
-                  {policies.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} - {p.number}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
-                  Tipo de siniestro
-                </label>
-                <input
-                  type="text"
-                  value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  className="input"
-                  placeholder="Ej: Daños por agua, Robo, Accidente..."
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
-                  Descripción detallada
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="input min-h-[120px]"
-                  placeholder="Describe lo ocurrido con el mayor detalle posible: cuándo, cómo, qué daños hay..."
-                  required
-                />
-              </div>
+      {/* Filters */}
+      <div className="mb-6 space-y-4">
+        <div className="flex flex-wrap gap-2">
+          {['all', 'PENDING', 'UNDER_REVIEW', 'APPROVED', 'REJECTED'].map((status) => (
+            <button
+              key={status}
+              type="button"
+              onClick={() => setFilterStatus(status)}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                filterStatus === status
+                  ? 'bg-occident text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              {status === 'all' ? 'Todos' : statusConfig[status]?.label || status}
+            </button>
+          ))}
+        </div>
 
-              <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                <p className="text-sm text-blue-700 dark:text-blue-300">
-                  <strong>Siguiente paso:</strong> Una vez enviado, recibirás confirmación por email
-                  y te asignaremos un agente que se pondrá en contacto contigo.
-                </p>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button type="submit" className="btn-primary">
-                  <AlertTriangle className="w-4 h-4 mr-2" />
-                  Comunicar siniestro
-                </button>
-                <button type="button" onClick={() => setShowForm(false)} className="btn-secondary">
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Buscar por número de siniestro o tipo..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-occident focus:border-transparent"
+          />
+        </div>
+      </div>
 
       {/* Claims List */}
-      {claims.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="card p-12 text-center"
-        >
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-            <CheckCircle className="w-8 h-8 text-green-500" />
-          </div>
-          <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
-            Sin siniestros
-          </h3>
-          <p className="mb-6" style={{ color: 'var(--color-text-secondary)' }}>
-            No tienes ningún siniestro registrado. ¡Esperamos que siga así!
+      {filteredClaims.length === 0 ? (
+        <Card className="p-12 text-center">
+          <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+          <h3 className="text-xl font-semibold mb-2">No tienes siniestros</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            No has reportado ningún siniestro. ¡Esperamos que siga así!
           </p>
-          <button type="button" onClick={() => setShowForm(true)} className="btn-secondary">
-            <Plus className="w-4 h-4 mr-2" />
-            Comunicar siniestro
-          </button>
-        </motion.div>
+          <Link
+            href="/siniestros/nuevo"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-occident text-white rounded-lg hover:bg-occident/90 transition-colors font-semibold"
+          >
+            <Plus className="w-5 h-5" />
+            Reportar Primer Siniestro
+          </Link>
+        </Card>
       ) : (
         <div className="space-y-4">
-          {sortedClaims.map((claim, index) => (
-            <ClaimCard key={claim.id} claim={claim} index={index} />
-          ))}
+          {filteredClaims.map((claim) => {
+            const statusInfo = statusConfig[claim.status] || statusConfig.PENDING
+            const StatusIcon = statusInfo.icon
+
+            return (
+              <Link key={claim.id} href={`/siniestros/${claim.id}`}>
+                <Card className="p-6 hover:shadow-lg transition-all cursor-pointer">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-start gap-4 flex-1">
+                      <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <AlertTriangle className="w-6 h-6 text-orange-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold">{claim.claimNumber}</h3>
+                          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+                            <StatusIcon className="w-3.5 h-3.5" />
+                            {statusInfo.label}
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{claim.type}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 font-mono">Póliza: {claim.policyNumber}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Monto reclamado</p>
+                      <p className="font-semibold text-occident">{claim.amountClaimed.toLocaleString()}€</p>
+                    </div>
+                    {claim.amountApproved && (
+                      <div>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Monto aprobado</p>
+                        <p className="font-semibold text-green-600">{claim.amountApproved.toLocaleString()}€</p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Fecha del incidente</p>
+                      <p className="font-medium">{new Date(claim.incidentDate).toLocaleDateString('es-ES')}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Fecha de reporte</p>
+                      <p className="font-medium">{new Date(claim.createdAt).toLocaleDateString('es-ES')}</p>
+                    </div>
+                  </div>
+
+                  {claim.description && (
+                    <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                      <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
+                        {claim.description}
+                      </p>
+                    </div>
+                  )}
+                </Card>
+              </Link>
+            )
+          })}
         </div>
       )}
     </div>

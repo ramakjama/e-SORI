@@ -1,0 +1,992 @@
+// ========================================
+// e-SORI - Esquema Prisma Completo
+// Sistema de gestión de seguros con gamificación
+// ========================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========================================
+// MODELO: Usuario
+// ========================================
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String?
+  phone             String?
+  avatar            String?
+  password          String? // Opcional si usa OAuth
+  emailVerified     DateTime?
+
+  // Gamificación
+  xp                Int       @default(0)
+  coins             Int       @default(0)
+  level             Int       @default(1)
+  streak            Int       @default(0) // Días consecutivos de actividad
+  lastActiveDate    DateTime?
+
+  // Metadata
+  role              UserRole  @default(CLIENT)
+  status            UserStatus @default(ACTIVE)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relaciones
+  policies          Policy[]
+  claims            Claim[]
+  documents         Document[]
+  riskProfile       RiskProfile?
+  notifications     Notification[]
+  reminders         Reminder[]
+  quizResults       QuizResult[]
+  referralsMade     Referral[] @relation("ReferralsMade")
+  referralsReceived Referral[] @relation("ReferralsReceived")
+  claimMessages     ClaimMessage[]
+  achievements      UserAchievement[]
+  transactions      Transaction[]
+  rewardPurchases   RewardPurchase[]
+  requests          Request[]
+  ticketsCreated    Ticket[]  @relation("UserTickets")
+  ticketsAssigned   Ticket[]  @relation("AssignedTickets")
+  ticketNotes       TicketNote[]  @relation("TicketNotes")
+
+  @@index([email])
+  @@index([status])
+  @@index([level])
+  @@map("users")
+}
+
+enum UserRole {
+  CLIENT
+  ADMIN
+  AGENT
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+// ========================================
+// MODELO: Póliza
+// ========================================
+model Policy {
+  id                String       @id @default(cuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Información de la póliza
+  policyNumber      String       @unique
+  policyType        PolicyType
+  provider          String       // Compañía aseguradora
+  startDate         DateTime
+  endDate           DateTime
+  renewalDate       DateTime?
+
+  // Detalles financieros
+  premium           Float
+  coverage          Float
+  deductible        Float?
+  paymentFrequency  PaymentFrequency @default(MONTHLY)
+
+  // Estado y metadata
+  status            PolicyStatus @default(ACTIVE)
+  description       String?
+  vehicleInfo       Json?        // Para seguros de auto
+  propertyInfo      Json?        // Para seguros de hogar
+  healthInfo        Json?        // Para seguros de salud
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  // Relaciones
+  claims            Claim[]
+  documents         Document[]
+  reminders         Reminder[]
+
+  @@index([userId])
+  @@index([policyNumber])
+  @@index([status])
+  @@index([endDate])
+  @@map("policies")
+}
+
+enum PolicyType {
+  AUTO
+  HOME
+  HEALTH
+  LIFE
+  BUSINESS
+  TRAVEL
+  PET
+  OTHER
+}
+
+enum PaymentFrequency {
+  MONTHLY
+  QUARTERLY
+  SEMI_ANNUAL
+  ANNUAL
+}
+
+enum PolicyStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+  SUSPENDED
+}
+
+// ========================================
+// MODELO: Siniestro
+// ========================================
+model Claim {
+  id                String       @id @default(cuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  policyId          String
+  policy            Policy       @relation(fields: [policyId], references: [id], onDelete: Cascade)
+
+  // Información del siniestro
+  claimNumber       String       @unique
+  incidentDate      DateTime
+  reportedDate      DateTime     @default(now())
+  description       String
+  location          String?
+
+  // Detalles financieros
+  claimedAmount     Float
+  approvedAmount    Float?
+  paidAmount        Float?
+
+  // Estado y proceso
+  status            ClaimStatus  @default(SUBMITTED)
+  priority          ClaimPriority @default(NORMAL)
+  assignedTo        String?      // ID del agente asignado
+  resolutionDate    DateTime?
+  resolutionNotes   String?
+
+  // Metadata adicional
+  witnesses         Json?
+  policeReport      Boolean      @default(false)
+  policeReportNumber String?
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  // Relaciones
+  documents         Document[]
+  messages          ClaimMessage[]
+
+  @@index([userId])
+  @@index([policyId])
+  @@index([claimNumber])
+  @@index([status])
+  @@index([incidentDate])
+  @@map("claims")
+}
+
+enum ClaimStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  PENDING_INFO
+  APPROVED
+  REJECTED
+  PAID
+  CLOSED
+}
+
+enum ClaimPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+// ========================================
+// MODELO: Documento
+// ========================================
+model Document {
+  id                String       @id @default(cuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Referencias opcionales
+  policyId          String?
+  policy            Policy?      @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  claimId           String?
+  claim             Claim?       @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  // Información del archivo
+  fileName          String
+  fileType          String       // MIME type
+  fileSize          Int          // En bytes
+  fileUrl           String       // URL en storage
+  thumbnailUrl      String?
+
+  // Clasificación
+  documentType      DocumentType
+  category          String?
+  tags              String[]
+
+  // Metadata
+  description       String?
+  uploadedBy        String       // ID del usuario que subió
+  isVerified        Boolean      @default(false)
+  verifiedBy        String?
+  verifiedAt        DateTime?
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([policyId])
+  @@index([claimId])
+  @@index([documentType])
+  @@map("documents")
+}
+
+enum DocumentType {
+  POLICY_CONTRACT
+  ID_CARD
+  DRIVER_LICENSE
+  VEHICLE_REGISTRATION
+  CLAIM_PHOTO
+  MEDICAL_REPORT
+  POLICE_REPORT
+  INVOICE
+  RECEIPT
+  OTHER
+}
+
+// ========================================
+// MODELO: Perfil de Riesgo
+// ========================================
+model RiskProfile {
+  id                String       @id @default(cuid())
+  userId            String       @unique
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Datos demográficos
+  age               Int?
+  gender            String?
+  occupation        String?
+  maritalStatus     String?
+  dependents        Int?
+
+  // Ubicación
+  address           String?
+  city              String?
+  state             String?
+  zipCode           String?
+  country           String       @default("ES")
+
+  // Salud
+  smoker            Boolean?
+  healthConditions  String[]
+  medications       String[]
+  lastCheckup       DateTime?
+
+  // Vehículos
+  vehicles          Json?        // Array de vehículos
+  drivingRecord     Json?        // Historial de conducción
+
+  // Propiedad
+  homeType          String?
+  homeValue         Float?
+  homeAge           Int?
+  securityFeatures  String[]
+
+  // Score de riesgo
+  riskScore         Float?       // 0-100
+  riskCategory      RiskCategory?
+  lastAssessed      DateTime?
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([riskCategory])
+  @@map("risk_profiles")
+}
+
+enum RiskCategory {
+  LOW
+  MEDIUM
+  HIGH
+  VERY_HIGH
+}
+
+// ========================================
+// MODELO: Notificación
+// ========================================
+model Notification {
+  id                String       @id @default(cuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Contenido
+  title             String
+  message           String
+  type              NotificationType
+  priority          NotificationPriority @default(NORMAL)
+
+  // Acciones
+  actionUrl         String?
+  actionLabel       String?
+
+  // Estado
+  read              Boolean      @default(false)
+  readAt            DateTime?
+  dismissed         Boolean      @default(false)
+  dismissedAt       DateTime?
+
+  // Metadata
+  metadata          Json?
+  expiresAt         DateTime?
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([read])
+  @@index([type])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  POLICY_RENEWAL
+  CLAIM_UPDATE
+  PAYMENT_DUE
+  DOCUMENT_REQUEST
+  SYSTEM
+  ACHIEVEMENT
+  REWARD
+  REFERRAL
+  REMINDER
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+// ========================================
+// MODELO: Recordatorio
+// ========================================
+model Reminder {
+  id                String       @id @default(cuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  policyId          String?
+  policy            Policy?      @relation(fields: [policyId], references: [id], onDelete: Cascade)
+
+  // Contenido
+  title             String
+  description       String?
+  reminderType      ReminderType
+
+  // Timing
+  reminderDate      DateTime
+  daysBeforeExpiry  Int?         // Para renovaciones
+
+  // Estado
+  sent              Boolean      @default(false)
+  sentAt            DateTime?
+  dismissed         Boolean      @default(false)
+  dismissedAt       DateTime?
+
+  // Configuración
+  sendEmail         Boolean      @default(true)
+  sendPush          Boolean      @default(true)
+  sendSms           Boolean      @default(false)
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([policyId])
+  @@index([reminderDate])
+  @@index([sent])
+  @@map("reminders")
+}
+
+enum ReminderType {
+  POLICY_RENEWAL
+  PAYMENT_DUE
+  DOCUMENT_EXPIRY
+  CLAIM_FOLLOWUP
+  CUSTOM
+}
+
+// ========================================
+// MODELO: Resultado de Quiz
+// ========================================
+model QuizResult {
+  id                String       @id @default(cuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Información del quiz
+  quizId            String
+  quizTitle         String
+  quizType          QuizType
+
+  // Resultados
+  score             Int
+  maxScore          Int
+  percentage        Float
+  passed            Boolean
+
+  // Detalles
+  answers           Json         // Array de respuestas
+  timeSpent         Int?         // Segundos
+
+  // Recompensas
+  xpEarned          Int          @default(0)
+  coinsEarned       Int          @default(0)
+
+  completedAt       DateTime     @default(now())
+  createdAt         DateTime     @default(now())
+
+  @@index([userId])
+  @@index([quizId])
+  @@index([passed])
+  @@map("quiz_results")
+}
+
+enum QuizType {
+  RISK_ASSESSMENT
+  INSURANCE_KNOWLEDGE
+  SAFETY_TIPS
+  PRODUCT_EDUCATION
+}
+
+// ========================================
+// MODELO: Referido
+// ========================================
+model Referral {
+  id                String       @id @default(cuid())
+  referrerId        String
+  referrer          User         @relation("ReferralsMade", fields: [referrerId], references: [id], onDelete: Cascade)
+
+  // Información del referido
+  referredId        String?
+  referred          User?        @relation("ReferralsReceived", fields: [referredId], references: [id], onDelete: SetNull)
+  referredEmail     String
+  referredName      String?
+
+  // Estado del proceso
+  status            ReferralStatus @default(PENDING)
+  stage             ReferralStage  @default(INVITED)
+
+  // Tracking
+  invitedAt         DateTime     @default(now())
+  signedUpAt        DateTime?
+  firstPolicyAt     DateTime?
+  completedAt       DateTime?
+
+  // Recompensas
+  referrerReward    Int          @default(0) // Coins
+  referredReward    Int          @default(0) // Coins
+  rewardPaidAt      DateTime?
+
+  // Metadata
+  referralCode      String       @unique
+  source            String?      // Email, SMS, Link, etc.
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([referrerId])
+  @@index([referredId])
+  @@index([status])
+  @@index([referralCode])
+  @@map("referrals")
+}
+
+enum ReferralStatus {
+  PENDING
+  COMPLETED
+  EXPIRED
+  CANCELLED
+}
+
+enum ReferralStage {
+  INVITED
+  SIGNED_UP
+  VERIFIED
+  FIRST_POLICY
+  COMPLETED
+}
+
+// ========================================
+// MODELO: Mensaje de Siniestro (Chat)
+// ========================================
+model ClaimMessage {
+  id                String       @id @default(cuid())
+  claimId           String
+  claim             Claim        @relation(fields: [claimId], references: [id], onDelete: Cascade)
+
+  // Autor
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  senderRole        UserRole
+
+  // Contenido
+  message           String
+  attachments       Json?        // URLs de archivos adjuntos
+
+  // Estado
+  read              Boolean      @default(false)
+  readAt            DateTime?
+
+  // Metadata
+  isInternal        Boolean      @default(false) // Solo visible para agentes
+  isSystem          Boolean      @default(false) // Mensaje automático del sistema
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([claimId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("claim_messages")
+}
+
+// ========================================
+// MODELO: Logro (Achievement)
+// ========================================
+model Achievement {
+  id                String       @id @default(cuid())
+
+  // Información del logro
+  key               String       @unique
+  title             String
+  description       String
+  category          AchievementCategory
+
+  // Iconografía
+  icon              String
+  badgeUrl          String?
+
+  // Requisitos
+  criteria          Json         // Condiciones para desbloquear
+  points            Int          @default(0) // XP
+  coinReward        Int          @default(0)
+
+  // Metadata
+  rarity            AchievementRarity @default(COMMON)
+  isHidden          Boolean      @default(false)
+  isActive          Boolean      @default(true)
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  // Relaciones
+  userAchievements  UserAchievement[]
+
+  @@index([category])
+  @@index([rarity])
+  @@map("achievements")
+}
+
+enum AchievementCategory {
+  POLICY_MANAGEMENT
+  CLAIMS
+  LEARNING
+  REFERRALS
+  ENGAGEMENT
+  SPECIAL
+}
+
+enum AchievementRarity {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+// ========================================
+// MODELO: Logros de Usuario
+// ========================================
+model UserAchievement {
+  id                String       @id @default(cuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId     String
+  achievement       Achievement  @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  // Progreso
+  progress          Int          @default(0)
+  maxProgress       Int
+  completed         Boolean      @default(false)
+
+  // Timing
+  unlockedAt        DateTime?
+  claimedAt         DateTime?
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@index([achievementId])
+  @@index([completed])
+  @@map("user_achievements")
+}
+
+// ========================================
+// MODELO: Recompensa (Marketplace)
+// ========================================
+model Reward {
+  id                String       @id @default(cuid())
+
+  // Información
+  title             String
+  description       String
+  category          RewardCategory
+
+  // Costo
+  coinCost          Int
+
+  // Inventario
+  stock             Int?         // null = ilimitado
+  availableStock    Int?
+
+  // Multimedia
+  imageUrl          String?
+  thumbnailUrl      String?
+
+  // Validez
+  isActive          Boolean      @default(true)
+  startDate         DateTime?
+  endDate           DateTime?
+
+  // Metadata
+  termsAndConditions String?
+  redemptionInstructions String?
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  // Relaciones
+  purchases         RewardPurchase[]
+
+  @@index([category])
+  @@index([isActive])
+  @@index([coinCost])
+  @@map("rewards")
+}
+
+enum RewardCategory {
+  DISCOUNT
+  GIFT_CARD
+  INSURANCE_BENEFIT
+  PHYSICAL_ITEM
+  DIGITAL_CONTENT
+  EXPERIENCE
+  DONATION
+}
+
+// ========================================
+// MODELO: Compra de Recompensa
+// ========================================
+model RewardPurchase {
+  id                String       @id @default(cuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rewardId          String
+  reward            Reward       @relation(fields: [rewardId], references: [id], onDelete: Restrict)
+
+  // Transacción
+  coinsCost         Int
+  status            PurchaseStatus @default(PENDING)
+
+  // Entrega
+  deliveryMethod    String?
+  deliveryAddress   String?
+  trackingNumber    String?
+
+  // Redención
+  redemptionCode    String?      @unique
+  redeemedAt        DateTime?
+  expiresAt         DateTime?
+
+  // Timing
+  purchasedAt       DateTime     @default(now())
+  deliveredAt       DateTime?
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([rewardId])
+  @@index([status])
+  @@map("reward_purchases")
+}
+
+enum PurchaseStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+// ========================================
+// MODELO: Transacción (Historial de Coins)
+// ========================================
+model Transaction {
+  id                String       @id @default(cuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Tipo de transacción
+  type              TransactionType
+  category          String
+
+  // Montos
+  amount            Int          // Positivo = ganancia, Negativo = gasto
+  balanceBefore     Int
+  balanceAfter      Int
+
+  // Descripción
+  description       String
+  metadata          Json?
+
+  // Referencias
+  referenceId       String?      // ID de la entidad relacionada
+  referenceType     String?      // Tipo de entidad (Achievement, Reward, etc.)
+
+  createdAt         DateTime     @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("transactions")
+}
+
+enum TransactionType {
+  EARNED
+  SPENT
+  BONUS
+  REFUND
+  ADJUSTMENT
+  STREAK_BONUS
+  REFERRAL_REWARD
+  ACHIEVEMENT_REWARD
+  QUIZ_REWARD
+  DAILY_LOGIN
+}
+// ========================================
+// SISTEMA DE PETICIONES Y TICKETS
+// ========================================
+
+// ========================================
+// MODELO: Request (Petición del cliente)
+// ========================================
+model Request {
+  id                String          @id @default(cuid())
+  userId            String
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Clasificación
+  type              RequestType
+  category          RequestCategory
+  priority          RequestPriority @default(MEDIUM)
+
+  // Contenido
+  title             String
+  description       String          @db.Text
+  metadata          Json?           // Datos adicionales específicos
+
+  // IA Classification
+  aiClassification  Json?           // Intent, entities, confidence
+  aiResolved        Boolean         @default(false)
+  aiResponse        String?         @db.Text
+
+  // Estado
+  status            RequestStatus   @default(PENDING)
+  resolvedAt        DateTime?
+  resolution        String?         @db.Text
+
+  // Relaciones
+  ticketId          String?         @unique
+  ticket            Ticket?
+  policyId          String?
+  policy            Policy?         @relation(fields: [policyId], references: [id])
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([userId, status])
+  @@index([type, category])
+  @@index([createdAt])
+  @@index([status, priority])
+  @@map("requests")
+}
+
+enum RequestType {
+  DOCUMENT_REQUEST        // Solicitud de documento
+  INFO_QUERY             // Consulta de información
+  DATA_UPDATE            // Actualización de datos
+  POLICY_MODIFICATION    // Modificación de póliza
+  QUOTE_REQUEST          // Solicitud de presupuesto
+  CLAIM_COMPLEX          // Reclamación compleja
+  CANCELLATION           // Cancelación
+  ADVISORY               // Asesoramiento
+  COMPLAINT              // Queja/reclamación
+  PAYMENT                // Pago de recibo
+  CONTRACT               // Contratar nueva póliza
+  OTHER                  // Otro
+}
+
+enum RequestCategory {
+  POLICY                 // Relacionado con pólizas
+  CLAIM                  // Relacionado con siniestros
+  DOCUMENT               // Relacionado con documentos
+  ACCOUNT                // Relacionado con cuenta
+  PAYMENT                // Relacionado con pagos
+  COVERAGE               // Relacionado con coberturas
+  CONTRACT               // Contratar/cotizar
+  GENERAL                // General
+}
+
+enum RequestPriority {
+  LOW                    // 72h SLA
+  MEDIUM                 // 24h SLA
+  HIGH                   // 4h SLA
+  URGENT                 // 2h SLA
+}
+
+enum RequestStatus {
+  PENDING                // Pendiente de procesamiento
+  PROCESSING             // En procesamiento por IA
+  RESOLVED               // Resuelta automáticamente
+  TICKET_CREATED         // Se creó ticket
+  ESCALATED              // Escalada
+  CANCELLED              // Cancelada
+}
+
+// ========================================
+// MODELO: Ticket (Gestión manual)
+// ========================================
+model Ticket {
+  id                String          @id @default(cuid())
+  ticketNumber      String          @unique
+
+  // Relaciones
+  requestId         String          @unique
+  request           Request         @relation(fields: [requestId], references: [id])
+  userId            String
+  user              User            @relation("UserTickets", fields: [userId], references: [id])
+  assignedToId      String?
+  assignedTo        User?           @relation("AssignedTickets", fields: [assignedToId], references: [id])
+
+  // Clasificación
+  type              RequestType
+  category          RequestCategory
+  priority          RequestPriority
+
+  // Contenido
+  title             String
+  description       String          @db.Text
+
+  // SLA y tiempos
+  slaDeadline       DateTime
+  firstResponseAt   DateTime?
+  resolvedAt        DateTime?
+
+  // Estado
+  status            TicketStatus    @default(NEW)
+  resolution        String?         @db.Text
+  satisfactionScore Int?            // 1-5
+
+  // Comunicación
+  messages          TicketMessage[]
+  internalNotes     TicketNote[]
+
+  // Metadata
+  tags              String[]
+  relatedPolicyId   String?
+  relatedPolicy     Policy?         @relation(fields: [relatedPolicyId], references: [id])
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  closedAt          DateTime?
+
+  @@index([userId, status])
+  @@index([assignedToId, status])
+  @@index([status, priority])
+  @@index([slaDeadline])
+  @@index([createdAt])
+  @@map("tickets")
+}
+
+enum TicketStatus {
+  NEW                    // Nuevo, sin asignar
+  ASSIGNED               // Asignado a mediador
+  IN_PROGRESS            // En proceso
+  WAITING_USER           // Esperando respuesta del usuario
+  WAITING_THIRD_PARTY    // Esperando aseguradora/tercero
+  RESOLVED               // Resuelto
+  CLOSED                 // Cerrado
+  CANCELLED              // Cancelado
+}
+
+// ========================================
+// MODELO: TicketMessage (Mensajes del ticket)
+// ========================================
+model TicketMessage {
+  id                String   @id @default(cuid())
+  ticketId          String
+  ticket            Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  senderType        String           // USER, MEDIATOR, SYSTEM
+  senderId          String
+  senderName        String
+
+  message           String   @db.Text
+  attachments       Json?            // URLs de archivos
+
+  read              Boolean  @default(false)
+  readAt            DateTime?
+
+  createdAt         DateTime @default(now())
+
+  @@index([ticketId, createdAt])
+  @@map("ticket_messages")
+}
+
+// ========================================
+// MODELO: TicketNote (Notas internas)
+// ========================================
+model TicketNote {
+  id                String   @id @default(cuid())
+  ticketId          String
+  ticket            Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  authorId          String
+  author            User     @relation("TicketNotes", fields: [authorId], references: [id])
+
+  note              String   @db.Text
+
+  createdAt         DateTime @default(now())
+
+  @@index([ticketId])
+  @@map("ticket_notes")
+}

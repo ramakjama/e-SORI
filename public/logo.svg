@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none">
   <defs>
     <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#E30613"/>
-      <stop offset="100%" style="stop-color:#B8050F"/>
+      <stop offset="0%" style="stop-color:#4A90E2"/>
+      <stop offset="100%" style="stop-color:#2E6DB8"/>
     </linearGradient>
     <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#E30613"/>
-      <stop offset="50%" style="stop-color:#C4050E"/>
-      <stop offset="100%" style="stop-color:#8B0309"/>
+      <stop offset="0%" style="stop-color:#4A90E2"/>
+      <stop offset="50%" style="stop-color:#3A7FC9"/>
+      <stop offset="100%" style="stop-color:#2E6DB8"/>
     </linearGradient>
   </defs>
 
@@ -20,6 +20,6 @@
   </g>
 
   <!-- Company Name -->
-  <text x="65" y="28" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="700" fill="#1d1d1f">SORIANO</text>
-  <text x="65" y="46" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="500" fill="#6e6e73" letter-spacing="0.5">MEDIADORES DE SEGUROS</text>
+  <text x="65" y="28" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="700" fill="#808080">SORIANO</text>
+  <text x="65" y="46" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="500" fill="#a7a5a5" letter-spacing="0.5">MEDIADORES DE SEGUROS</text>
 </svg>

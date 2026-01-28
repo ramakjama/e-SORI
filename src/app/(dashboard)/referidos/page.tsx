@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState } from 'react'
 import {
   Copy,
   Check,
@@ -15,7 +14,6 @@ import {
   Send,
   RefreshCw,
   ChevronDown,
-  ChevronUp,
   Sparkles,
   Trophy,
   UserPlus,
@@ -272,32 +270,23 @@ Saludos!`
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center"
-      >
+      <div className="text-center">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-occident/10 to-purple-500/10 rounded-full mb-4">
           <UserPlus className="w-5 h-5 text-occident" />
-          <span className="font-medium" style={{ color: 'var(--color-text)' }}>
+          <span className="font-medium text-slate-900 dark:text-white">
             Programa de Referidos
           </span>
         </div>
-        <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: 'var(--color-text)' }}>
+        <h1 className="text-3xl md:text-4xl font-bold mb-2 text-slate-900 dark:text-white">
           Invita y Gana
         </h1>
-        <p className="max-w-xl mx-auto" style={{ color: 'var(--color-text-secondary)' }}>
+        <p className="max-w-xl mx-auto text-slate-600 dark:text-slate-400">
           Comparte tu codigo con amigos y familia. Gana coins por cada paso que completen.
         </p>
-      </motion.div>
+      </div>
 
       {/* Referral Code Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="card p-6 md:p-8 relative overflow-hidden"
-      >
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 md:p-8 relative overflow-hidden">
         {/* Background decoration */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-occident/5 to-purple-500/5 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-amber-500/5 to-orange-500/5 rounded-full translate-y-1/2 -translate-x-1/2" />
@@ -305,33 +294,27 @@ Saludos!`
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-6">
             <Gift className="w-5 h-5 text-occident" />
-            <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
               Tu Codigo de Referido
             </h2>
           </div>
 
           {/* Code Display */}
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center mb-6">
-            <div
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl border-2 border-dashed border-occident/30 bg-gradient-to-r from-occident/5 to-purple-500/5"
-            >
-              <code
-                className="text-2xl sm:text-3xl font-mono font-bold tracking-widest block text-center"
-                style={{ color: 'var(--color-text)' }}
-              >
+            <div className="w-full sm:w-auto px-8 py-4 rounded-2xl border-2 border-dashed border-occident/30 bg-gradient-to-r from-occident/5 to-purple-500/5">
+              <code className="text-2xl sm:text-3xl font-mono font-bold tracking-widest block text-center text-slate-900 dark:text-white">
                 {referralCode}
               </code>
             </div>
 
-            <motion.button
+            <button
+              type="button"
               onClick={copyCode}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               className={cn(
-                'flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all',
+                'flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all',
                 copied
                   ? 'bg-green-500 text-white'
-                  : 'bg-occident text-white hover:bg-occident/90'
+                  : 'bg-occident text-white hover:bg-red-700'
               )}
             >
               {copied ? (
@@ -345,115 +328,95 @@ Saludos!`
                   Copiar
                 </>
               )}
-            </motion.button>
+            </button>
           </div>
 
           {/* Share URL */}
           <div className="mb-6">
-            <p className="text-sm mb-2 text-center" style={{ color: 'var(--color-text-secondary)' }}>
+            <p className="text-sm mb-2 text-center text-slate-600 dark:text-slate-400">
               O comparte tu enlace personal:
             </p>
-            <div
-              className="flex items-center gap-2 p-3 rounded-xl mx-auto max-w-md"
-              style={{ backgroundColor: 'var(--color-bg-secondary)' }}
-            >
+            <div className="flex items-center gap-2 p-3 rounded-xl mx-auto max-w-md bg-slate-100 dark:bg-slate-900">
               <input
                 type="text"
                 value={shareUrl}
                 readOnly
-                className="flex-1 bg-transparent text-sm outline-none truncate"
-                style={{ color: 'var(--color-text)' }}
+                className="flex-1 bg-transparent text-sm outline-none truncate text-slate-900 dark:text-white"
               />
               <button
+                type="button"
                 onClick={copyUrl}
                 className="p-2 rounded-lg hover:bg-white/50 dark:hover:bg-white/10 transition-colors"
+                aria-label="Copiar enlace"
               >
-                <ExternalLink className="w-4 h-4" style={{ color: 'var(--color-text-secondary)' }} />
+                <ExternalLink className="w-4 h-4 text-slate-600 dark:text-slate-400" />
               </button>
             </div>
           </div>
 
           {/* Share Buttons */}
           <div className="flex flex-wrap justify-center gap-3">
-            <motion.button
+            <button
+              type="button"
               onClick={shareWhatsApp}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] text-white font-medium hover:bg-[#20BD5A] transition-colors"
             >
               <MessageCircle className="w-5 h-5" />
               WhatsApp
-            </motion.button>
+            </button>
 
-            <motion.button
+            <button
+              type="button"
               onClick={shareTelegram}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0088cc] text-white font-medium hover:bg-[#0077b5] transition-colors"
             >
               <Send className="w-5 h-5" />
               Telegram
-            </motion.button>
+            </button>
 
-            <motion.button
+            <button
+              type="button"
               onClick={shareEmail}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-600 text-white font-medium hover:bg-gray-700 transition-colors"
             >
               <Mail className="w-5 h-5" />
               Email
-            </motion.button>
+            </button>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="card p-4 sm:p-6"
-        >
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
               <Users className="w-5 h-5 text-blue-500" />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--color-text)' }}>
+          <p className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
             {stats.total}
           </p>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             Total referidos
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="card p-4 sm:p-6"
-        >
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-green-500" />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--color-text)' }}>
+          <p className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
             {stats.conversionRate}%
           </p>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             Tasa conversion
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="card p-4 sm:p-6"
-        >
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
               <Coins className="w-5 h-5 text-amber-500" />
@@ -462,17 +425,12 @@ Saludos!`
           <p className="text-2xl sm:text-3xl font-bold text-amber-500">
             {stats.totalCoinsEarned.toLocaleString()}
           </p>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             Coins ganados
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="card p-4 sm:p-6"
-        >
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
               <Trophy className="w-5 h-5 text-purple-500" />
@@ -481,112 +439,95 @@ Saludos!`
           <p className="text-2xl sm:text-3xl font-bold text-purple-500">
             {stats.byStage.POLICY_PAID}
           </p>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             Conversiones
           </p>
-        </motion.div>
+        </div>
       </div>
 
       {/* Rewards Breakdown */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="card p-6"
-      >
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
         <div className="flex items-center gap-2 mb-6">
           <Sparkles className="w-5 h-5 text-occident" />
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
             Recompensas por Etapa
           </h2>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {Object.entries(STAGE_REWARDS).map(([stage, reward], index) => (
-            <motion.div
+          {Object.entries(STAGE_REWARDS).map(([stage, reward]) => (
+            <div
               key={stage}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5 + index * 0.1 }}
-              className="p-4 rounded-xl text-center"
-              style={{ backgroundColor: 'var(--color-bg-secondary)' }}
+              className="p-4 rounded-xl text-center bg-slate-50 dark:bg-slate-900"
             >
               <div className="flex items-center justify-center gap-1 mb-2">
                 <Coins className="w-5 h-5 text-amber-500" />
                 <span className="text-xl font-bold text-amber-500">+{reward.coins}</span>
               </div>
-              <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+              <p className="text-sm font-medium text-slate-900 dark:text-white">
                 {reward.label}
               </p>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20">
           <div className="flex items-center justify-center gap-2">
             <Gift className="w-5 h-5 text-amber-500" />
-            <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
+            <span className="font-semibold text-slate-900 dark:text-white">
               Total potencial por referido:
             </span>
             <span className="text-xl font-bold text-amber-500">1,350 coins</span>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Referrals List */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="card p-6"
-      >
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-occident" />
-            <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
               Tus Referidos
             </h2>
-            <span
-              className="px-2 py-0.5 rounded-full text-xs font-medium bg-occident/10 text-occident"
-            >
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-occident/10 text-occident">
               {referrals.length}
             </span>
           </div>
 
           <button
+            type="button"
             onClick={() => setLoading(true)}
             disabled={loading}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            aria-label="Actualizar"
           >
-            <RefreshCw className={cn('w-5 h-5', loading && 'animate-spin')} style={{ color: 'var(--color-text-secondary)' }} />
+            <RefreshCw className={cn('w-5 h-5 text-slate-600 dark:text-slate-400', loading && 'animate-spin')} />
           </button>
         </div>
 
         {referrals.length === 0 ? (
           <div className="text-center py-12">
-            <UserPlus className="w-16 h-16 mx-auto mb-4 opacity-20" style={{ color: 'var(--color-text)' }} />
-            <p className="text-lg font-medium mb-2" style={{ color: 'var(--color-text)' }}>
+            <UserPlus className="w-16 h-16 mx-auto mb-4 opacity-20 text-slate-900 dark:text-white" />
+            <p className="text-lg font-medium mb-2 text-slate-900 dark:text-white">
               Aun no tienes referidos
             </p>
-            <p style={{ color: 'var(--color-text-secondary)' }}>
+            <p className="text-slate-600 dark:text-slate-400">
               Comparte tu codigo y empieza a ganar recompensas
             </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {referrals.map((referral, index) => (
-              <motion.div
+            {referrals.map((referral) => (
+              <div
                 key={referral.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 * index }}
-                className="border rounded-2xl overflow-hidden"
-                style={{ borderColor: 'var(--color-border)' }}
+                className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden"
               >
                 {/* Header Row */}
                 <button
+                  type="button"
                   onClick={() => toggleExpanded(referral.id)}
-                  className="w-full p-4 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  className="w-full p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors"
                 >
                   {/* Avatar */}
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-occident/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
@@ -597,7 +538,7 @@ Saludos!`
 
                   {/* Info */}
                   <div className="flex-1 text-left min-w-0">
-                    <p className="font-semibold truncate" style={{ color: 'var(--color-text)' }}>
+                    <p className="font-semibold truncate text-slate-900 dark:text-white">
                       {referral.referredName || 'Invitado'}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
@@ -624,68 +565,50 @@ Saludos!`
                   )}
 
                   {/* Expand Icon */}
-                  <motion.div
-                    animate={{ rotate: expandedReferral === referral.id ? 180 : 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <ChevronDown className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
-                  </motion.div>
+                  <ChevronDown
+                    className={cn(
+                      'w-5 h-5 text-slate-600 dark:text-slate-400 transition-transform',
+                      expandedReferral === referral.id && 'rotate-180'
+                    )}
+                  />
                 </button>
 
                 {/* Expanded Content */}
-                <AnimatePresence>
-                  {expandedReferral === referral.id && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
-                      <div
-                        className="p-4 pt-0 border-t"
-                        style={{ borderColor: 'var(--color-border)' }}
-                      >
-                        {/* Contact Info */}
-                        <div className="mb-4 pt-4 flex flex-wrap gap-4 text-sm">
-                          {referral.referredEmail && (
-                            <div className="flex items-center gap-2">
-                              <Mail className="w-4 h-4" style={{ color: 'var(--color-text-secondary)' }} />
-                              <span style={{ color: 'var(--color-text)' }}>{referral.referredEmail}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center gap-2">
-                            <span style={{ color: 'var(--color-text-secondary)' }}>Invitado:</span>
-                            <span style={{ color: 'var(--color-text)' }}>{formatDate(referral.createdAt)}</span>
-                          </div>
+                {expandedReferral === referral.id && (
+                  <div className="p-4 pt-0 border-t border-slate-200 dark:border-slate-700">
+                    {/* Contact Info */}
+                    <div className="mb-4 pt-4 flex flex-wrap gap-4 text-sm">
+                      {referral.referredEmail && (
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                          <span className="text-slate-900 dark:text-white">{referral.referredEmail}</span>
                         </div>
-
-                        {/* Full Tracker */}
-                        <ReferralTracker
-                          currentStage={referral.stage}
-                          coinsEarned={referral.coinsAwarded}
-                          compact
-                        />
+                      )}
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-600 dark:text-slate-400">Invitado:</span>
+                        <span className="text-slate-900 dark:text-white">{formatDate(referral.createdAt)}</span>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
+                    </div>
+
+                    {/* Full Tracker */}
+                    <ReferralTracker
+                      currentStage={referral.stage}
+                      coinsEarned={referral.coinsAwarded}
+                      compact
+                    />
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}
-      </motion.div>
+      </div>
 
       {/* How It Works */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="card p-6"
-      >
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
         <div className="flex items-center gap-2 mb-6">
           <Share2 className="w-5 h-5 text-occident" />
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
             Como Funciona
           </h2>
         </div>
@@ -695,10 +618,10 @@ Saludos!`
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center">
               <span className="text-2xl font-bold text-blue-500">1</span>
             </div>
-            <h3 className="font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
+            <h3 className="font-semibold mb-2 text-slate-900 dark:text-white">
               Comparte tu codigo
             </h3>
-            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               Envia tu codigo por WhatsApp, Telegram o email a amigos y familiares
             </p>
           </div>
@@ -707,10 +630,10 @@ Saludos!`
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center">
               <span className="text-2xl font-bold text-purple-500">2</span>
             </div>
-            <h3 className="font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
+            <h3 className="font-semibold mb-2 text-slate-900 dark:text-white">
               Ellos se registran
             </h3>
-            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               Cuando usen tu codigo al registrarse, empezaras a ganar coins por cada paso
             </p>
           </div>
@@ -719,15 +642,15 @@ Saludos!`
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/20 flex items-center justify-center">
               <span className="text-2xl font-bold text-amber-500">3</span>
             </div>
-            <h3 className="font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
+            <h3 className="font-semibold mb-2 text-slate-900 dark:text-white">
               Gana recompensas
             </h3>
-            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               Acumula hasta 1,350 coins por cada referido que contrate una poliza
             </p>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }

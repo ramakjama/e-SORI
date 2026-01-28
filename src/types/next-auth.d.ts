@@ -11,6 +11,9 @@ declare module 'next-auth' {
       role: UserRole
       level: UserLevel
       points: number
+      xp: number
+      coins: number
+      shields: number
       referralCode: string | null
     }
   }
@@ -20,6 +23,9 @@ declare module 'next-auth' {
     role: UserRole
     level: UserLevel
     points: number
+    xp?: number
+    coins?: number
+    shields?: number
     referralCode?: string | null
   }
 }
@@ -30,6 +36,11 @@ declare module 'next-auth/jwt' {
     role: UserRole
     level: UserLevel
     points: number
+    xp: number
+    coins: number
+    shields: number
     referralCode?: string | null
+    lastVerified?: number
+    invalid?: boolean
   }
 }
