@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'es_ES',
-    url: 'https://esori.sorianomediadores.es',
+    url: 'https://app.sorianomediadores.es',
     siteName: 'e-SORI',
     title: 'e-SORI | Soriano Mediadores de Seguros',
     description: 'Tu portal de seguros en la Costa Blanca. Gestiona tus pólizas, siniestros y mucho más.',
