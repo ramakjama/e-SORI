@@ -12,6 +12,7 @@ import {
 import { useStore } from '@/store/useStore'
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { staggerContainer, staggerItem, slideLeftVariants, hoverScale, transitions } from '@/lib/animations'
 
 const menuItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -26,7 +27,7 @@ const menuItems = [
 ]
 
 const gamificationItems = [
-  { name: 'Soriano Club', href: '/soriano-club', icon: Gamepad2 },
+  { name: 'Sori HUB', href: '/soriano-club', icon: Gamepad2 },
   { name: 'Quizzes', href: '/quizzes', icon: Target },
   { name: 'Clasificación', href: '/clasificacion', icon: Trophy },
   { name: 'Referidos', href: '/referidos', icon: Users },
@@ -74,10 +75,13 @@ export function Sidebar() {
       {/* Sidebar */}
       <motion.aside
         initial={false}
-        animate={{ width: sidebarOpen ? 280 : 80 }}
+        animate={{
+          width: sidebarOpen ? 280 : 80,
+          transition: transitions.smooth
+        }}
         className={cn(
           'sidebar fixed left-0 top-0 h-full z-50',
-          'flex flex-col transition-all duration-300',
+          'flex flex-col',
           !sidebarOpen && 'lg:w-20',
           sidebarOpen ? 'w-72' : 'w-0 lg:w-20'
         )}
@@ -102,13 +106,20 @@ export function Sidebar() {
               )}
             </AnimatePresence>
           </Link>
-          <button
+          <motion.button
             type="button"
             onClick={toggleSidebar}
             className="hidden lg:flex w-8 h-8 items-center justify-center rounded-lg hover:bg-white/50 dark:hover:bg-white/10 transition-colors"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
           >
-            <ChevronLeft className={cn('w-5 h-5 transition-transform', !sidebarOpen && 'rotate-180')} style={{ color: 'var(--color-text-secondary)' }} />
-          </button>
+            <motion.div
+              animate={{ rotate: sidebarOpen ? 0 : 180 }}
+              transition={transitions.smooth}
+            >
+              <ChevronLeft className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
+            </motion.div>
+          </motion.button>
         </div>
 
         {/* User info with gamification */}
@@ -130,10 +141,20 @@ export function Sidebar() {
             </div>
 
             {/* Points & Progress */}
-            <div className="card-glass p-3 rounded-xl">
+            <motion.div
+              className="card-glass p-3 rounded-xl"
+              variants={slideLeftVariants}
+              initial="hidden"
+              animate="visible"
+            >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-1.5">
-                  <Star className="w-4 h-4 text-yellow-500" />
+                  <motion.div
+                    animate={{ rotate: [0, 15, -15, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                  >
+                    <Star className="w-4 h-4 text-yellow-500" />
+                  </motion.div>
                   <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                     {user.points?.toLocaleString() || '0'} pts
                   </span>
@@ -145,41 +166,67 @@ export function Sidebar() {
                 )}
               </div>
               <div className="progress-bar">
-                <div className="progress-bar-fill" style={{ width: `${levelInfo.progress}%` }} />
+                <motion.div
+                  className="progress-bar-fill"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${levelInfo.progress}%` }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                />
               </div>
-            </div>
+            </motion.div>
           </div>
         )}
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {menuItems.map((item) => {
+        <motion.nav
+          className="flex-1 p-4 space-y-1 overflow-y-auto"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
+          {menuItems.map((item, index) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
             return (
-              <Link
+              <motion.div
                 key={item.href}
-                href={item.href}
-                className={cn('sidebar-link', isActive && 'active')}
+                variants={staggerItem}
+                custom={index}
               >
-                <item.icon className="w-5 h-5 flex-shrink-0" />
-                <AnimatePresence>
-                  {sidebarOpen && (
+                <Link
+                  href={item.href}
+                  className={cn('sidebar-link group', isActive && 'active')}
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={transitions.quick}
+                  >
+                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                  </motion.div>
+                  <AnimatePresence>
+                    {sidebarOpen && (
+                      <motion.span
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: 'auto' }}
+                        exit={{ opacity: 0, width: 0 }}
+                        transition={transitions.smooth}
+                        className="whitespace-nowrap overflow-hidden"
+                      >
+                        {item.name}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                  {item.name === 'Mensajes' && unreadMessages > 0 && sidebarOpen && (
                     <motion.span
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: 'auto' }}
-                      exit={{ opacity: 0, width: 0 }}
-                      className="whitespace-nowrap overflow-hidden"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="ml-auto bg-occident text-white text-xs px-2 py-0.5 rounded-full"
                     >
-                      {item.name}
+                      {unreadMessages}
                     </motion.span>
                   )}
-                </AnimatePresence>
-                {item.name === 'Mensajes' && unreadMessages > 0 && sidebarOpen && (
-                  <span className="ml-auto bg-occident text-white text-xs px-2 py-0.5 rounded-full">
-                    {unreadMessages}
-                  </span>
-                )}
-              </Link>
+                </Link>
+              </motion.div>
             )
           })}
 
@@ -218,7 +265,7 @@ export function Sidebar() {
           {sidebarOpen && (
             <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
               <p className="text-xs font-semibold uppercase tracking-wider mb-2 px-3" style={{ color: 'var(--color-text-tertiary)' }}>
-                Soriano Club
+                Sori HUB
               </p>
               {gamificationItems.map((item) => {
                 const isActive = pathname === item.href
@@ -265,23 +312,32 @@ export function Sidebar() {
           </div>
 
           {sidebarOpen && (
-            <a
+            <motion.a
               href="tel:+34966810290"
               className="sidebar-link text-occident bg-occident/10 hover:bg-occident/20"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <Phone className="w-5 h-5" />
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 5 }}
+              >
+                <Phone className="w-5 h-5" />
+              </motion.div>
               <span>966 810 290</span>
-            </a>
+            </motion.a>
           )}
 
-          <button
+          <motion.button
             type="button"
             onClick={handleLogout}
             className="sidebar-link w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             <LogOut className="w-5 h-5" />
             {sidebarOpen && <span>Cerrar sesión</span>}
-          </button>
+          </motion.button>
         </div>
       </motion.aside>
     </>

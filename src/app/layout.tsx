@@ -4,6 +4,7 @@ import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import { ToastProvider } from '@/components/ui/Toast'
+import { SessionProviderWrapper } from '@/components/providers/SessionProviderWrapper'
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
 
@@ -56,29 +57,31 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <ToastProvider position="top-right">
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: 'var(--card-bg)',
-                  color: 'var(--color-text)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                  borderRadius: '12px',
-                  border: '1px solid var(--color-border)',
-                },
-              }}
-            />
-            {children}
-          </ToastProvider>
-        </ThemeProvider>
+        <SessionProviderWrapper>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ToastProvider position="top-right">
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background: 'var(--card-bg)',
+                    color: 'var(--color-text)',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    borderRadius: '12px',
+                    border: '1px solid var(--color-border)',
+                  },
+                }}
+              />
+              {children}
+            </ToastProvider>
+          </ThemeProvider>
+        </SessionProviderWrapper>
       </body>
     </html>
   )

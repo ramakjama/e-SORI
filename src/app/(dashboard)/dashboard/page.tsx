@@ -19,6 +19,14 @@ import { CircularProgress } from '@/components/ui/Progress'
 import { Badge, LevelBadge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
 import { useCoverageAnalysis } from '@/hooks/useCoverageAnalysis'
+import {
+  staggerContainer,
+  staggerItem,
+  scaleVariants,
+  slideUpVariants,
+  fadeVariants,
+  transitions
+} from '@/lib/animations'
 
 // Gamification widgets
 import { WalletSummary } from '@/components/gamification/WalletSummary'
@@ -219,80 +227,118 @@ export default function DashboardPage() {
   }, [])
 
   return (
-    <div className="space-y-6 md:space-y-8">
+    <motion.div
+      className="space-y-6 md:space-y-8"
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Premium Welcome Banner */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-600 via-red-700 to-red-800 p-6 md:p-8 text-white"
+        variants={staggerItem}
+        whileHover={{ scale: 1.01 }}
+        transition={transitions.smooth}
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-600 via-red-700 to-red-800 p-6 md:p-8 text-white hover-lift"
       >
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <motion.div
+          className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
           <div className="flex-1">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <p className="text-red-200 text-sm font-medium mb-1">{greeting}</p>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">
+            <motion.div variants={staggerItem}>
+              <motion.p
+                className="text-red-200 text-sm font-medium mb-1"
+                variants={fadeVariants}
+              >
+                {greeting}
+              </motion.p>
+              <motion.h1
+                className="text-3xl md:text-4xl font-bold mb-2"
+                variants={slideUpVariants}
+              >
                 {user?.name.split(' ')[0]} 👋
-              </h1>
-              <p className="text-red-100 text-sm md:text-base max-w-md">
+              </motion.h1>
+              <motion.p
+                className="text-red-100 text-sm md:text-base max-w-md"
+                variants={slideUpVariants}
+              >
                 Tienes <span className="font-semibold text-white">{activePolicies} pólizas activas</span> protegiéndote.
                 {pendingClaims > 0 && (
                   <> Hay <span className="font-semibold text-amber-300">{pendingClaims} siniestro{pendingClaims > 1 ? 's' : ''}</span> en gestión.</>
                 )}
-              </p>
+              </motion.p>
             </motion.div>
 
             {/* Quick Stats Row */}
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
+              variants={staggerItem}
               className="flex items-center gap-6 mt-6"
             >
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <motion.div
+                className="flex items-center gap-2"
+                whileHover={{ scale: 1.05 }}
+                transition={transitions.quick}
+              >
+                <motion.div
+                  className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center"
+                  animate={{ rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, repeatDelay: 5 }}
+                >
                   <Shield className="w-5 h-5" />
-                </div>
+                </motion.div>
                 <div>
                   <p className="text-xs text-red-200">Prima anual</p>
                   <p className="font-bold text-lg">{formatCurrency(totalPremium)}</p>
                 </div>
-              </div>
+              </motion.div>
               <div className="w-px h-10 bg-white/20" />
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <motion.div
+                className="flex items-center gap-2"
+                whileHover={{ scale: 1.05 }}
+                transition={transitions.quick}
+              >
+                <motion.div
+                  className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center"
+                  animate={{ rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, repeatDelay: 5, delay: 0.5 }}
+                >
                   <Calendar className="w-5 h-5" />
-                </div>
+                </motion.div>
                 <div>
                   <p className="text-xs text-red-200">Próximo pago</p>
                   <p className="font-bold text-lg">{nextPayment ? formatDateShort(nextPayment.date) : '-'}</p>
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
           </div>
 
           {/* Level Card + Streak */}
           {user && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
+              variants={staggerItem}
               className="flex flex-col gap-3"
             >
               {/* Streak Display en Header */}
-              <div className="flex justify-end">
+              <motion.div
+                className="flex justify-end"
+                variants={scaleVariants}
+              >
                 <StreakDisplay variant="badge" showTooltip />
-              </div>
+              </motion.div>
 
               <Link href="/soriano-club">
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/20 hover:bg-white/20 transition-all cursor-pointer group min-w-[200px]">
+                <motion.div
+                  className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/20 hover:bg-white/20 transition-smooth cursor-pointer group min-w-[200px] hover-lift"
+                  whileHover={{ scale: 1.05, rotate: 1 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={transitions.bouncy}
+                >
                   <div className="flex items-center gap-3 mb-4">
                     <div className={cn(
                       'w-12 h-12 rounded-xl flex items-center justify-center text-2xl',
@@ -312,11 +358,11 @@ export default function DashboardPage() {
                     </div>
                     <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </div>
-                </div>
+                </motion.div>
               </Link>
             </motion.div>
           )}
-        </div>
+        </motion.div>
       </motion.div>
 
       {/* Quick Tip */}
@@ -427,16 +473,16 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <div className="flex-1 space-y-3 max-h-64 overflow-y-auto">
-                    {coverageAnalysis.recommendations.map((rec) => (
-                      <div key={rec.policyType}>
+                  <div className="flex-1 space-y-2">
+                    {coverageAnalysis.recommendations.slice(0, 4).map((rec) => (
+                      <div key={rec.policyType} className="pb-2 border-b border-slate-100 dark:border-slate-700 last:border-0">
                         <div className="flex items-center justify-between text-sm mb-1">
                           <div className="flex items-center gap-2">
                             {!rec.isCurrentlyCovered && (
-                              <span className="text-red-500" title={`Prioridad ${rec.priority}`}>⚠️</span>
+                              <span className="text-red-500 text-xs">⚠️</span>
                             )}
                             <span className={cn(
-                              'font-medium',
+                              'font-medium text-xs',
                               rec.isCurrentlyCovered ? 'text-slate-600 dark:text-slate-400' : 'text-slate-900 dark:text-white'
                             )}>
                               {rec.policyType}
@@ -448,47 +494,34 @@ export default function DashboardPage() {
                               ? 'text-emerald-600 dark:text-emerald-400'
                               : 'text-red-600 dark:text-red-400'
                           )}>
-                            {rec.isCurrentlyCovered ? '✓ Cubierto' : `✗ ${rec.priority}`}
+                            {rec.isCurrentlyCovered ? '✓' : rec.priority}
                           </span>
                         </div>
 
-                        {/* Show personalized risk message for uncovered policies */}
+                        {/* Mostrar solo riesgo principal para las no cubiertas */}
                         {!rec.isCurrentlyCovered && (
-                          <div className="mb-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                            <p className="text-xs font-medium text-red-700 dark:text-red-300 mb-1">
-                              {rec.mainReason}
-                            </p>
-                            <p className="text-xs text-red-600 dark:text-red-400">
-                              {rec.riskDescription}
-                            </p>
-                            {rec.financialImpact && (
-                              <p className="text-xs text-red-600 dark:text-red-400 mt-1 font-semibold">
-                                💰 {rec.financialImpact}
-                              </p>
-                            )}
-                            {rec.legalImpact && (
-                              <p className="text-xs text-red-700 dark:text-red-300 mt-1 font-semibold">
-                                ⚖️ {rec.legalImpact}
-                              </p>
-                            )}
-                          </div>
+                          <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                            {rec.mainReason}
+                          </p>
                         )}
 
-                        <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: rec.isCurrentlyCovered ? '100%' : '0%' }}
-                            transition={{ delay: 0.5, duration: 0.5 }}
+                        <div className="h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mt-2">
+                          <div
                             className={cn(
-                              'h-full rounded-full',
-                              rec.isCurrentlyCovered
-                                ? 'bg-emerald-500'
-                                : 'bg-red-300 dark:bg-red-700'
+                              'h-full rounded-full transition-all',
+                              rec.isCurrentlyCovered ? 'w-full bg-emerald-500' : 'w-0 bg-red-400 dark:bg-red-600'
                             )}
                           />
                         </div>
                       </div>
                     ))}
+                    {coverageAnalysis.recommendations.length > 4 && (
+                      <Link href="/perfil-riesgo" className="block text-center">
+                        <span className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
+                          Ver análisis completo (+{coverageAnalysis.recommendations.length - 4} más)
+                        </span>
+                      </Link>
+                    )}
                   </div>
                 </div>
 

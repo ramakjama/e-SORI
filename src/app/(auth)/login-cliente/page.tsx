@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -9,9 +10,18 @@ import {
   Mail, Lock, Eye, EyeOff, Fingerprint, ScanEye,
   Sparkles, ArrowRight, Check, Camera
 } from 'lucide-react'
-import { useStore } from '@/store/useStore'
 import toast from 'react-hot-toast'
 import Confetti from 'react-confetti'
+import {
+  pageVariants,
+  staggerContainer,
+  staggerItem,
+  scaleVariants,
+  slideUpVariants,
+  fadeVariants,
+  hoverScale,
+  transitions
+} from '@/lib/animations'
 
 // OAuth Provider Icons
 const GoogleIcon = () => (
@@ -50,12 +60,12 @@ const LinkedInIcon = () => (
   </svg>
 )
 
+// OAuth Providers configurados en NextAuth
 const oauthProviders = [
-  { id: 'google', name: 'Google', icon: GoogleIcon, bg: 'hover:bg-red-50 dark:hover:bg-red-950/20' },
-  { id: 'microsoft', name: 'Microsoft', icon: MicrosoftIcon, bg: 'hover:bg-blue-50 dark:hover:bg-blue-950/20' },
-  { id: 'apple', name: 'Apple', icon: AppleIcon, bg: 'hover:bg-gray-100 dark:hover:bg-gray-800' },
-  { id: 'facebook', name: 'Facebook', icon: FacebookIcon, bg: 'hover:bg-blue-50 dark:hover:bg-blue-950/20' },
-  { id: 'linkedin', name: 'LinkedIn', icon: LinkedInIcon, bg: 'hover:bg-sky-50 dark:hover:bg-sky-950/20' },
+  { id: 'google', name: 'Google', icon: GoogleIcon, bg: 'hover:bg-red-50 dark:hover:bg-red-950/20', providerId: 'google' },
+  { id: 'microsoft-entra-id', name: 'Microsoft', icon: MicrosoftIcon, bg: 'hover:bg-blue-50 dark:hover:bg-blue-950/20', providerId: 'microsoft-entra-id' },
+  { id: 'apple', name: 'Apple', icon: AppleIcon, bg: 'hover:bg-gray-100 dark:hover:bg-gray-800', providerId: 'apple' },
+  // Facebook y LinkedIn se pueden añadir después si se configuran
 ]
 
 type AuthPhase = 'oauth' | 'biometric' | 'complete'
@@ -63,50 +73,42 @@ type BiometricStep = 'choice' | 'fingerprint' | 'iris' | 'verifying' | 'success'
 
 export default function LoginClientePage() {
   const router = useRouter()
-  const { login } = useStore()
-  const [phase, setPhase] = useState<AuthPhase>('oauth')
-  const [biometricStep, setBiometricStep] = useState<BiometricStep>('choice')
   const [isLoading, setIsLoading] = useState<string | null>(null)
   const [showEmailForm, setShowEmailForm] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({ email: '', password: '' })
-  const [connectedProvider, setConnectedProvider] = useState<string | null>(null)
-  const [showConfetti, setShowConfetti] = useState(false)
-  const [irisScanning, setIrisScanning] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [cameraActive, setCameraActive] = useState(false)
 
-  // Camera for iris scan
-  const startCamera = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: 640, height: 480 }
-      })
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        setCameraActive(true)
-      }
-    } catch {
-      toast.error('No se pudo acceder a la cámara')
-    }
-  }, [])
+  // Camera for iris scan (commented out - not used in current flow)
+  // const startCamera = useCallback(async () => {
+  //   try {
+  //     const stream = await navigator.mediaDevices.getUserMedia({
+  //       video: { facingMode: 'user', width: 640, height: 480 }
+  //     })
+  //     if (videoRef.current) {
+  //       videoRef.current.srcObject = stream
+  //       setCameraActive(true)
+  //     }
+  //   } catch {
+  //     toast.error('No se pudo acceder a la cámara')
+  //   }
+  // }, [])
 
-  const stopCamera = useCallback(() => {
-    if (videoRef.current?.srcObject) {
-      const tracks = (videoRef.current.srcObject as MediaStream).getTracks()
-      tracks.forEach(track => track.stop())
-      setCameraActive(false)
-    }
-  }, [])
+  // const stopCamera = useCallback(() => {
+  //   if (videoRef.current?.srcObject) {
+  //     const tracks = (videoRef.current.srcObject as MediaStream).getTracks()
+  //     tracks.forEach(track => track.stop())
+  //     setCameraActive(false)
+  //   }
+  // }, [])
 
-  useEffect(() => {
-    if (biometricStep === 'iris') {
-      startCamera()
-    } else {
-      stopCamera()
-    }
-    return () => stopCamera()
-  }, [biometricStep, startCamera, stopCamera])
+  // useEffect(() => {
+  //   if (biometricStep === 'iris') {
+  //     startCamera()
+  //   } else {
+  //     stopCamera()
+  //   }
+  //   return () => stopCamera()
+  // }, [biometricStep, startCamera, stopCamera])
 
   // Haptic feedback helper
   const triggerHaptic = (type: 'light' | 'medium' | 'heavy' = 'medium') => {
@@ -116,32 +118,138 @@ export default function LoginClientePage() {
     }
   }
 
-  const handleOAuthLogin = async (provider: string) => {
-    setIsLoading(provider)
-    triggerHaptic('light')
+  // Real OAuth login con NextAuth
+  const handleOAuthLogin = async (providerId: string, providerName: string) => {
+    try {
+      setIsLoading(providerId)
+      triggerHaptic('light')
 
-    // Simulate OAuth flow
-    await new Promise(resolve => setTimeout(resolve, 1500))
+      const result = await signIn(providerId, {
+        callbackUrl: '/dashboard',
+        redirect: false,
+      })
 
-    setConnectedProvider(provider)
-    setPhase('biometric')
-    setIsLoading(null)
-    toast.success(`Conectado con ${provider}`)
-    triggerHaptic('medium')
+      if (result?.error) {
+        // Si el error es por usuario no registrado
+        if (result.error === 'Callback') {
+          toast.error(
+            `No tienes una cuenta registrada. Por favor regístrate primero.`,
+            { duration: 5000 }
+          )
+          setTimeout(() => {
+            router.push('/registro')
+          }, 2000)
+        } else {
+          toast.error(`Error al conectar con ${providerName}`)
+        }
+        setIsLoading(null)
+        return
+      }
+
+      if (result?.url) {
+        toast.success(`¡Bienvenido de vuelta!`)
+        triggerHaptic('medium')
+        router.push(result.url)
+      }
+    } catch (error) {
+      console.error('OAuth error:', error)
+      toast.error(`No se pudo conectar con ${providerName}`)
+      setIsLoading(null)
+    }
   }
 
+  // Real email/password login con NextAuth
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading('email')
-    triggerHaptic('light')
 
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    if (!formData.email || !formData.password) {
+      toast.error('Por favor completa todos los campos')
+      return
+    }
 
-    setConnectedProvider('Email')
-    setPhase('biometric')
-    setIsLoading(null)
-    toast.success('Email verificado')
-    triggerHaptic('medium')
+    try {
+      setIsLoading('email')
+      triggerHaptic('light')
+
+      const result = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        callbackUrl: '/dashboard',
+        redirect: false,
+      })
+
+      if (result?.error) {
+        toast.error('Credenciales incorrectas')
+        setIsLoading(null)
+        return
+      }
+
+      if (result?.url) {
+        toast.success('¡Bienvenido!')
+        triggerHaptic('medium')
+        router.push(result.url)
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      toast.error('Error al iniciar sesión')
+      setIsLoading(null)
+    }
+  }
+
+  // Modo DEMO - Acceso rápido sin OAuth
+  const handleDemoLogin = async () => {
+    try {
+      setIsLoading('demo')
+      triggerHaptic('light')
+
+      // Crear/usar usuario demo en la DB
+      const response = await fetch('/api/auth/demo-login', {
+        method: 'POST',
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        console.error('[Demo] API error:', error)
+        throw new Error(error.error || 'Demo login failed')
+      }
+
+      const data = await response.json()
+      console.log('[Demo] User created/found:', data.email)
+
+      // Login con el usuario demo
+      const result = await signIn('credentials', {
+        email: data.email,
+        password: 'demo123',
+        callbackUrl: '/dashboard',
+        redirect: false,
+      })
+
+      console.log('[Demo] SignIn result:', result)
+
+      if (result?.error) {
+        console.error('[Demo] SignIn error:', result.error)
+        toast.error(`Error: ${result.error}`)
+        setIsLoading(null)
+        return
+      }
+
+      if (result?.url) {
+        toast.success('¡Bienvenido al modo DEMO! 🎮', {
+          icon: '🎯',
+          duration: 3000,
+        })
+        triggerHaptic('medium')
+        router.push(result.url)
+      } else {
+        console.error('[Demo] No URL in result')
+        setIsLoading(null)
+        toast.error('Error en modo demo - No se pudo redirigir')
+      }
+    } catch (error) {
+      console.error('Demo login error:', error)
+      toast.error(`Error al acceder en modo demo: ${error instanceof Error ? error.message : 'Unknown'}`)
+      setIsLoading(null)
+    }
   }
 
   const handleFingerprintAuth = async () => {
@@ -216,59 +324,90 @@ export default function LoginClientePage() {
   // Render OAuth phase
   const renderOAuthPhase = () => (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
       className="w-full max-w-md"
     >
       {/* Logo & Title */}
-      <div className="text-center mb-8">
+      <motion.div
+        className="text-center mb-8"
+        variants={fadeVariants}
+      >
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', damping: 15 }}
-          className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center shadow-2xl"
+          variants={scaleVariants}
+          className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center shadow-2xl hover-glow"
+          whileHover={{ scale: 1.05, rotate: 5 }}
+          transition={transitions.bouncy}
         >
-          <Shield className="w-10 h-10 text-white" />
+          <motion.div
+            animate={{
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <Shield className="w-10 h-10 text-white" />
+          </motion.div>
         </motion.div>
-        <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-text)' }}>
+        <motion.h1
+          variants={slideUpVariants}
+          className="text-2xl font-bold mb-2"
+          style={{ color: 'var(--color-text)' }}
+        >
           Acceso Cliente
-        </h1>
-        <p style={{ color: 'var(--color-text-secondary)' }}>
+        </motion.h1>
+        <motion.p
+          variants={slideUpVariants}
+          style={{ color: 'var(--color-text-secondary)' }}
+        >
           Elige tu método de acceso preferido
-        </p>
-      </div>
+        </motion.p>
+      </motion.div>
 
       {/* OAuth Buttons */}
-      <div className="space-y-3 mb-6">
+      <motion.div
+        className="space-y-3 mb-6"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
         {oauthProviders.map((provider, index) => (
           <motion.button
             key={provider.id}
             type="button"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.05 }}
-            onClick={() => handleOAuthLogin(provider.name)}
+            variants={staggerItem}
+            onClick={() => handleOAuthLogin(provider.providerId, provider.name)}
             disabled={isLoading !== null}
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.02, x: 4 }}
             whileTap={{ scale: 0.98 }}
-            className={`w-full flex items-center justify-center gap-3 px-4 py-4 rounded-2xl border-2 transition-all ${provider.bg} disabled:opacity-50`}
+            transition={transitions.smooth}
+            className={`w-full flex items-center justify-center gap-3 px-4 py-4 rounded-2xl border-2 hover-lift disabled:opacity-50 ${provider.bg}`}
             style={{
               backgroundColor: 'var(--card-bg)',
               borderColor: 'var(--color-border)'
             }}
           >
-            {isLoading === provider.name ? (
+            {isLoading === provider.providerId ? (
               <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--color-text)' }} />
             ) : (
-              <provider.icon />
+              <motion.div
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.6 }}
+              >
+                <provider.icon />
+              </motion.div>
             )}
             <span className="font-medium" style={{ color: 'var(--color-text)' }}>
               Continuar con {provider.name}
             </span>
           </motion.button>
         ))}
-      </div>
+      </motion.div>
 
       {/* Divider */}
       <div className="relative my-6">
@@ -283,31 +422,38 @@ export default function LoginClientePage() {
       </div>
 
       {/* Email Form */}
-      {!showEmailForm ? (
-        <motion.button
-          type="button"
-          onClick={() => setShowEmailForm(true)}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full flex items-center justify-center gap-3 px-4 py-4 rounded-2xl border-2 transition-all hover:bg-slate-50 dark:hover:bg-slate-800"
-          style={{
-            backgroundColor: 'var(--card-bg)',
-            borderColor: 'var(--color-border)'
-          }}
-        >
-          <Mail className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
-          <span className="font-medium" style={{ color: 'var(--color-text)' }}>
-            Acceder con Email
-          </span>
-        </motion.button>
-      ) : (
-        <motion.form
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          onSubmit={handleEmailLogin}
-          className="space-y-4"
-        >
-          <div>
+      <AnimatePresence mode="wait">
+        {!showEmailForm ? (
+          <motion.button
+            key="email-button"
+            type="button"
+            onClick={() => setShowEmailForm(true)}
+            variants={slideUpVariants}
+            whileHover={{ scale: 1.02, x: 4 }}
+            whileTap={{ scale: 0.98 }}
+            transition={transitions.smooth}
+            className="w-full flex items-center justify-center gap-3 px-4 py-4 rounded-2xl border-2 hover-lift hover:bg-slate-50 dark:hover:bg-slate-800"
+            style={{
+              backgroundColor: 'var(--card-bg)',
+              borderColor: 'var(--color-border)'
+            }}
+          >
+            <Mail className="w-5 h-5" style={{ color: 'var(--color-text-secondary)' }} />
+            <span className="font-medium" style={{ color: 'var(--color-text)' }}>
+              Acceder con Email
+            </span>
+          </motion.button>
+        ) : (
+          <motion.form
+            key="email-form"
+            variants={scaleVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            onSubmit={handleEmailLogin}
+            className="space-y-4"
+          >
+          <motion.div variants={slideUpVariants}>
             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
               Email
             </label>
@@ -318,13 +464,13 @@ export default function LoginClientePage() {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="tu@email.com"
-                className="input pl-12"
+                className="input pl-12 transition-smooth focus:scale-[1.01]"
                 required
               />
             </div>
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div variants={slideUpVariants}>
             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text)' }}>
               Contraseña
             </label>
@@ -335,40 +481,115 @@ export default function LoginClientePage() {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 placeholder="••••••••"
-                className="input pl-12 pr-12"
+                className="input pl-12 pr-12 transition-smooth focus:scale-[1.01]"
                 required
               />
-              <button
+              <motion.button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-4 top-1/2 -translate-y-1/2"
                 style={{ color: 'var(--color-text-secondary)' }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
+              </motion.button>
             </div>
-          </div>
+          </motion.div>
 
-          <button
+          <motion.button
             type="submit"
             disabled={isLoading !== null}
-            className="btn-primary w-full py-4 text-lg"
+            className="btn-primary w-full py-4 text-lg hover-lift"
+            variants={slideUpVariants}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             {isLoading === 'email' ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               'Continuar'
             )}
-          </button>
+          </motion.button>
         </motion.form>
-      )}
+        )}
+      </AnimatePresence>
 
-      {/* Demo Notice */}
-      <div className="mt-6 p-4 rounded-2xl text-center" style={{ backgroundColor: 'var(--card-bg)' }}>
-        <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-          <strong>Demo:</strong> Haz clic en cualquier botón para continuar
-        </span>
+      {/* Divider */}
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t" style={{ borderColor: 'var(--color-border)' }} />
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-4" style={{ backgroundColor: 'var(--color-bg)', color: 'var(--color-text-secondary)' }}>
+            o prueba sin cuenta
+          </span>
+        </div>
       </div>
+
+      {/* Demo Mode Button */}
+      <motion.button
+        type="button"
+        onClick={handleDemoLogin}
+        disabled={isLoading !== null}
+        variants={slideUpVariants}
+        whileHover={{ scale: 1.02, x: 4 }}
+        whileTap={{ scale: 0.98 }}
+        transition={transitions.bouncy}
+        className="w-full flex items-center justify-center gap-3 px-4 py-4 rounded-2xl border-2 hover-lift bg-gradient-to-r from-purple-500/10 to-pink-500/10 hover:from-purple-500/20 hover:to-pink-500/20 disabled:opacity-50"
+        style={{
+          borderColor: 'var(--color-border)'
+        }}
+      >
+        {isLoading === 'demo' ? (
+          <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--color-text)' }} />
+        ) : (
+          <motion.div
+            animate={{
+              rotate: [0, 10, -10, 10, 0],
+              scale: [1, 1.1, 1.1, 1.1, 1]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              repeatDelay: 3
+            }}
+          >
+            <Sparkles className="w-5 h-5 text-purple-500" />
+          </motion.div>
+        )}
+        <span className="font-medium" style={{ color: 'var(--color-text)' }}>
+          Acceder en Modo Demo
+        </span>
+      </motion.button>
+
+      {/* Info Notice */}
+      <motion.div
+        className="mt-6 space-y-4"
+        variants={fadeVariants}
+      >
+        <motion.div
+          className="p-4 rounded-2xl text-center hover-scale-sm transition-smooth"
+          style={{ backgroundColor: 'var(--card-bg)' }}
+          whileHover={{ y: -2 }}
+        >
+          <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            <strong>¿Primera vez aquí?</strong>
+          </span>
+          <Link
+            href="/registro"
+            className="block mt-2 text-blue-500 hover:text-blue-600 font-medium text-sm inline-flex items-center justify-center gap-1"
+          >
+            Regístrate gratis
+            <motion.span
+              animate={{ x: [0, 4, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              →
+            </motion.span>
+          </Link>
+        </motion.div>
+      </motion.div>
     </motion.div>
   )
 
@@ -673,8 +894,8 @@ export default function LoginClientePage() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--color-bg)' }}>
-      {/* Confetti */}
-      {showConfetti && (
+      {/* Confetti - commented out, not used in current flow */}
+      {/* {showConfetti && (
         <Confetti
           width={window.innerWidth}
           height={window.innerHeight}
@@ -682,7 +903,7 @@ export default function LoginClientePage() {
           numberOfPieces={200}
           gravity={0.3}
         />
-      )}
+      )} */}
 
       {/* Header */}
       <header className="p-4">
@@ -698,10 +919,7 @@ export default function LoginClientePage() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
-        <AnimatePresence mode="wait">
-          {phase === 'oauth' && renderOAuthPhase()}
-          {(phase === 'biometric' || phase === 'complete') && renderBiometricPhase()}
-        </AnimatePresence>
+        {renderOAuthPhase()}
       </main>
 
       {/* Security Badge */}
